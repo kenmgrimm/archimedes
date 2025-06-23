@@ -2,20 +2,26 @@
 
 This document outlines the initial set of user stories and technical tasks required to establish the MVP for the Archimedes project. These stories will serve as the foundation for breaking out individual features and tracking early progress.
 
-## 1. Database Setup
+## 1. Database Setup  
+✅ **Completed**
 - **Story:** As a developer, I want to stand up the PostgreSQL database so that the application has a robust, scalable data store.
 - **Tasks:**
   - Initialize PostgreSQL instance
   - Install and configure the `pgvector` extension for vector search capabilities
   - Define initial schema for core entities (users, uploads, categories, etc.)
 
-## 2. Rails Project Initialization
+*All tasks complete: PostgreSQL and pgvector are installed, and initial schema (users) is in place.*
+
+## 2. Rails Project Initialization  
+✅ **Completed**
 - **Story:** As a developer, I want to initialize a new Rails project with the required stack so I can build and run the backend API.
 - **Tasks:**
-  - Create new Rails app (API mode)
-  - Set up gems for authentication (Devise), file storage (ActiveStorage), and background jobs (Sidekiq or similar)
+  - Create new Rails app (standard full-stack mode)
+  - Set up gems for authentication (Devise), file storage (ActiveStorage), and background jobs (Sidekiq)
   - Configure TailwindCSS for styling
   - Set up RSpec for testing
+
+*All tasks complete: Rails app is initialized with all required gems and integrations. TailwindCSS and RSpec are set up and verified.*
 
 ## 3. Core Controller and Views
 - **Story:** As a user, I want to upload files and interact with the system via a basic web interface.

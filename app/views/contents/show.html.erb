@@ -1,0 +1,23 @@
+<%# Debug: Rendering Content show page %>
+<div class="max-w-2xl mx-auto px-2 py-6">
+  <div class="bg-white rounded shadow p-6 flex flex-col gap-4">
+    <div class="text-sm text-gray-500 mb-2">Created <%= time_ago_in_words(@content.created_at) %> ago</div>
+    <div class="text-gray-800 whitespace-pre-line mb-4"><%= @content.note %></div>
+    <% if @content.files.attached? %>
+      <div class="mt-2">
+        <h2 class="font-semibold mb-1">Attached Files</h2>
+        <ul class="flex flex-wrap gap-2">
+          <% @content.files.each do |file| %>
+            <li class="bg-gray-100 border rounded p-2 text-xs">
+              <%= link_to file.filename.to_s, url_for(file), target: "_blank", class: "underline text-blue-600" %>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+    <div class="flex gap-4 mt-4">
+      <%= link_to 'Edit', edit_content_path(@content), class: "bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600" %>
+      <%= link_to 'Back', contents_path, class: "bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400" %>
+    </div>
+  </div>
+</div>

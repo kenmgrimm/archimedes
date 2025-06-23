@@ -1,0 +1,38 @@
+<p style="color: green"><%= notice %></p>
+
+<%# Debug: Rendering Content index page %>
+<div class="max-w-2xl mx-auto px-2 py-6">
+  <div class="flex justify-between items-center mb-4">
+    <h1 class="text-2xl font-bold">Content</h1>
+    <%= link_to 'New Content', new_content_path, class: "bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" %>
+  </div>
+  <% if @contents.empty? %>
+    <div class="flex flex-col items-center justify-center py-16 text-center text-gray-500">
+      <svg class="w-20 h-20 mb-4 text-blue-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+      <h2 class="text-xl font-semibold mb-2">No content yet</h2>
+      <p class="mb-4">Get started by uploading your first note or files for Archimedes!</p>
+      <a href="<%= new_content_path %>" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded shadow transition">New Content</a>
+    </div>
+  <% else %>
+    <div class="grid gap-6 md:grid-cols-2">
+      <% @contents.each do |content| %>
+        <div class="bg-white rounded-xl shadow hover:shadow-lg transition-all p-5 flex flex-col gap-2 border border-gray-100 hover:border-blue-200">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs text-gray-400"><%= content.created_at.strftime('%b %d, %Y %H:%M') %></span>
+            <span class="inline-flex items-center gap-1 text-xs text-gray-500">
+              <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 002.828 2.828L18 9.828M9 17H7a2 2 0 01-2-2v-8a2 2 0 012-2h8a2 2 0 012 2v2" /></svg>
+              <%= pluralize(content.files.count, 'file') %>
+            </span>
+          </div>
+          <div class="text-gray-800 text-base mb-2 min-h-[2.5rem]">
+            <%= content.note.present? ? truncate(content.note, length: 100) : content.files.attached? ? '(Files only)' : '(No note)' %>
+          </div>
+          <div class="flex justify-end">
+            <a href="<%= content_path(content) %>" class="text-blue-600 hover:text-blue-800 font-medium text-sm underline">View</a>
+          </div>
+        </div>
+      <% end %>
+    </div>
+    <a href="<%= new_content_path %>" class="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-full shadow-lg transition md:hidden z-50">＋</a>
+  <% end %>
+</div>
