@@ -1,0 +1,48 @@
+# Entity taxonomy for OpenAI extraction
+# Extend this list as needed for new entity types
+entity_types:
+  - name: Organization
+    description: Companies, institutions, or groups
+  - name: Location
+    description: Cities, countries, landmarks, addresses (e.g., home, work, gym, Home Depot, parent's house, Montrose)
+  - name: Date
+    description: Specific dates or date ranges
+  - name: Topic
+    description: Key concepts, subjects, or themes
+  - name: Contact
+    description: Contact information for a person or organization
+  - name: CalendarEvent
+    description: Calendar event such as a meeting, appointment, or occasion
+  - name: Reminder
+    description: Reminder for a specific action or event
+  - name: Possession
+    description: Owned item or property (e.g., photo of license plate, vehicle, vehicle door sticker)
+  - name: Receipt
+    description: Photo or record of receipt (e.g., vehicle purchase or sale)
+  - name: Note
+    description: Freeform note or annotation
+  - name: Interest
+    description: Area of interest (e.g., artist, song, movie, book, hiking, biking)
+  - name: Todo
+    description: To-do item or actionable task
+  - name: Goal
+    description: Personal or project goal
+  - name: WebLink
+    description: Link to article, video, podcast, or other web resource
+  - name: ShoppingList
+    description: Shopping list containing items
+    children:
+      - name: Item
+        description: Individual shopping list item (e.g., almonds)
+  - name: Recipe
+    description: Recipe or cooking instructions
+  - name: FinancialInformation
+    description: Financial data or sensitive information
+  - name: Project
+    description: Project or major initiative (e.g., repair the garage)
+    children:
+      - name: Task
+        description: Task within a project (e.g., paint the garage, register vehicle)
+        children:
+          - name: Subtask
+            description: Subtask within a task (e.g., buy paint, fill out paperwork)
