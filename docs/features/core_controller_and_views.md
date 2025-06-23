@@ -4,7 +4,9 @@ This document breaks out the core MVP features into focused, sequential stories.
 
 ---
 
-## Story 1: Upload Content (Files and Text)
+## Story 1: Upload Content (Files and Text) ✅
+
+> **Status:** ✔️ Complete — All acceptance criteria and tasks have been implemented and tested as of 2025-06-22.
 
 ### User Story
 As a user, I want to upload files and enter text through a simple form, so I can create and view content in the system.

@@ -7,9 +7,9 @@ class Content < ApplicationRecord
   private
 
   def note_or_file_present
-    if note.blank? && !files.attached?
-      errors.add(:base, "You must provide a note or attach at least one file.")
-    end
+    return unless note.blank? && !files.attached?
+
+    errors.add(:base, "You must provide a note or attach at least one file.")
   end
 
   def log_file_attachments

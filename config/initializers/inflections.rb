@@ -14,3 +14,8 @@
 # ActiveSupport::Inflector.inflections(:en) do |inflect|
 #   inflect.acronym "RESTful"
 # end
+
+# Register OpenAI as an acronym for Rails inflections
+ActiveSupport::Inflector.inflections(:en) do |inflect|
+  inflect.acronym "OpenAI"
+end
