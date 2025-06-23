@@ -44,6 +44,34 @@ RSpec.describe ContentAnalysisService do
       expect(result.first[:result]["rating"]).to be_between(0, 1)
     end
 
+    it "skips files larger than 4MB and logs a warning" do
+      large_file = { filename: "big.pdf", data: "x" * (4 * 1024 * 1024 + 1) }
+      logger = double("Logger").as_null_object
+      allow(Rails).to receive(:logger).and_return(logger)
+      expect(logger).to receive(:warn).with(/Skipping file big.pdf due to size > 4MB/)
+      expect(openai_service).not_to receive(:chat_with_files)
+      result = service.analyze(notes: notes, files: [large_file])
+      expect(result).to eq([])
+    end
+
+    it "skips files with unsupported mime type and logs a warning" do
+      bad_file = { filename: "script.exe", data: "fakebinarydata" }
+      logger = double("Logger").as_null_object
+      allow(Rails).to receive(:logger).and_return(logger)
+      expect(logger).to receive(:warn).with(/Skipping file script.exe due to unsupported mime type/)
+      expect(openai_service).not_to receive(:chat_with_files)
+      result = service.analyze(notes: notes, files: [bad_file])
+      expect(result).to eq([])
+    end
+
+    it "accepts a valid image file and calls OpenAI" do
+      image_file = { filename: "pic.jpg", data: "fakeimagedata" }
+      expect(openai_service).to receive(:chat_with_files).and_return(valid_openai_response)
+      result = service.analyze(notes: notes, files: [image_file])
+      expect(result).to be_an(Array)
+      expect(result.first[:file]).to eq("pic.jpg")
+    end
+
     it "raises if OpenAI response is not valid JSON" do
       bad_response = valid_openai_response.dup
       bad_response["choices"][0]["message"]["content"] = "not json!"

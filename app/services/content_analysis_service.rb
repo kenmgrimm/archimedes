@@ -25,9 +25,52 @@ class ContentAnalysisService
       result = parse_response(content)
       raise "OpenAI response is not valid JSON" if result.nil?
       raise "OpenAI response does not match required output format" unless valid_output_format?(result)
+
       results << { note: notes.join("\n"), file: nil, result: result }
     else
       files.each do |file|
+        # File size and mime type validation
+        size = if file.respond_to?(:byte_size)
+                 file.byte_size
+               elsif file[:byte_size]
+                 file[:byte_size]
+               elsif file[:data]
+                 file[:data].respond_to?(:bytesize) ? file[:data].bytesize : file[:data].to_s.bytesize
+               end
+        mime_type = if file.respond_to?(:content_type)
+                      file.content_type
+                    elsif file[:content_type]
+                      file[:content_type]
+                    elsif file[:filename]
+                      ext = File.extname(file[:filename]).downcase
+                      case ext
+                      when ".pdf"
+                        "application/pdf"
+                      when ".txt"
+                        "text/plain"
+                      when ".jpg", ".jpeg" then "image/jpeg"
+                      when ".png" then "image/png"
+                      when ".gif" then "image/gif"
+                      else
+                        "application/octet-stream"
+                      end
+                    else
+                      "application/octet-stream"
+                    end
+
+        allowed_types = ["application/pdf", "text/plain", "image/jpeg", "image/png", "image/gif"]
+        max_size = 4 * 1024 * 1024 # 4 MB
+
+        unless size.nil? || size <= max_size
+          Rails.logger.warn("[ContentAnalysisService] Skipping file #{file[:filename] || (file.respond_to?(:filename) && file.filename.to_s)} due to size > 4MB (#{size} bytes)")
+          next
+        end
+        image_types = ["image/jpeg", "image/png", "image/gif"]
+        unless allowed_types.include?(mime_type) || image_types.any? { |type| mime_type.start_with?(type.split("/").first) }
+          Rails.logger.warn("[ContentAnalysisService] Skipping file #{file[:filename] || (file.respond_to?(:filename) && file.filename.to_s)} due to unsupported mime type: #{mime_type}")
+          next
+        end
+
         prompt = build_prompt(notes)
         file_data = file.respond_to?(:download) ? file.download : file[:data]
         filename = file.respond_to?(:filename) ? file.filename.to_s : file[:filename].to_s
@@ -43,6 +86,7 @@ class ContentAnalysisService
         end
         raise "OpenAI response is not valid JSON" if result.nil?
         raise "OpenAI response does not match required output format" unless valid_output_format?(result)
+
         file_name = file.respond_to?(:filename) ? file.filename.to_s : file[:filename].to_s
         results << { note: notes.join("\n"), file: file_name, result: result }
       end
