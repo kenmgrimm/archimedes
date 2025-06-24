@@ -12,6 +12,7 @@ In the V2 model, an entity represents a unique concept, person, organization, or
 
 - Has a unique identifier
 - Has a name (the canonical representation)
+- Has a name_embedding for direct entity similarity search
 - May be associated with multiple statements
 - Does not have a "type" field as in V1 (type information is captured in statements)
 - Can be linked to source content
@@ -45,7 +46,7 @@ Content
   |
   +-- has many --> Entities
                      |
-                     +-- has attributes: name, (no type)
+                     +-- has attributes: name, name_embedding
                      |
                      +-- has many --> Statements
                                         |

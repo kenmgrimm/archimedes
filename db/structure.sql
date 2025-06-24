@@ -179,12 +179,11 @@ ALTER SEQUENCE public.contents_id_seq OWNED BY public.contents.id;
 CREATE TABLE public.entities (
     id bigint NOT NULL,
     content_id integer NOT NULL,
-    entity_type character varying NOT NULL,
-    value character varying NOT NULL,
+    name character varying NOT NULL,
     canonical_entity_id bigint,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    value_embedding public.vector(1536),
+    name_embedding public.vector(1536),
     description text
 );
 
@@ -215,6 +214,77 @@ ALTER SEQUENCE public.entities_id_seq OWNED BY public.entities.id;
 CREATE TABLE public.schema_migrations (
     version character varying NOT NULL
 );
+
+
+--
+-- Name: statements; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.statements (
+    id bigint NOT NULL,
+    entity_id bigint NOT NULL,
+    object_entity_id bigint,
+    content_id bigint NOT NULL,
+    text text NOT NULL,
+    confidence double precision DEFAULT 1.0,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    text_embedding public.vector(1536)
+);
+
+
+--
+-- Name: COLUMN statements.entity_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.statements.entity_id IS 'Subject entity';
+
+
+--
+-- Name: COLUMN statements.object_entity_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.statements.object_entity_id IS 'Optional object entity for relationships';
+
+
+--
+-- Name: COLUMN statements.content_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.statements.content_id IS 'Source content';
+
+
+--
+-- Name: COLUMN statements.text; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.statements.text IS 'The statement text';
+
+
+--
+-- Name: COLUMN statements.confidence; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.statements.confidence IS 'Confidence score (0-1)';
+
+
+--
+-- Name: statements_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.statements_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: statements_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.statements_id_seq OWNED BY public.statements.id;
 
 
 --
@@ -288,6 +358,13 @@ ALTER TABLE ONLY public.entities ALTER COLUMN id SET DEFAULT nextval('public.ent
 
 
 --
+-- Name: statements id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.statements ALTER COLUMN id SET DEFAULT nextval('public.statements_id_seq'::regclass);
+
+
+--
 -- Name: users id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -351,6 +428,14 @@ ALTER TABLE ONLY public.schema_migrations
 
 
 --
+-- Name: statements statements_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.statements
+    ADD CONSTRAINT statements_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -401,10 +486,38 @@ CREATE INDEX index_entities_on_canonical_entity_id ON public.entities USING btre
 
 
 --
--- Name: index_entities_on_value_embedding; Type: INDEX; Schema: public; Owner: -
+-- Name: index_entities_on_name; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX index_entities_on_value_embedding ON public.entities USING ivfflat (value_embedding) WITH (lists='10');
+CREATE INDEX index_entities_on_name ON public.entities USING btree (name);
+
+
+--
+-- Name: index_entities_on_name_embedding; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_entities_on_name_embedding ON public.entities USING ivfflat (name_embedding) WITH (lists='10');
+
+
+--
+-- Name: index_statements_on_content_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_statements_on_content_id ON public.statements USING btree (content_id);
+
+
+--
+-- Name: index_statements_on_entity_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_statements_on_entity_id ON public.statements USING btree (entity_id);
+
+
+--
+-- Name: index_statements_on_object_entity_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_statements_on_object_entity_id ON public.statements USING btree (object_entity_id);
 
 
 --
@@ -419,6 +532,13 @@ CREATE UNIQUE INDEX index_users_on_email ON public.users USING btree (email);
 --
 
 CREATE UNIQUE INDEX index_users_on_reset_password_token ON public.users USING btree (reset_password_token);
+
+
+--
+-- Name: statements_text_embedding_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX statements_text_embedding_idx ON public.statements USING ivfflat (text_embedding public.vector_cosine_ops);
 
 
 --
@@ -444,6 +564,9 @@ ALTER TABLE ONLY public.active_storage_attachments
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20250624211254'),
+('20250624210618'),
+('20250624210606'),
 ('20250624042542'),
 ('20250623202600'),
 ('20250623202500'),

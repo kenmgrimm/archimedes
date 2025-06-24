@@ -8,55 +8,53 @@ class Content < ApplicationRecord
 
   # Associations
   has_many_attached :files
-  has_many :entities, dependent: :destroy
+  has_many :entities, dependent: :nullify
   has_many :statements, dependent: :destroy
 
   validate :note_or_file_present
   before_save :generate_embedding
   after_save :log_file_attachments
-  
+
   # V2 Data Model helper methods
-  
+
   # Extract entities and statements from analysis results
   # @param analysis_result [Hash] The result from ContentAnalysisService
   # @return [Array<Entity>] The created or found entities
   def extract_entities_and_statements(analysis_result)
-    return [] unless analysis_result.is_a?(Hash) && analysis_result['annotated_description'].present?
-    
+    return [] unless analysis_result.is_a?(Hash) && analysis_result["annotated_description"].present?
+
     # Debug logging
-    Rails.logger.debug { "[Content] Extracting entities and statements from analysis result" } if ENV['DEBUG']
-    
+    Rails.logger.debug { "[Content] Extracting entities and statements from analysis result" } if ENV["DEBUG"]
+
     # Parse the annotated description to find entity mentions
     # Format is typically: "...text... [EntityName] ...more text..."
-    entity_names = analysis_result['annotated_description'].scan(/\[(.*?)\]/).flatten.uniq
-    
+    entity_names = analysis_result["annotated_description"].scan(/\[(.*?)\]/).flatten.uniq
+
     # Debug logging
-    Rails.logger.debug { "[Content] Found #{entity_names.size} unique entity mentions: #{entity_names.join(', ')}" } if ENV['DEBUG']
-    
+    Rails.logger.debug { "[Content] Found #{entity_names.size} unique entity mentions: #{entity_names.join(', ')}" } if ENV["DEBUG"]
+
     # Create or find entities and generate statements
     created_entities = []
-    
+
     entity_names.each do |name|
       # Find or create the entity
       entity = entities.find_or_create_by(name: name)
       created_entities << entity
-      
+
       # Create a basic statement about this entity
       entity.add_statement("Mentioned in content: #{title || 'Untitled'}", content: self)
-      
+
       # Extract context around the entity mention to create more detailed statements
-      context = extract_context_for_entity(analysis_result['annotated_description'], name)
-      if context.present?
-        entity.add_statement(context, content: self)
-      end
+      context = extract_context_for_entity(analysis_result["annotated_description"], name)
+      entity.add_statement(context, content: self) if context.present?
     end
-    
+
     # Debug logging
-    Rails.logger.debug { "[Content] Created #{created_entities.size} entities with statements" } if ENV['DEBUG']
-    
+    Rails.logger.debug { "[Content] Created #{created_entities.size} entities with statements" } if ENV["DEBUG"]
+
     created_entities
   end
-  
+
   # Extract context around an entity mention
   # @param text [String] The full text to search in
   # @param entity_name [String] The entity name to find context for
@@ -66,14 +64,14 @@ class Content < ApplicationRecord
     entity_pattern = /\[#{Regexp.escape(entity_name)}\]/
     match = text.match(entity_pattern)
     return nil unless match
-    
+
     # Get the start and end positions
     start_pos = [match.begin(0) - 100, 0].max
     end_pos = [match.end(0) + 100, text.length].min
-    
+
     # Extract the context
     context = text[start_pos...end_pos].gsub(entity_pattern, entity_name)
-    
+
     # Clean up the context
     context.strip
   end
