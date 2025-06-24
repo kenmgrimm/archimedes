@@ -73,35 +73,33 @@ class Entity < ApplicationRecord
   # @param limit [Integer] Maximum number of results to return
   # @return [Array<Entity>] Collection of entities with similar statements
   def self.find_by_statement(query_text, limit: 10)
-    return none if query_text.blank?
+    return [] if query_text.blank?
 
+    # Debug logging
     Rails.logger.debug { "[Entity] Finding entities by statement similarity to: #{query_text}" } if ENV["DEBUG"]
-
-    # Generate embedding for query text
-    embedding_service = OpenAI::EmbeddingService.new
-    query_embedding = embedding_service.embed(query_text)
-    return none if query_embedding.nil?
 
     # Find statements similar to the query
     statements = Statement.find_similar(query_text, limit: limit * 3) # Get more statements than needed
+    
+    return [] if statements.empty?
 
     # Get unique entities from those statements
-    entity_ids = statements.pluck(:entity_id).uniq
+    entity_ids = statements.map(&:entity_id).uniq
 
     # Debug logging
     Rails.logger.debug { "[Entity] Found #{entity_ids.size} entities with similar statements" } if ENV["DEBUG"]
 
     # Fetch entities
-    entities = where(id: entity_ids).limit(limit)
+    entities = where(id: entity_ids).limit(limit).to_a
 
     # For each entity, find its most similar statement and set similarity score
     entities.each do |entity|
       best_statement = statements.find { |s| s.entity_id == entity.id }
-      entity.similarity = best_statement&.similarity || 1.0
+      entity.similarity = best_statement&.similarity || 0.0
     end
-
-    # Sort by similarity (lowest distance first)
-    entities.sort_by(&:similarity)
+    
+    # Sort by similarity score
+    entities.sort_by { |entity| -entity.similarity }
   end
 
   # Find entities by name (text search)
