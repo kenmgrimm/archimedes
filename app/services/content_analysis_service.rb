@@ -6,12 +6,11 @@ require "json"
 
 # Service to analyze uploaded content and notes, and extract/annotate entities using OpenAI
 class ContentAnalysisService
-  TAXONOMY_PATH = Rails.root.join("app", "services", "openai", "entity_taxonomy.yml")
-  OUTPUT_FORMAT_PATH = Rails.root.join("app", "services", "openai", "entity_output_format.json")
+  # V2 Data Model: Using statements instead of typed entities
+  OUTPUT_FORMAT_PATH = Rails.root.join("app", "services", "openai", "statement_output_format.json")
 
   def initialize(openai_service: OpenAI::ClientService.new)
     @openai_service = openai_service
-    @taxonomy = YAML.load_file(TAXONOMY_PATH)["entity_types"]
     @output_format = JSON.parse(File.read(OUTPUT_FORMAT_PATH))
   end
 
@@ -94,8 +93,9 @@ class ContentAnalysisService
     raise
   end
 
-  # Extract entities from annotated_description and create Entity records for the given Content.
-  # Entities must match taxonomy. Includes debug logging for all steps.
+  # Extract entities and statements from OpenAI result and create records for the given Content.
+  # V2 Data Model: Creates entities and statements instead of typed entities.
+  # Includes debug logging for all steps.
   def extract_and_create_entities(content, openai_result)
     # Validate content is a Content model instance
     unless content.is_a?(Content)
@@ -103,24 +103,21 @@ class ContentAnalysisService
       return false
     end
 
-    annotated = openai_result["annotated_description"]
     description = openai_result["description"]
-    return if annotated.blank?
+    annotated = openai_result["annotated_description"]
+    statements = openai_result["statements"]
+    return if annotated.blank? && statements.blank?
 
     # Store description embedding if available
     if description.present?
       Rails.logger.debug { "[ContentAnalysisService] Generating embedding for description: #{description.truncate(50)}" }
       begin
         embedding_service = OpenAI::EmbeddingService.new
-        description_embedding = embedding_service.embed(description)
+        description_embedding = embedding_service.embed_text(description)
 
         if description_embedding.present?
-          # Format the embedding array as a PostgreSQL vector string
-          # The format should be '[n1,n2,n3,...]' for pgvector
-          formatted_embedding = ActiveRecord::Base.connection.quote_string(description_embedding.to_s)
-
           # Store the embedding with the content for future similarity searches
-          content.update(note_embedding: formatted_embedding)
+          content.update(note_embedding: description_embedding)
           Rails.logger.debug do
             "[ContentAnalysisService] Successfully stored description embedding with #{description_embedding.size} dimensions to content ##{content.id}"
           end
@@ -130,64 +127,135 @@ class ContentAnalysisService
       end
     end
 
-    Rails.logger.debug { "[ContentAnalysisService] Processing annotated description: #{annotated}" }
+    Rails.logger.debug { "[ContentAnalysisService] Processing statements and entities" }
 
-    valid_types = @taxonomy.pluck("name")
-    entities = annotated.scan(/\[([^\]:]+):\s*([^\]]+)\]/)
-    Rails.logger.debug { "[ContentAnalysisService] Extracted entities: #{entities.inspect}" }
-
-    created_entities = []
-
-    entities.each do |type, value|
-      type_down = type.strip.downcase
-      canonical_type = valid_types.find { |t| t.downcase == type_down }
-      unless canonical_type
-        Rails.logger.warn("[ContentAnalysisService] Skipping entity with invalid type: #{type}")
-        next
+    # Extract entities from annotated description if statements aren't provided directly
+    if statements.blank? && annotated.present?
+      Rails.logger.debug { "[ContentAnalysisService] Extracting entities from annotated description: #{annotated}" }
+      # Extract entities from format [Entity: name]
+      entity_names = annotated.scan(/\[Entity:\s*([^\]]+)\]/).flatten.map(&:strip).uniq
+      
+      # Create simple statements for each entity
+      statements = entity_names.map do |name|
+        {
+          "subject" => name,
+          "text" => "is mentioned in the content",
+          "confidence" => 0.9
+        }
       end
-
-      # Check if entity already exists to prevent duplicates
-      clean_value = value.strip
-      existing_entity = content.entities.find_by(entity_type: canonical_type, value: clean_value)
-
-      if existing_entity
-        # Entity already exists, don't create a duplicate
-        log_safe("Entity already exists: #{canonical_type} - #{clean_value}", :debug)
-        created_entities << existing_entity
-        next
-      end
-
-      # Create entity with value embedding
-      begin
-        # Generate embedding for entity value
-        embedding_service = OpenAI::EmbeddingService.new
-        embedding_array = embedding_service.embed(clean_value)
-
-        # Format the embedding array as a PostgreSQL vector string
-        # The format should be '[n1,n2,n3,...]' for pgvector
-        formatted_embedding = (ActiveRecord::Base.connection.quote_string(embedding_array.to_s) if embedding_array.present?)
-
-        entity = content.entities.create(
-          entity_type: canonical_type,
-          value: clean_value,
-          value_embedding: formatted_embedding
-        )
-
-        if entity.persisted?
-          created_entities << entity
-          log_safe("Created entity: #{canonical_type} - #{clean_value} with embedding dimensions: #{embedding_array&.size}", :info)
-        else
-          log_safe("Failed to create entity: #{entity.errors.full_messages.join(', ')}", :error)
-        end
-      rescue StandardError => e
-        log_safe("Error creating entity: #{e.message}", :error)
-      end
+      
+      Rails.logger.debug { "[ContentAnalysisService] Created #{statements.size} basic statements from annotated text" }
     end
 
-    created_entities
+    created_entities = []
+    created_statements = []
+
+    # Process statements
+    statements.each do |statement_data|
+      subject_name = statement_data["subject"].strip
+      object_name = statement_data["object"]&.strip
+      statement_text = statement_data["text"].strip
+      confidence = statement_data["confidence"] || 1.0
+
+      # Find or create subject entity
+      subject_entity = find_or_create_entity(content, subject_name)
+      created_entities << subject_entity if subject_entity.persisted? && !created_entities.include?(subject_entity)
+
+      # Find or create object entity if present
+      object_entity = find_or_create_entity(content, object_name) if object_name.present?
+      created_entities << object_entity if object_entity&.persisted? && !created_entities.include?(object_entity)
+
+      # Create statement
+      statement = create_statement(
+        content: content,
+        entity: subject_entity,
+        object_entity: object_entity,
+        text: statement_text,
+        confidence: confidence
+      )
+
+      created_statements << statement if statement&.persisted?
+    end
+
+    Rails.logger.debug { "[ContentAnalysisService] Created #{created_entities.size} entities and #{created_statements.size} statements" }
+    
+    { entities: created_entities, statements: created_statements }
   end
 
   private
+  
+  # Find or create an entity by name
+  # @param content [Content] The content to associate the entity with
+  # @param name [String] The entity name
+  # @return [Entity] The found or created entity
+  def find_or_create_entity(content, name)
+    return nil if name.blank?
+    
+    # Debug logging
+    Rails.logger.debug { "[ContentAnalysisService] Finding or creating entity: #{name}" } if ENV["DEBUG"]
+    
+    # Try to find existing entity by name
+    entity = Entity.find_by(name: name)
+    
+    if entity
+      Rails.logger.debug { "[ContentAnalysisService] Found existing entity: #{name} (ID: #{entity.id})" } if ENV["DEBUG"]
+      return entity
+    end
+    
+    # Create new entity
+    entity = Entity.new(name: name, content: content)
+    
+    if entity.save
+      Rails.logger.debug { "[ContentAnalysisService] Created new entity: #{name} (ID: #{entity.id})" } if ENV["DEBUG"]
+    else
+      Rails.logger.error { "[ContentAnalysisService] Failed to create entity: #{name} - #{entity.errors.full_messages.join(', ')}" }
+    end
+    
+    entity
+  end
+  
+  # Create a statement
+  # @param content [Content] The content to associate the statement with
+  # @param entity [Entity] The subject entity
+  # @param object_entity [Entity] The optional object entity
+  # @param text [String] The statement text
+  # @param confidence [Float] The confidence score (0-1)
+  # @return [Statement] The created statement
+  def create_statement(content:, entity:, object_entity: nil, text:, confidence: 1.0)
+    return nil if entity.nil? || text.blank?
+    
+    # Debug logging
+    statement_desc = object_entity ? "#{entity.name} -> #{text} -> #{object_entity.name}" : "#{entity.name} -> #{text}"
+    Rails.logger.debug { "[ContentAnalysisService] Creating statement: #{statement_desc}" } if ENV["DEBUG"]
+    
+    # Create statement
+    statement = Statement.new(
+      entity: entity,
+      object_entity: object_entity,
+      content: content,
+      text: text,
+      confidence: confidence
+    )
+    
+    if statement.save
+      Rails.logger.debug { "[ContentAnalysisService] Created statement (ID: #{statement.id})" } if ENV["DEBUG"]
+      
+      # Generate embedding asynchronously
+      # In a real app, this would be a background job
+      begin
+        embedding_service = OpenAI::EmbeddingService.new
+        embedding = embedding_service.embed_text(text)
+        statement.update(text_embedding: embedding) if embedding.present?
+        Rails.logger.debug { "[ContentAnalysisService] Added embedding to statement (ID: #{statement.id})" } if ENV["DEBUG"]
+      rescue StandardError => e
+        Rails.logger.error { "[ContentAnalysisService] Error generating embedding for statement: #{e.message}" }
+      end
+    else
+      Rails.logger.error { "[ContentAnalysisService] Failed to create statement: #{statement.errors.full_messages.join(', ')}" }
+    end
+    
+    statement
+  end
 
   # Safe logging method that prevents binary data from being logged
   def log_safe(message, level = :debug)
@@ -209,18 +277,20 @@ class ContentAnalysisService
   end
 
   def build_prompt(notes)
-    taxonomy_list = @taxonomy.map { |t| "- #{t['name']}: #{t['description']}" }.join("\n")
-    output_example = JSON.pretty_generate(@output_format)
-
     <<~PROMPT
-      IMPORTANT: You are NOT being asked to identify, describe, or provide information about people or faces in any image. Do NOT attempt to identify individuals. Your task is strictly to extract and summarize the contents of documents, receipts, images, or user notes, and to classify the type of document or image.
+      IMPORTANT: You are NOT being asked to identify, describe, or provide information about people or faces in any image. Do NOT attempt to identify individuals. Your task is strictly to extract and summarize the contents of documents, receipts, images, or user notes.
 
-      You are an expert assistant for information extraction. Your job is to:
+      You are an expert assistant for information extraction and knowledge graph building. Your job is to:
       1. Read the provided user notes and, if present, the uploaded document or image.
       2. Write a detailed, human-readable description that synthesizes information from BOTH the user note(s) and the document/image, making clear connections between them.
-      3. Annotate each description with entity tags in the format [EntityType: Value], using ONLY the allowed entity types below. Be thorough in identifying all relevant entities.
-      4. Provide a confidence rating between 0 and 1 (as a float, 1 = very sure, 0 = not sure) for your analysis of that piece of content.
-      5. Output your result as a single JSON object matching the following strict schema. IMPORTANT: The output MUST be valid JSON and MUST match the schema exactly, with no extra text, comments, or Markdown. If you do not comply, your output will be rejected as an error.
+      3. Identify all entities (people, places, things, concepts) in the content and mark them with [Entity: Name] tags.
+      4. Generate a list of statements about these entities. Each statement should have:
+         - subject: The entity the statement is about
+         - text: The statement text (what is being said about the subject)
+         - object: Optional second entity that is related to the subject
+         - confidence: A confidence score between 0 and 1 (1 = very sure, 0 = not sure)
+      5. Provide a confidence rating between 0 and 1 for your overall analysis.
+      6. Output your result as a single JSON object matching the following strict schema. IMPORTANT: The output MUST be valid JSON and MUST match the schema exactly, with no extra text, comments, or Markdown.
 
       CRITICAL: Your description MUST include ALL specific identifying information visible in the content:
       - For license plates: Include the full plate number, state/province, expiration dates, and any visible registration tags or stickers
@@ -231,25 +301,50 @@ class ContentAnalysisService
 
       DO NOT omit any identifying information that is visible in the content. The description should be comprehensive enough that someone could identify the exact item without seeing the original content.
 
+      OUTPUT FORMAT:
       - description: string (describe what the note and/or file is about, combining both)
-      - annotated_description: string (with entity tags)
+      - annotated_description: string (with [Entity: Name] tags)
+      - statements: array of statement objects with structure:
+        - subject: string (entity name)
+        - text: string (statement about the entity)
+        - object: string (optional related entity)
+        - confidence: float (0-1)
       - rating: float (0-1)
 
-      EXAMPLE (for a receipt and note):
+      EXAMPLE OUTPUT:
       {
-        "description": "This is a receipt from Joe's Diner in Ocean City, NJ, dated April 5, 2024, for a meal with Steven, as referenced in the user's note.",
-        "annotated_description": "This is a [Receipt: meal] at [Organization: Joe's Diner] in [Location: Ocean City, NJ], dated [Date: April 5, 2024], for a meal with [Person: Steven], as referenced in the user's note.",
-        "rating": 0.98
+        "description": "This is a Florida license plate CJ8 9NF on a GMC Sierra 1500 truck, expiring in February 2026.",
+        "annotated_description": "This is a [Entity: Florida license plate] [Entity: CJ8 9NF] on a [Entity: GMC Sierra 1500 truck], expiring in [Entity: February 2026].",
+        "statements": [
+          {
+            "subject": "CJ8 9NF",
+            "text": "is a license plate number",
+            "confidence": 1.0
+          },
+          {
+            "subject": "Florida license plate",
+            "text": "has number",
+            "object": "CJ8 9NF",
+            "confidence": 1.0
+          },
+          {
+            "subject": "GMC Sierra 1500 truck",
+            "text": "has license plate",
+            "object": "CJ8 9NF",
+            "confidence": 0.95
+          },
+          {
+            "subject": "CJ8 9NF",
+            "text": "expires in",
+            "object": "February 2026",
+            "confidence": 0.9
+          }
+        ],
+        "rating": 0.95
       }
 
-      Allowed entity types:
-      #{taxonomy_list}
-
-      Example output format:
-      #{output_example}
-
-      Provided user notes:
-      #{notes.map.with_index { |n, i| "Note \\##{i + 1}: #{n}" }.join("\n")}
+      USER NOTES:
+      #{notes.join("\n\n")}
 
       IMPORTANT: Only output valid JSON. If you are unsure, return your best guess but always follow the schema.
     PROMPT
@@ -265,14 +360,27 @@ class ContentAnalysisService
     nil
   end
 
-  # Validate that the OpenAI response matches the required flat output format
+  # Validate that the OpenAI response matches the required V2 output format with statements
   def valid_output_format?(result)
-    result.is_a?(Hash) &&
-      result.key?("description") &&
-      result.key?("annotated_description") &&
-      result.key?("rating") &&
-      result["rating"].is_a?(Numeric) &&
-      result["rating"] >= 0 && result["rating"] <= 1
+    return false unless result.is_a?(Hash)
+    return false unless result["description"].is_a?(String)
+    return false unless result["annotated_description"].is_a?(String)
+    return false unless result["rating"].is_a?(Numeric) && result["rating"].between?(0, 1)
+    
+    # Check statements array
+    return true if result["statements"].nil? # Allow missing statements for backward compatibility
+    
+    return false unless result["statements"].is_a?(Array)
+    
+    # Validate each statement
+    result["statements"].all? do |statement|
+      statement.is_a?(Hash) &&
+      statement["subject"].is_a?(String) &&
+      statement["text"].is_a?(String) &&
+      (statement["object"].nil? || statement["object"].is_a?(String)) &&
+      (statement["confidence"].nil? || 
+       (statement["confidence"].is_a?(Numeric) && statement["confidence"].between?(0, 1)))
+    end
   end
 
   # Returns the size (in bytes) of the file, or nil if not available

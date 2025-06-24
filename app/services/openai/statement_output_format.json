@@ -1,0 +1,45 @@
+{
+  "description": "This is a travel itinerary for a vacation in Italy, including visits to Rome, Florence, and Venice, as requested in the user's note.",
+  "annotated_description": "This document contains information about [Entity: vacation in Italy]. The entity [Entity: vacation in Italy] includes visits to [Entity: Rome], [Entity: Florence], and [Entity: Venice]. [Entity: Rome] is a city in Italy. [Entity: Florence] is a city in Italy. [Entity: Venice] is a city in Italy.",
+  "statements": [
+    {
+      "subject": "vacation in Italy",
+      "text": "is a travel itinerary",
+      "confidence": 0.95
+    },
+    {
+      "subject": "vacation in Italy",
+      "text": "includes visits to Rome",
+      "object": "Rome",
+      "confidence": 0.95
+    },
+    {
+      "subject": "vacation in Italy",
+      "text": "includes visits to Florence",
+      "object": "Florence",
+      "confidence": 0.95
+    },
+    {
+      "subject": "vacation in Italy",
+      "text": "includes visits to Venice",
+      "object": "Venice",
+      "confidence": 0.95
+    },
+    {
+      "subject": "Rome",
+      "text": "is a city in Italy",
+      "confidence": 1.0
+    },
+    {
+      "subject": "Florence",
+      "text": "is a city in Italy",
+      "confidence": 1.0
+    },
+    {
+      "subject": "Venice",
+      "text": "is a city in Italy",
+      "confidence": 1.0
+    }
+  ],
+  "rating": 0.95
+}
