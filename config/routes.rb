@@ -1,5 +1,13 @@
 Rails.application.routes.draw do
-  resources :contents
+  resources :contents do
+    member do
+      post :analyze
+    end
+  end
+  
+  # Search routes for vector similarity search
+  get 'search', to: 'search#index'
+  
   get 'home/index'
   devise_for :users
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
