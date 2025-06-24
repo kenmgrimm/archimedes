@@ -10,7 +10,9 @@ module OpenAI
 
     # Example: Chat completion for entity extraction
     def chat(prompt, model: "gpt-4o", temperature: 0.2, max_tokens: 2048)
+      # Log truncated prompt to avoid sensitive data in logs
       Rails.logger.debug { "[OpenAI::ClientService] Sending chat prompt: #{prompt.truncate(120)}" }
+
       response = @client.chat(
         parameters: {
           model: model,
@@ -22,7 +24,15 @@ module OpenAI
           max_tokens: max_tokens
         }
       )
-      Rails.logger.debug { "[OpenAI::ClientService] OpenAI raw response: #{response.inspect}" }
+
+      # Log response metadata without including potentially large content
+      response_info = {
+        id: response["id"],
+        model: response["model"],
+        usage: response["usage"],
+        choices_count: response["choices"]&.size
+      }
+      Rails.logger.debug { "[OpenAI::ClientService] OpenAI response received: #{response_info.inspect}" }
       response
     rescue StandardError => e
       Rails.logger.error("[OpenAI::ClientService] OpenAI API error: #{e.class} - #{e.message}")
@@ -49,7 +59,10 @@ module OpenAI
           image_url: { url: "data:image/#{mime};base64,#{image_data}" }
         }
       end
-      Rails.logger.debug { "[OpenAI::ClientService] Sending multimodal prompt with note and #{files.size} file(s)." }
+      # Log without including binary data
+      file_info = files.map { |f| "#{f[:filename]} (#{File.extname(f[:filename]).delete('.').downcase})" }
+      Rails.logger.debug { "[OpenAI::ClientService] Sending multimodal prompt with note and #{files.size} file(s): #{file_info.join(', ')}" }
+
       response = @client.chat(
         parameters: {
           model: model,
@@ -61,7 +74,15 @@ module OpenAI
           max_tokens: max_tokens
         }
       )
-      Rails.logger.debug { "[OpenAI::ClientService] OpenAI multimodal raw response: #{response.inspect}" }
+
+      # Log response without including potentially large content
+      response_info = {
+        id: response["id"],
+        model: response["model"],
+        usage: response["usage"],
+        choices_count: response["choices"]&.size
+      }
+      Rails.logger.debug { "[OpenAI::ClientService] OpenAI multimodal response received: #{response_info.inspect}" }
       response
     rescue StandardError => e
       Rails.logger.error("[OpenAI::ClientService] OpenAI API error (multimodal): #{e.class} - #{e.message}")
