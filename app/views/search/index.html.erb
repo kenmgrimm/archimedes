@@ -22,7 +22,7 @@
   
   <div id="search-results">
     <% if @query.present? %>
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="grid grid-cols-1 gap-6">
         <!-- Entities Section -->
         <div class="bg-white rounded-lg shadow p-4">
           <h2 class="text-lg font-semibold mb-4 flex items-center">
@@ -57,6 +57,101 @@
             </ul>
           <% else %>
             <p class="text-gray-500 italic">No similar entities found.</p>
+          <% end %>
+        </div>
+
+        <!-- Statements Section (V2 Data Model) -->
+        <div class="bg-white rounded-lg shadow p-4 mt-6">
+          <h2 class="text-lg font-semibold mb-4 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+            </svg>
+            Statements (<%= @statements.size %>)
+          </h2>
+          
+          <% if @statements.any? %>
+            <ul class="divide-y">
+              <% @statements.each do |statement| %>
+                <li class="py-3">
+                  <div class="flex items-start">
+                    <div class="flex-grow">
+                      <p class="font-medium">
+                        <% if statement.subject_entity %>
+                          <span class="text-blue-600"><%= statement.subject_entity.name %></span>
+                        <% end %>
+                        <span class="text-gray-700"><%= statement.text %></span>
+                        <% if statement.object_entity %>
+                          <span class="text-green-600"><%= statement.object_entity.name %></span>
+                        <% end %>
+                      </p>
+                      <% if statement.content %>
+                        <p class="text-xs text-gray-500">
+                          From: <%= link_to truncate(statement.content.note, length: 50), content_path(statement.content), class: "underline" %>
+                        </p>
+                      <% end %>
+                      <p class="text-xs text-gray-500 mt-1">
+                        Confidence: <%= (statement.confidence * 100).round(1) %>%
+                      </p>
+                    </div>
+                    <div class="text-xs text-gray-500">
+                      Similarity: <%= (statement.similarity * 100).round(1) %>%
+                    </div>
+                  </div>
+                </li>
+              <% end %>
+            </ul>
+          <% else %>
+            <p class="text-gray-500 italic">No similar statements found.</p>
+          <% end %>
+        </div>
+
+        <!-- Entities by Statement Section (V2 Data Model) -->
+        <div class="bg-white rounded-lg shadow p-4 mt-6">
+          <h2 class="text-lg font-semibold mb-4 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            Entities by Statement (<%= @entities_by_statement.size %>)
+          </h2>
+          
+          <% if @entities_by_statement.any? %>
+            <ul class="divide-y">
+              <% @entities_by_statement.each do |entity| %>
+                <li class="py-3">
+                  <div class="flex items-start">
+                    <div class="flex-grow">
+                      <p class="font-medium"><%= entity.name %></p>
+                      <div class="mt-2">
+                        <% entity.statements.limit(3).each do |statement| %>
+                          <div class="text-sm text-gray-600 mb-1">
+                            <% if statement.subject_entity && statement.subject_entity.id == entity.id %>
+                              <span class="text-blue-600">This entity</span>
+                              <span><%= statement.text %></span>
+                              <% if statement.object_entity %>
+                                <span class="text-green-600"><%= statement.object_entity.name %></span>
+                              <% end %>
+                            <% elsif statement.object_entity && statement.object_entity.id == entity.id %>
+                              <% if statement.subject_entity %>
+                                <span class="text-blue-600"><%= statement.subject_entity.name %></span>
+                              <% end %>
+                              <span><%= statement.text %></span>
+                              <span class="text-green-600">this entity</span>
+                            <% else %>
+                              <span><%= statement.text %></span>
+                            <% end %>
+                          </div>
+                        <% end %>
+                      </div>
+                    </div>
+                    <div class="text-xs text-gray-500">
+                      Similarity: <%= (entity.similarity * 100).round(1) %>%
+                    </div>
+                  </div>
+                </li>
+              <% end %>
+            </ul>
+          <% else %>
+            <p class="text-gray-500 italic">No entities found by statement similarity.</p>
           <% end %>
         </div>
         

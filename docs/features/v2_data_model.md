@@ -95,7 +95,7 @@ Content
 X 1. Create new database migrations for the updated Entity model and new Statement model
 X 2. Update the ContentAnalysisService to extract statements about entities
 X 3. Modify the OpenAI prompt to generate statements rather than entity types
-4. Update the search functionality to search across statements
+X 4. Update the search functionality to search across statements
 5. Create a data migration path from V1 to V2 model
 6. Update UI to display entities with their statements
 
