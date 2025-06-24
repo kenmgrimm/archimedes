@@ -36,45 +36,24 @@ As a user, I want the system to analyze each uploaded document and extract key e
   - Example format:
     ```json
     {
-      "notes": [
-        {
-          "description": "Met with John Doe at the dealership.",
-          "annotated_description": "Met with [Organization: John Doe] at the dealership."
-        }
-      ],
-      "files": [
-        {
-          "filename": "receipt.jpg",
-          "description": "Photo of the receipt for the car purchase in Paris, dated 2022.",
-          "annotated_description": "Photo of the receipt for the car purchase in [Location: Paris], dated [Date: 2022]."
-        },
-        {
-          "filename": "license_plate.jpg",
-          "description": "Photo of the new license plate.",
-          "annotated_description": "Photo of the new [Possession: license plate]."
-        }
-      ],
-      "cumulative": {
-        "description": "Met with John Doe at the dealership. Uploaded a receipt and license plate photo in Paris, 2022.",
-        "annotated_description": "Met with [Organization: John Doe] at the dealership. Uploaded a [Receipt: receipt] and [Possession: license plate] photo in [Location: Paris], [Date: 2022]."
-      }
+      "description": "Met with John Doe at the dealership. Uploaded a receipt and license plate photo in Paris, 2022.",
+      "annotated_description": "Met with [Organization: John Doe] at the dealership. Uploaded a [Receipt: receipt] and [Possession: license plate] photo in [Location: Paris], [Date: 2022].",
+      "rating": 0.95
     }
     ```
   - The integration must reject any OpenAI response that does not match this format to ensure reliability and prevent downstream errors.
 
-2. **Build Content Analysis Service**
+2. **Build Content Analysis Service** ✅
    - Implement a `ContentAnalysisService` that takes a Content's note and uploaded files.
    - Compose a detailed prompt for OpenAI, describing how to extract entities from both text and file content.
    - Ensure the service is modular and testable.
 
-3. **Set File Size Limit**
+3. **Set File Size Limit** ✅
    - Enforce a maximum file size for analysis (configurable, e.g., 2MB per file).
    - Validate and skip or warn on files that exceed the limit before sending to OpenAI.
 
 4. **Entity Extraction and Storage**
-   - Use the OpenAI response to create related `Entity` records for the Content.
-   - Classify entities (e.g., person, place, topic) and store them with their type and value.
-   - Store the full OpenAI response body with the Content or Entity for future review/audit.
+   - See [`entity_extraction_and_storage.md`](entity_extraction_and_storage.md) for requirements and implementation details.
 
 5. **Background Processing**
    - Run the content analysis and entity extraction in a background job (e.g., Sidekiq or ActiveJob).
