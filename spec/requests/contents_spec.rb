@@ -13,6 +13,43 @@ require 'rails_helper'
 # sticking to rails and rspec-rails APIs to keep things simple and stable.
 
 RSpec.describe "/contents", type: :request do
+  # Helper method to stub OpenAI API calls for embeddings
+  def stub_openai_embedding_api
+    # Create a mock embedding vector with 1536 dimensions
+    mock_embedding = Array.new(1536) { rand(-1.0..1.0) }
+    
+    # Stub any OpenAI embedding API call with a valid response
+    stub_request(:post, "https://api.openai.com/v1/embeddings")
+      .with(
+        body: hash_including({
+          "model" => "text-embedding-3-small"
+        })
+      )
+      .to_return(
+        status: 200,
+        body: {
+          "data" => [
+            {
+              "embedding" => mock_embedding,
+              "index" => 0,
+              "object" => "embedding"
+            }
+          ],
+          "model" => "text-embedding-3-small",
+          "object" => "list",
+          "usage" => {
+            "prompt_tokens" => 5,
+            "total_tokens" => 5
+          }
+        }.to_json,
+        headers: { 'Content-Type' => 'application/json' }
+      )
+  end
+  
+  # Stub OpenAI API calls before each test
+  before(:each) do
+    stub_openai_embedding_api
+  end
   
   # This should return the minimal set of attributes required to create a valid
   # Content. As you add validations to Content, be sure to
