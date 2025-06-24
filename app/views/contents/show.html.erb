@@ -1,23 +1,181 @@
 <%# Debug: Rendering Content show page %>
 <div class="max-w-2xl mx-auto px-2 py-6">
+  <div id="flash_messages">
+    <%= render 'shared/flash_messages' %>
+  </div>
+  
   <div class="bg-white rounded shadow p-6 flex flex-col gap-4">
-    <div class="text-sm text-gray-500 mb-2">Created <%= time_ago_in_words(@content.created_at) %> ago</div>
-    <div class="text-gray-800 whitespace-pre-line mb-4"><%= @content.note %></div>
+    <div class="flex justify-between items-center mb-4">
+      <h1 class="text-xl font-bold">Content Details</h1>
+      <div class="text-sm text-gray-500">Created <%= time_ago_in_words(@content.created_at) %> ago</div>
+    </div>
+    
+    <!-- Content Summary -->
+    <div class="mb-6">
+      <h2 class="text-lg font-semibold mb-2 text-gray-700 border-b pb-1">Summary</h2>
+      <div class="text-gray-800 whitespace-pre-line"><%= @content.note %></div>
+    </div>
+    
+    <!-- Entity Summary Section -->
+    <% if @content.entities.any? %>
+      <div class="mb-6">
+        <h2 class="text-lg font-semibold mb-2 text-gray-700 border-b pb-1">Entities (<%= @content.entities.count %>)</h2>
+        
+        <% entity_types = @content.entities.group_by(&:entity_type) %>
+        <% entity_types.each do |type, entities| %>
+          <div class="mb-4">
+            <h3 class="text-md font-medium mb-2 mt-3"><%= type.titleize %> (<%= entities.count %>)</h3>
+            <div class="flex flex-wrap gap-2">
+              <% entities.each do |entity| %>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-blue-100 text-blue-800">
+                  <%= entity.value %>
+                </span>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+    
+    <!-- Attached Files -->
     <% if @content.files.attached? %>
-      <div class="mt-2">
-        <h2 class="font-semibold mb-1">Attached Files</h2>
+      <div class="mb-6">
+        <h2 class="text-lg font-semibold mb-2 text-gray-700 border-b pb-1">Attached Files (<%= @content.files.count %>)</h2>
         <ul class="flex flex-wrap gap-2">
           <% @content.files.each do |file| %>
-            <li class="bg-gray-100 border rounded p-2 text-xs">
+            <li class="bg-gray-100 border rounded p-2 text-sm flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+              </svg>
               <%= link_to file.filename.to_s, url_for(file), target: "_blank", class: "underline text-blue-600" %>
             </li>
           <% end %>
         </ul>
       </div>
     <% end %>
-    <div class="flex gap-4 mt-4">
-      <%= link_to 'Edit', edit_content_path(@content), class: "bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600" %>
-      <%= link_to 'Back', contents_path, class: "bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400" %>
+    <!-- Action Buttons -->
+    <div class="flex flex-wrap gap-2 mt-6 border-t pt-4" data-controller="analysis">
+      <div class="flex-grow flex gap-2">
+        <%= link_to edit_content_path(@content), class: "bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 flex items-center" do %>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+          </svg>
+          <span>Edit</span>
+        <% end %>
+        
+        <%= link_to contents_path, class: "bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 flex items-center" do %>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          <span>Back</span>
+        <% end %>
+      </div>
+      
+      <%= form_with url: analyze_content_path(@content), method: :post, class: "inline", local: false do %>
+        <div class="relative inline-block">
+          <%= button_tag type: :submit, class: "bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 cursor-pointer flex items-center", 
+              data: { "analysis-target": "button", action: "click->analysis#start" } do %>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            </svg>
+            <span>Analyze</span>
+          <% end %>
+          <div data-analysis-target="spinner" class="hidden absolute inset-0 flex items-center justify-center">
+            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </div>
+        </div>
+      <% end %>
     </div>
+    
+    <!-- Analysis Results -->
+    <% if @content.openai_response.present? %>
+      <div id="analysis-results" class="mt-6 border-t pt-4" data-analysis-target="results">
+        <h2 class="text-lg font-semibold mb-3 text-gray-700 border-b pb-1">Analysis Results</h2>
+        
+        <div class="bg-gray-50 rounded p-4 mb-4 shadow-sm">
+          <!-- Description from stored OpenAI response -->
+          <% if @content.openai_response["description"].present? %>
+            <div class="mb-3 bg-white p-3 rounded border">
+              <h3 class="text-md font-medium mb-1 text-gray-700">Description</h3>
+              <p class="text-gray-700"><%= @content.openai_response["description"] %></p>
+            </div>
+          <% end %>
+          
+          <!-- Annotated Description with highlighted entities -->
+          <% if @content.openai_response["annotated_description"].present? %>
+            <div class="mb-3 bg-white p-3 rounded border">
+              <h3 class="text-md font-medium mb-1 text-gray-700">Annotated Description</h3>
+              <% 
+                # Format the annotated description with highlighted entities
+                annotated_text = @content.openai_response["annotated_description"]
+                formatted_text = annotated_text.gsub(/\[(\w+):\s*([^\]]+)\]/) do
+                  "<span class='bg-blue-100 text-blue-800 px-1 py-0.5 rounded' title='#{$1}'>#{$2}</span>"
+                end
+              %>
+              <p class="text-gray-700"><%=raw formatted_text %></p>
+            </div>
+          <% end %>
+          
+          <!-- Confidence Rating -->
+          <% if @content.openai_response["rating"].present? %>
+            <div class="mb-3 bg-white p-3 rounded border">
+              <h3 class="text-md font-medium mb-1 text-gray-700">Confidence Rating</h3>
+              <% 
+                rating = @content.openai_response["rating"].to_f
+                rating_percent = (rating * 100).round
+                rating_class = case rating
+                  when 0.8..1.0 then "bg-green-500"
+                  when 0.5...0.8 then "bg-yellow-500"
+                  else "bg-red-500"
+                end
+              %>
+              <div class="flex items-center">
+                <div class="w-full bg-gray-200 rounded-full h-2.5 mr-2">
+                  <div class="<%= rating_class %> h-2.5 rounded-full" style="width: <%= rating_percent %>%"></div>
+                </div>
+                <span class="text-sm font-medium text-gray-700"><%= rating_percent %>%</span>
+              </div>
+            </div>
+          <% end %>
+          
+          <!-- Extracted Entities -->
+          <% if @content.openai_response["annotated_description"].present? %>
+            <div class="mt-4">
+              <h3 class="text-md font-medium mb-2 text-gray-700">Extracted Entities</h3>
+              
+              <% 
+                # Extract entities from annotated_description
+                entities = @content.openai_response["annotated_description"].scan(/\[([^\]:]+):\s*([^\]]+)\]/).map do |type, value|
+                  { "entity_type" => type.strip, "value" => value.strip }
+                end
+                
+                # Group entities by type
+                entity_groups = entities.group_by { |e| e["entity_type"] }
+              %>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <% entity_groups.each do |type, entities| %>
+                  <div class="bg-white p-3 rounded border">
+                    <h4 class="text-sm font-medium text-gray-600 border-b pb-1 mb-2"><%= type.titleize %></h4>
+                    <div class="flex flex-col gap-1">
+                      <% entities.each do |entity| %>
+                        <div class="flex items-center">
+                          <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                            <%= entity["value"] %>
+                          </span>
+                        </div>
+                      <% end %>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
   </div>
 </div>

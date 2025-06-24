@@ -1,0 +1,78 @@
+<%# Debug: Rendering Search index turbo stream %>
+<%= turbo_stream.update "search-results" do %>
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Entities Section -->
+    <div class="bg-white rounded-lg shadow p-4">
+      <h2 class="text-lg font-semibold mb-4 flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+        </svg>
+        Entities (<%= @entities.size %>)
+      </h2>
+      
+      <% if @entities.any? %>
+        <ul class="divide-y">
+          <% @entities.each do |entity| %>
+            <li class="py-3">
+              <div class="flex items-start">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-blue-100 text-blue-800 mr-2">
+                  <%= entity.entity_type %>
+                </span>
+                <div class="flex-grow">
+                  <p class="font-medium"><%= entity.value %></p>
+                  <% if entity.content %>
+                    <p class="text-xs text-gray-500">
+                      From: <%= link_to truncate(entity.content.note, length: 50), content_path(entity.content), class: "underline" %>
+                    </p>
+                  <% end %>
+                </div>
+                <div class="text-xs text-gray-500">
+                  Similarity: <%= (entity.similarity * 100).round(1) %>%
+                </div>
+              </div>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="text-gray-500 italic">No similar entities found.</p>
+      <% end %>
+    </div>
+    
+    <!-- Contents Section -->
+    <div class="bg-white rounded-lg shadow p-4">
+      <h2 class="text-lg font-semibold mb-4 flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        Contents (<%= @contents.size %>)
+      </h2>
+      
+      <% if @contents.any? %>
+        <ul class="divide-y">
+          <% @contents.each do |content| %>
+            <li class="py-3">
+              <div class="flex flex-col">
+                <div class="flex justify-between">
+                  <p class="font-medium"><%= link_to truncate(content.note, length: 50), content_path(content), class: "hover:underline" %></p>
+                  <div class="text-xs text-gray-500">
+                    Similarity: <%= (content.similarity * 100).round(1) %>%
+                  </div>
+                </div>
+                <p class="text-sm text-gray-600 mt-1"><%= truncate(content.note, length: 100) %></p>
+                <div class="flex flex-wrap gap-1 mt-2">
+                  <% content.entities.limit(5).each do |entity| %>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-800">
+                      <%= entity.entity_type %>: <%= entity.value %>
+                    </span>
+                  <% end %>
+                </div>
+              </div>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="text-gray-500 italic">No similar content found.</p>
+      <% end %>
+    </div>
+  </div>
+<% end %>
