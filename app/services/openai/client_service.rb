@@ -18,27 +18,20 @@ module OpenAI
 
       # Log detailed request to dedicated OpenAI logger
       OpenAI.logger.info("REQUEST #{request_id}")
-      OpenAI.logger.debug({
-                            request_type: "chat",
-                            request_id: request_id,
-                            model: model,
-                            temperature: temperature,
-                            max_tokens: max_tokens,
-                            system_message: "You are an AI assistant that extracts structured entities from user content.",
-                            user_message: prompt
-                          })
+      parameters = {
+        model: model,
+        messages: [
+          { role: "system", content: "You are an AI assistant that extracts structured entities from user content." },
+          { role: "user", content: prompt }
+        ],
+        temperature: temperature,
+        max_tokens: max_tokens
+      }
+      OpenAI.logger.debug(clean_parameters(parameters))
 
       # Make the API call
       response = @client.chat(
-        parameters: {
-          model: model,
-          messages: [
-            { role: "system", content: "You are an AI assistant that extracts structured entities from user content." },
-            { role: "user", content: prompt }
-          ],
-          temperature: temperature,
-          max_tokens: max_tokens
-        }
+        parameters: parameters
       )
 
       # Log response metadata to regular Rails logger
@@ -52,14 +45,13 @@ module OpenAI
 
       # Log detailed response to dedicated OpenAI logger
       OpenAI.logger.info("RESPONSE #{request_id}")
-      OpenAI.logger.debug({
-                            request_id: request_id,
-                            response_id: response["id"],
-                            model: response["model"],
-                            usage: response["usage"],
-                            content: response["choices"].first["message"]["content"],
-                            finish_reason: response["choices"].first["finish_reason"]
-                          })
+      OpenAI.logger.debug(
+        {
+          usage: response["usage"],
+          content: response["choices"].first["message"]["content"],
+          finish_reason: response["choices"].first["finish_reason"]
+        }
+      )
 
       response
     rescue StandardError => e
@@ -137,9 +129,6 @@ module OpenAI
       OpenAI.logger.info("RESPONSE #{request_id} (MULTIMODAL)")
       OpenAI.logger.debug(
         {
-          request_id: request_id,
-          response_id: response["id"],
-          model: response["model"],
           usage: response["usage"],
           content: response["choices"].first["message"]["content"],
           finish_reason: response["choices"].first["finish_reason"]
@@ -165,33 +154,13 @@ module OpenAI
 
     private
 
-    # Clean parameters for logging by removing large base64 image data
-    # @param parameters [Hash] The parameters to clean
-    # @return [Hash] A copy of the parameters with base64 image data stripped
     def clean_parameters(parameters)
-      # Create a deep copy to avoid modifying the original
-      cleaned = Marshal.load(Marshal.dump(parameters))
-      
-      # Process the messages array if it exists
-      if cleaned[:messages].is_a?(Array)
-        cleaned[:messages].each do |message|
-          # Process user content which might contain image data
-          if message[:role] == "user" && message[:content].is_a?(Array)
-            message[:content].each do |content_item|
-              # Replace base64 image data with a placeholder
-              if content_item.is_a?(Hash) && content_item[:image_url].is_a?(Hash) && content_item[:image_url][:url].is_a?(String)
-                url = content_item[:image_url][:url]
-                if url.match?(/data:image\/[^;]+;base64,/)
-                  mime_type = url.match(/data:image\/([^;]+);base64,/)[1]
-                  content_item[:image_url][:url] = "data:image/#{mime_type};base64,STRIPPED"
-                end
-              end
-            end
-          end
-        end
-      end
-      
-      cleaned
+      JSON.parse(
+        parameters.to_json.gsub(
+          %r{"data:image/jpeg;base64,[^"]+"},
+          '"data:image/jpeg;base64,STRIPPED"'
+        )
+      )
     end
   end
 end
