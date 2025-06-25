@@ -74,8 +74,8 @@
                   <div class="flex items-start">
                     <div class="flex-grow">
                       <p class="font-medium">
-                        <% if statement.subject_entity %>
-                          <span class="text-blue-600"><%= statement.subject_entity.name %></span>
+                        <% if statement.entity %>
+                          <span class="text-blue-600"><%= statement.entity.name %></span>
                         <% end %>
                         <span class="text-gray-700"><%= statement.text %></span>
                         <% if statement.object_entity %>
@@ -122,15 +122,15 @@
                       <div class="mt-2">
                         <% entity.statements.limit(3).each do |statement| %>
                           <div class="text-sm text-gray-600 mb-1">
-                            <% if statement.subject_entity && statement.subject_entity.id == entity.id %>
+                            <% if statement.entity && statement.entity.id == entity.id %>
                               <span class="text-blue-600">This entity</span>
                               <span><%= statement.text %></span>
                               <% if statement.object_entity %>
                                 <span class="text-green-600"><%= statement.object_entity.name %></span>
                               <% end %>
                             <% elsif statement.object_entity && statement.object_entity.id == entity.id %>
-                              <% if statement.subject_entity %>
-                                <span class="text-blue-600"><%= statement.subject_entity.name %></span>
+                              <% if statement.entity %>
+                                <span class="text-blue-600"><%= statement.entity.name %></span>
                               <% end %>
                               <span><%= statement.text %></span>
                               <span class="text-green-600">this entity</span>
