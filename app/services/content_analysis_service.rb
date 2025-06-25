@@ -33,39 +33,85 @@ class ContentAnalysisService
       files.each do |file|
         # Get filename for logging
         filename = file[:filename] || (file.respond_to?(:filename) && file.filename.to_s) || "unknown"
-        
+
         # Log that we're processing this file
-        Rails.logger.debug { "[ContentAnalysisService] Processing file #{filename} for analysis" }
-        
+        log_safe("Processing file: #{filename} for analysis")
+
         prompt = build_prompt(notes)
         # Get file data without logging binary content
         begin
-          file_data = file.respond_to?(:download) ? file.download : file[:data]
-          filename = file.respond_to?(:filename) ? file.filename.to_s : file[:filename].to_s
+          # Extract file data based on the file object type
+          file_data = if file.respond_to?(:download)
+                        log_safe("Downloading file content for #{filename}")
+                        file.download
+                      elsif file.is_a?(Hash) && file[:data]
+                        file[:data]
+                      else
+                        raise "Unable to extract file data from #{filename}"
+                      end
 
-          # Log file processing without including binary data
-          log_safe("Processing file: #{filename} (#{file_mime_type(file)})")
+          # Get file size for logging (without storing large data in logs)
+          file_size = file_data.respond_to?(:bytesize) ? file_data.bytesize : file_data.to_s.bytesize
+          log_safe("File #{filename} size: #{file_size} bytes")
 
+          # Create file argument for OpenAI API
           file_arg = { io: StringIO.new(file_data), filename: filename }
+
+          # Send to OpenAI API
+          log_safe("Sending file #{filename} to OpenAI API for analysis")
           response = @openai_service.chat_with_files(note: prompt, files: [file_arg], model: "gpt-4o", max_tokens: 4096)
         rescue StandardError => e
-          Rails.logger.error { "[ContentAnalysisService] Error processing file #{filename}: #{e.message}" }
+          error_message = "Error processing file #{filename}: #{e.message}"
+          log_safe(error_message, :error)
+          log_safe("Stack trace: #{e.backtrace[0..5].join('\n')}", :error)
+          results << { note: notes.join("\n"), file: filename, result: nil, error: error_message }
           next
         end
+        # Extract content from response
         content = response.dig("choices", 0, "message", "content")
+        if content.nil?
+          log_safe("No content returned from OpenAI API for file #{filename}", :warn)
+          results << { note: notes.join("\n"), file: filename, result: nil, error: "No content returned from API" }
+          next
+        end
+
+        # Parse the response
+        log_safe("Parsing response for file #{filename}")
         result = parse_response(content)
+
+        # If parsing failed, try a second pass with a more explicit prompt
         if result.nil?
-          # Re-prompt for JSON as a second pass
-          response = @openai_service.chat_with_files(note: prompt, files: [file_arg], model: "gpt-4o", max_tokens: 4096)
-          content = response.dig("choices", 0, "message", "content")
-          result = parse_response(content)
+          log_safe("First parsing attempt failed for #{filename}, trying second pass", :warn)
+          begin
+            # Re-prompt for JSON as a second pass with more explicit instructions
+            second_prompt = "#{prompt}\n\nIMPORTANT: Your response MUST be valid JSON matching the example format exactly."
+            log_safe("Sending second request to OpenAI API for file #{filename}")
+            response = @openai_service.chat_with_files(note: second_prompt, files: [file_arg], model: "gpt-4o", max_tokens: 4096)
+            content = response.dig("choices", 0, "message", "content")
+            result = parse_response(content)
+          rescue StandardError => e
+            error_message = "Error in second parsing attempt for file #{filename}: #{e.message}"
+            log_safe(error_message, :error)
+            results << { note: notes.join("\n"), file: filename, result: nil, error: error_message }
+            next
+          end
         end
 
         # Validate response format
-        validate_response_format(result)
+        begin
+          validate_response_format(result)
+          log_safe("Successfully validated response format for file #{filename}")
+        rescue StandardError => e
+          error_message = "Invalid response format for file #{filename}: #{e.message}"
+          log_safe(error_message, :warn)
+          # Still include the result, but note the validation error
+          results << { note: notes.join("\n"), file: filename, result: result, validation_error: error_message }
+          next
+        end
 
-        file_name = file.respond_to?(:filename) ? file.filename.to_s : file[:filename].to_s
-        results << { note: notes.join("\n"), file: file_name, result: result }
+        # Add successful result to results array
+        log_safe("Analysis completed successfully for file #{filename}")
+        results << { note: notes.join("\n"), file: filename, result: result }
       end
     end
     results
@@ -305,30 +351,35 @@ class ContentAnalysisService
   # @param result [Object] The parsed response from OpenAI
   # @raise [TypeError] If the response is nil or not a hash
   # @raise [ArgumentError] If the response doesn't match the required format
+  # Validate the format of the OpenAI response
+  # @param result [Hash, nil] The parsed response from OpenAI
+  # @raise [TypeError] If the response is nil or not a hash
+  # @raise [ArgumentError] If the response doesn't match the required format
   def validate_response_format(result)
     # Check if response is nil
     if result.nil?
-      error_msg = "OpenAI response is not valid JSON"
-      Rails.logger.error { "[ContentAnalysisService] #{error_msg}" }
+      error_msg = "OpenAI response is not valid JSON or could not be parsed"
+      log_safe(error_msg, :error)
       raise TypeError, error_msg
     end
 
     # Check if response is a hash
     unless result.is_a?(Hash)
-      error_msg = "OpenAI response has unexpected format: #{result.class}"
-      Rails.logger.error { "[ContentAnalysisService] #{error_msg}" }
+      error_msg = "OpenAI response has unexpected format: #{result.class}. Expected a Hash."
+      log_safe(error_msg, :error)
       raise TypeError, error_msg
     end
 
     # Check if response matches required output format
-    unless valid_output_format?(result)
-      error_msg = "OpenAI response does not match required output format"
-      Rails.logger.error { "[ContentAnalysisService] #{error_msg}" }
+    format_errors = validate_output_format_with_details(result)
+    unless format_errors.empty?
+      error_msg = "OpenAI response format validation failed: #{format_errors.join('; ')}"
+      log_safe(error_msg, :error)
       raise ArgumentError, error_msg
     end
 
     # Log successful validation
-    Rails.logger.debug { "[ContentAnalysisService] OpenAI response format validated successfully" } if ENV["DEBUG"]
+    log_safe("Response format validated successfully")
   end
 
   # Find or create an entity by name
@@ -546,26 +597,93 @@ class ContentAnalysisService
   end
 
   # Validate that the OpenAI response matches the required V2 output format with statements
+  # Check if the result has a valid output format
+  # @param result [Hash] The result to check
+  # @return [Boolean] Whether the result has a valid output format
   def valid_output_format?(result)
-    return false unless result.is_a?(Hash)
-    return false unless result["description"].is_a?(String)
-    return false unless result["annotated_description"].is_a?(String)
-    return false unless result["rating"].is_a?(Numeric) && result["rating"].between?(0, 1)
+    validate_output_format_with_details(result).empty?
+  end
 
-    # Check statements array
-    return true if result["statements"].nil? # Allow missing statements for backward compatibility
+  # Validate the output format and return detailed error messages
+  # @param result [Hash] The result to validate
+  # @return [Array<String>] Array of error messages, empty if valid
+  def validate_output_format_with_details(result)
+    errors = []
 
-    return false unless result["statements"].is_a?(Array)
+    # Basic structure checks
+    unless result.is_a?(Hash)
+      errors << "Result is not a Hash (got #{result.class})"
+      return errors # Early return as other checks depend on this
+    end
+
+    # Check required fields
+    errors << "Missing 'description' field" if result["description"].blank?
+    errors << "'description' is not a String" if result["description"].present? && !result["description"].is_a?(String)
+
+    errors << "Missing 'annotated_description' field" if result["annotated_description"].blank?
+    if result["annotated_description"].present? && !result["annotated_description"].is_a?(String)
+      errors << "'annotated_description' is not a String"
+    end
+
+    errors << "Missing 'rating' field" if result["rating"].blank?
+    if result["rating"].present?
+      if !result["rating"].is_a?(Numeric)
+        errors << "'rating' is not a number (got #{result['rating'].class})"
+      elsif !result["rating"].between?(0, 1)
+        errors << "'rating' must be between 0 and 1 (got #{result['rating']})"
+      end
+    end
+
+    # Check statements array (optional for backward compatibility)
+    return errors if result["statements"].nil?
+
+    unless result["statements"].is_a?(Array)
+      errors << "'statements' is not an Array (got #{result['statements'].class})"
+      return errors # Early return as statement validation depends on this
+    end
 
     # Validate each statement
-    result["statements"].all? do |statement|
-      statement.is_a?(Hash) &&
-        statement["subject"].is_a?(String) &&
-        statement["text"].is_a?(String) &&
-        (statement["object"].nil? || statement["object"].is_a?(String)) &&
-        (statement["confidence"].nil? ||
-         (statement["confidence"].is_a?(Numeric) && statement["confidence"].between?(0, 1)))
+    result["statements"].each_with_index do |statement, index|
+      statement_errors = validate_statement(statement, index)
+      errors.concat(statement_errors) if statement_errors.any?
     end
+
+    errors
+  end
+
+  # Validate a single statement
+  # @param statement [Hash] The statement to validate
+  # @param index [Integer] The index of the statement in the array
+  # @return [Array<String>] Array of error messages, empty if valid
+  def validate_statement(statement, index)
+    errors = []
+
+    unless statement.is_a?(Hash)
+      errors << "Statement ##{index} is not a Hash (got #{statement.class})"
+      return errors # Early return as other checks depend on this
+    end
+
+    # Check required fields
+    errors << "Statement ##{index} missing 'subject' field" if statement["subject"].blank?
+    errors << "Statement ##{index} 'subject' is not a String" if statement["subject"].present? && !statement["subject"].is_a?(String)
+
+    errors << "Statement ##{index} missing 'text' field" if statement["text"].blank?
+    errors << "Statement ##{index} 'text' is not a String" if statement["text"].present? && !statement["text"].is_a?(String)
+
+    # Optional fields
+    if statement["object"].present? && !statement["object"].is_a?(String)
+      errors << "Statement ##{index} 'object' is not a String (got #{statement['object'].class})"
+    end
+
+    if statement["confidence"].present?
+      if !statement["confidence"].is_a?(Numeric)
+        errors << "Statement ##{index} 'confidence' is not a number (got #{statement['confidence'].class})"
+      elsif !statement["confidence"].between?(0, 1)
+        errors << "Statement ##{index} 'confidence' must be between 0 and 1 (got #{statement['confidence']})"
+      end
+    end
+
+    errors
   end
 
   # This duplicate log_safe method was removed as it already exists at line 439
