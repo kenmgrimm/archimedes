@@ -32,7 +32,7 @@ class Entity < ApplicationRecord
   # @param limit [Integer] Maximum number of results to return
   # @param threshold [Float] Similarity threshold (lower = more similar)
   # @return [Array<Entity>] Collection of entities with similar names
-  
+
   # Find similar entities by name (used by SearchController)
   # @param query_text [String] The text to find similar entities for
   # @param limit [Integer] Maximum number of results to return
@@ -41,6 +41,7 @@ class Entity < ApplicationRecord
     Rails.logger.debug { "[Entity] Finding similar entities for: #{query_text}" } if ENV["DEBUG"]
     find_by_name_similarity(query_text, limit: limit)
   end
+
   def self.find_by_name_similarity(query_text, limit: 10, threshold: 0.8)
     return none if query_text.blank?
 
@@ -89,7 +90,7 @@ class Entity < ApplicationRecord
 
     # Find statements similar to the query
     statements = Statement.find_similar(query_text, limit: limit * 3) # Get more statements than needed
-    
+
     return [] if statements.empty?
 
     # Get unique entities from those statements
@@ -106,7 +107,7 @@ class Entity < ApplicationRecord
       best_statement = statements.find { |s| s.entity_id == entity.id }
       entity.similarity = best_statement&.similarity || 0.0
     end
-    
+
     # Sort by similarity score
     entities.sort_by { |entity| -entity.similarity }
   end
@@ -199,9 +200,16 @@ class Entity < ApplicationRecord
       embedding_service = OpenAI::EmbeddingService.new
       embedding_array = embedding_service.embed(name)
 
-      # Store the embedding array directly - pgvector will handle the conversion
+      # Store the embedding array properly for pgvector
       if embedding_array.present?
-        self.name_embedding = embedding_array
+        # For pgvector, we need to use the proper SQL array format
+        # This is typically '[val1,val2,val3,...]'
+        # We'll use a raw SQL fragment to ensure proper casting
+        vector_string = "[#{embedding_array.join(',')}]"
+
+        # Use the SQL array literal directly
+        self.name_embedding = vector_string
+
         if ENV["DEBUG"]
           Rails.logger.debug do
             "[Entity] Successfully generated embedding for '#{name}' with #{embedding_array.size} dimensions"

@@ -5,6 +5,7 @@
 class Statement < ApplicationRecord
   # Add accessor for similarity score to be used in views
   attr_accessor :similarity
+
   # Associations
   belongs_to :entity
   belongs_to :object_entity, class_name: "Entity", optional: true
@@ -43,31 +44,31 @@ class Statement < ApplicationRecord
     embedding = OpenAI::EmbeddingService.new.embed(query_text)
     vector_search(embedding, limit: limit)
   end
-  
+
   # Find similar statements with similarity score
   # @param query_text [String] The text to search for
   # @param limit [Integer] Maximum number of results to return
   # @return [Array<Statement>] Statements with similarity score
   def self.find_similar(query_text, limit: 10)
     return [] if query_text.blank?
-    
+
     # Debug logging
     Rails.logger.debug { "Finding statements similar to: #{query_text}" } if ENV["DEBUG"]
-    
+
     # Get embedding for the query text
     embedding = OpenAI::EmbeddingService.new.embed(query_text)
     return [] if embedding.nil?
-    
+
     # Use raw SQL for cosine similarity calculation
     statements = connection.execute(
-      "SELECT id, text, entity_id, object_entity_id, 
-              1 - (text_embedding <=> ARRAY[#{embedding.join(',')}]::vector) AS similarity 
-       FROM statements 
-       WHERE text_embedding IS NOT NULL 
-       ORDER BY similarity DESC 
+      "SELECT id, text, entity_id, object_entity_id,
+              1 - (text_embedding <=> ARRAY[#{embedding.join(',')}]::vector) AS similarity
+       FROM statements
+       WHERE text_embedding IS NOT NULL
+       ORDER BY similarity DESC
        LIMIT #{limit}"
     )
-    
+
     # Map results and add similarity score
     statements.map do |result|
       statement = find(result["id"])
