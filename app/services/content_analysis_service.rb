@@ -514,30 +514,37 @@ class ContentAnalysisService
 
       EXAMPLE OUTPUT:
       {
-        "description": "This is a Florida license plate CJ8 9NF on a GMC Sierra 1500 truck, expiring in February 2026.",
-        "annotated_description": "This is a [Entity: Florida license plate] [Entity: CJ8 9NF] on a [Entity: GMC Sierra 1500 truck], expiring in [Entity: February 2026].",
+        "description": "This is a vehicle door panel label from a 2022 Toyota RAV4 XLE with VIN 4T3R6RFV2NU123456, manufactured in Japan in October 2021. The label indicates a tire pressure of 35 PSI for front tires and 33 PSI for rear tires.",
+        "annotated_description": "This is a [Entity: vehicle door panel label] from a [Entity: 2022 Toyota RAV4 XLE] with [Entity: VIN 4T3R6RFV2NU123456], manufactured in [Entity: Japan] in [Entity: October 2021]. The label indicates a [Entity: tire pressure] of [Entity: 35 PSI] for front tires and [Entity: 33 PSI] for rear tires.",
         "statements": [
           {
-            "subject": "CJ8 9NF",
-            "text": "is a license plate number",
+            "subject": "2022 Toyota RAV4 XLE",
+            "text": "has VIN",
+            "object": "VIN 4T3R6RFV2NU123456",
             "confidence": 1.0
           },
           {
-            "subject": "Florida license plate",
-            "text": "has number",
-            "object": "CJ8 9NF",
+            "subject": "2022 Toyota RAV4 XLE",
+            "text": "was manufactured in",
+            "object": "Japan",
             "confidence": 1.0
           },
           {
-            "subject": "GMC Sierra 1500 truck",
-            "text": "has license plate",
-            "object": "CJ8 9NF",
+            "subject": "2022 Toyota RAV4 XLE",
+            "text": "was manufactured in",
+            "object": "October 2021",
             "confidence": 0.95
           },
           {
-            "subject": "CJ8 9NF",
-            "text": "expires in",
-            "object": "February 2026",
+            "subject": "vehicle door panel label",
+            "text": "specifies front tire pressure of",
+            "object": "35 PSI",
+            "confidence": 0.9
+          },
+          {
+            "subject": "vehicle door panel label",
+            "text": "specifies rear tire pressure of",
+            "object": "33 PSI",
             "confidence": 0.9
           }
         ],
