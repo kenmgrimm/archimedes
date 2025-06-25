@@ -16,14 +16,17 @@ class ContentAnalysisService
 
   # Analyze content: notes (array of strings) and files (array of hashes: {filename, text_content})
   # Returns the OpenAI response parsed as JSON
+  # @raise [TypeError] if the response is not a valid hash
+  # @raise [ArgumentError] if the response doesn't match the required format
   def analyze(notes:, files:)
     results = []
     if files.blank? || files.empty?
       response = @openai_service.chat(build_prompt(notes), model: "gpt-4o", max_tokens: 4096)
       content = response.dig("choices", 0, "message", "content")
       result = parse_response(content)
-      raise "OpenAI response is not valid JSON" if result.nil?
-      raise "OpenAI response does not match required output format" unless valid_output_format?(result)
+
+      # Validate response format
+      validate_response_format(result)
 
       results << { note: notes.join("\n"), file: nil, result: result }
     else
@@ -80,8 +83,9 @@ class ContentAnalysisService
           content = response.dig("choices", 0, "message", "content")
           result = parse_response(content)
         end
-        raise "OpenAI response is not valid JSON" if result.nil?
-        raise "OpenAI response does not match required output format" unless valid_output_format?(result)
+
+        # Validate response format
+        validate_response_format(result)
 
         file_name = file.respond_to?(:filename) ? file.filename.to_s : file[:filename].to_s
         results << { note: notes.join("\n"), file: file_name, result: result }
@@ -91,6 +95,142 @@ class ContentAnalysisService
   rescue StandardError => e
     Rails.logger.error("[ContentAnalysisService] Error analyzing content: #{e.message}")
     raise
+  end
+
+  # Process analysis results for a content item
+  # @param content [Content] The content to process results for
+  # @param results [Array<Hash>] The analysis results from analyze method
+  # @return [Hash] Summary of processing including created entities and updated content
+  def process_analysis_results(content, results)
+    return { success: false, message: "No results to process" } if results.blank?
+
+    # Log detailed results
+    log_analysis_results(results)
+
+    # Process each result and extract entities
+    created_entities = []
+    results.each do |result|
+      next unless result[:result].present? && result[:result].is_a?(Hash)
+
+      # Extract entities from this result
+      entities = extract_and_create_entities(content, result[:result])
+      created_entities << entities if entities.present?
+    end
+
+    # Flatten the array of created entities
+    created_entities = created_entities.flatten.compact
+
+    # Save the OpenAI response to the content record if we have valid results
+    if results.any? && results.last[:result].present?
+      Rails.logger.debug { "[ContentAnalysisService] Preparing to save OpenAI response for content ##{content.id}" } if ENV["DEBUG"]
+
+      begin
+        # Get a fresh instance of the content to avoid any state issues
+        fresh_content = Content.find(content.id)
+        Rails.logger.debug { "[ContentAnalysisService] Using fresh content instance ##{fresh_content.id}" } if ENV["DEBUG"]
+
+        # Get the raw response - no formatting needed as JSONB handles arrays fine
+        last_response = results.last[:result]
+
+        # Log detailed information about the response structure
+        log_response_structure(last_response) if ENV["DEBUG"]
+
+        # Directly assign and save
+        Rails.logger.debug { "[ContentAnalysisService] Assigning OpenAI response to content" } if ENV["DEBUG"]
+        fresh_content.openai_response = last_response
+
+        Rails.logger.debug { "[ContentAnalysisService] Attempting to save content with OpenAI response" } if ENV["DEBUG"]
+        if fresh_content.save
+          if ENV["DEBUG"]
+            Rails.logger.debug do
+              "[ContentAnalysisService] Successfully saved OpenAI response to content ##{fresh_content.id}"
+            end
+          end
+          # Update our reference to use the fresh content
+          content = fresh_content
+        else
+          error_msg = "Failed to save OpenAI response: #{fresh_content.errors.full_messages.join(', ')}"
+          Rails.logger.error { "[ContentAnalysisService] #{error_msg}" }
+          return { success: false, message: error_msg }
+        end
+      rescue StandardError => e
+        Rails.logger.error { "[ContentAnalysisService] Error saving OpenAI response: #{e.message}" }
+        Rails.logger.error { "[ContentAnalysisService] Error backtrace: #{e.backtrace.join('\n')}" } if ENV["DEBUG"]
+        return { success: false, message: "Error saving OpenAI response: #{e.message}" }
+      end
+    end
+
+    # Generate summary information
+    entity_count = content.entities.reload.count
+    skipped_files = results.select { |r| r[:skipped] }.pluck(:file)
+
+    # Return processing summary
+    {
+      success: true,
+      entity_count: entity_count,
+      created_entities: created_entities,
+      skipped_files: skipped_files,
+      results: results
+    }
+  end
+
+  # Log detailed information about the OpenAI response structure
+  # @param response [Hash] The OpenAI response hash
+  # @return [void]
+  def log_response_structure(response)
+    return unless ENV["DEBUG"] && response.is_a?(Hash)
+
+    Rails.logger.debug { "[ContentAnalysisService] Response type: #{response.class.name}" }
+    Rails.logger.debug { "[ContentAnalysisService] Response keys: #{response.keys.inspect}" }
+
+    # Log information about arrays in the response
+    response.each do |key, value|
+      next unless value.is_a?(Array)
+
+      Rails.logger.debug { "[ContentAnalysisService] Key '#{key}' contains an Array with #{value.size} elements" }
+
+      if key.to_s.end_with?("_embedding")
+        Rails.logger.debug { "[ContentAnalysisService] Found embedding array for '#{key}' with #{value.size} dimensions" }
+      elsif value.size.positive? && value.first.is_a?(Hash)
+        Rails.logger.debug { "[ContentAnalysisService] Array contains Hash objects with keys: #{value.first.keys.inspect}" }
+      end
+    end
+  end
+
+  # Log detailed information about analysis results
+  # @param results [Array<Hash>] The analysis results
+  def log_analysis_results(results)
+    return if results.blank?
+
+    results.each_with_index do |result, index|
+      Rails.logger.debug { "[ContentAnalysisService] Analysis result ##{index + 1}:" } if ENV["DEBUG"]
+      Rails.logger.debug { "  - File: #{result[:file] || 'No file (note only)'}" } if ENV["DEBUG"]
+
+      if result[:result].present? && result[:result].is_a?(Hash)
+        Rails.logger.debug { "  - Description: #{result[:result]['description']}" } if ENV["DEBUG"]
+        Rails.logger.debug { "  - Annotated Description: #{result[:result]['annotated_description']}" } if ENV["DEBUG"]
+        Rails.logger.debug { "  - Confidence Rating: #{result[:result]['rating']}" } if ENV["DEBUG"]
+
+        # Extract and log entities from annotated_description
+        entities = extract_entity_names_from_annotation(result[:result]["annotated_description"])
+
+        Rails.logger.debug { "  - Extracted #{entities.size} entities from annotated_description:" } if ENV["DEBUG"]
+        entities.each do |entity_name|
+          Rails.logger.debug { "    * Entity: #{entity_name}" } if ENV["DEBUG"]
+        end
+      elsif ENV["DEBUG"]
+        Rails.logger.debug { "  - No valid result data" }
+      end
+    end
+  end
+
+  # Extract entity names from annotated description
+  # @param annotated_description [String] The annotated description with [Entity: Name] tags
+  # @return [Array<String>] Array of entity names
+  def extract_entity_names_from_annotation(annotated_description)
+    return [] if annotated_description.blank?
+
+    annotated_description.to_s.scan(/\[Entity:\s*([^\]]+)\]/).flatten.map(&:strip).uniq
   end
 
   # Extract entities and statements from OpenAI result and create records for the given Content.
@@ -113,7 +253,7 @@ class ContentAnalysisService
       Rails.logger.debug { "[ContentAnalysisService] Generating embedding for description: #{description.truncate(50)}" }
       begin
         embedding_service = OpenAI::EmbeddingService.new
-        description_embedding = embedding_service.embed_text(description)
+        description_embedding = embedding_service.embed(description)
 
         if description_embedding.present?
           # Store the embedding with the content for future similarity searches
@@ -134,7 +274,7 @@ class ContentAnalysisService
       Rails.logger.debug { "[ContentAnalysisService] Extracting entities from annotated description: #{annotated}" }
       # Extract entities from format [Entity: name]
       entity_names = annotated.scan(/\[Entity:\s*([^\]]+)\]/).flatten.map(&:strip).uniq
-      
+
       # Create simple statements for each entity
       statements = entity_names.map do |name|
         {
@@ -143,7 +283,7 @@ class ContentAnalysisService
           "confidence" => 0.9
         }
       end
-      
+
       Rails.logger.debug { "[ContentAnalysisService] Created #{statements.size} basic statements from annotated text" }
     end
 
@@ -159,11 +299,11 @@ class ContentAnalysisService
 
       # Find or create subject entity
       subject_entity = find_or_create_entity(content, subject_name)
-      created_entities << subject_entity if subject_entity.persisted? && !created_entities.include?(subject_entity)
+      created_entities << subject_entity if subject_entity.persisted? && created_entities.exclude?(subject_entity)
 
       # Find or create object entity if present
       object_entity = find_or_create_entity(content, object_name) if object_name.present?
-      created_entities << object_entity if object_entity&.persisted? && !created_entities.include?(object_entity)
+      created_entities << object_entity if object_entity&.persisted? && created_entities.exclude?(object_entity)
 
       # Create statement
       statement = create_statement(
@@ -178,42 +318,91 @@ class ContentAnalysisService
     end
 
     Rails.logger.debug { "[ContentAnalysisService] Created #{created_entities.size} entities and #{created_statements.size} statements" }
-    
+
     { entities: created_entities, statements: created_statements }
   end
 
   private
-  
+
+  # Validates the OpenAI response format
+  # @param result [Object] The parsed response from OpenAI
+  # @raise [TypeError] If the response is nil or not a hash
+  # @raise [ArgumentError] If the response doesn't match the required format
+  def validate_response_format(result)
+    # Check if response is nil
+    if result.nil?
+      error_msg = "OpenAI response is not valid JSON"
+      Rails.logger.error { "[ContentAnalysisService] #{error_msg}" }
+      raise TypeError, error_msg
+    end
+
+    # Check if response is a hash
+    unless result.is_a?(Hash)
+      error_msg = "OpenAI response has unexpected format: #{result.class}"
+      Rails.logger.error { "[ContentAnalysisService] #{error_msg}" }
+      raise TypeError, error_msg
+    end
+
+    # Check if response matches required output format
+    unless valid_output_format?(result)
+      error_msg = "OpenAI response does not match required output format"
+      Rails.logger.error { "[ContentAnalysisService] #{error_msg}" }
+      raise ArgumentError, error_msg
+    end
+
+    # Log successful validation
+    Rails.logger.debug { "[ContentAnalysisService] OpenAI response format validated successfully" } if ENV["DEBUG"]
+  end
+
   # Find or create an entity by name
   # @param content [Content] The content to associate the entity with
   # @param name [String] The entity name
   # @return [Entity] The found or created entity
   def find_or_create_entity(content, name)
     return nil if name.blank?
-    
+
     # Debug logging
-    Rails.logger.debug { "[ContentAnalysisService] Finding or creating entity: #{name}" } if ENV["DEBUG"]
-    
-    # Try to find existing entity by name
-    entity = Entity.find_by(name: name)
-    
+    Rails.logger.debug { "[ContentAnalysisService] Finding or creating entity: #{name} for content ##{content.id}" } if ENV["DEBUG"]
+
+    # First, try to find an entity with this name that's already associated with this content
+    entity = content.entities.find_by(name: name)
+
     if entity
-      Rails.logger.debug { "[ContentAnalysisService] Found existing entity: #{name} (ID: #{entity.id})" } if ENV["DEBUG"]
+      Rails.logger.debug { "[ContentAnalysisService] Found existing entity for this content: #{name} (ID: #{entity.id})" } if ENV["DEBUG"]
       return entity
     end
-    
-    # Create new entity
+
+    # Due to the uniqueness constraint on entity names, we need to handle this carefully
+    # Each entity represents a unique concept in the system
+    # If an entity with this name already exists, we'll update its content association
+    existing_entity = Entity.find_by(name: name)
+
+    if existing_entity
+      if ENV["DEBUG"]
+        Rails.logger.debug do
+          "[ContentAnalysisService] Found existing entity: #{name} (ID: #{existing_entity.id}) for content ##{existing_entity.content_id}"
+        end
+      end
+
+      # Update the content association to the current content
+      # This effectively moves the entity to the new content
+      Rails.logger.debug { "[ContentAnalysisService] Updating entity to associate with content ##{content.id}" } if ENV["DEBUG"]
+      existing_entity.update(content: content)
+      return existing_entity
+    end
+
+    # Create new entity if no existing entity was found
     entity = Entity.new(name: name, content: content)
-    
+
     if entity.save
       Rails.logger.debug { "[ContentAnalysisService] Created new entity: #{name} (ID: #{entity.id})" } if ENV["DEBUG"]
     else
       Rails.logger.error { "[ContentAnalysisService] Failed to create entity: #{name} - #{entity.errors.full_messages.join(', ')}" }
     end
-    
+
     entity
   end
-  
+
   # Create a statement
   # @param content [Content] The content to associate the statement with
   # @param entity [Entity] The subject entity
@@ -221,13 +410,13 @@ class ContentAnalysisService
   # @param text [String] The statement text
   # @param confidence [Float] The confidence score (0-1)
   # @return [Statement] The created statement
-  def create_statement(content:, entity:, object_entity: nil, text:, confidence: 1.0)
+  def create_statement(content:, entity:, text:, object_entity: nil, confidence: 1.0)
     return nil if entity.nil? || text.blank?
-    
+
     # Debug logging
     statement_desc = object_entity ? "#{entity.name} -> #{text} -> #{object_entity.name}" : "#{entity.name} -> #{text}"
     Rails.logger.debug { "[ContentAnalysisService] Creating statement: #{statement_desc}" } if ENV["DEBUG"]
-    
+
     # Create statement
     statement = Statement.new(
       entity: entity,
@@ -236,24 +425,36 @@ class ContentAnalysisService
       text: text,
       confidence: confidence
     )
-    
+
     if statement.save
       Rails.logger.debug { "[ContentAnalysisService] Created statement (ID: #{statement.id})" } if ENV["DEBUG"]
-      
+
       # Generate embedding asynchronously
       # In a real app, this would be a background job
       begin
         embedding_service = OpenAI::EmbeddingService.new
-        embedding = embedding_service.embed_text(text)
-        statement.update(text_embedding: embedding) if embedding.present?
-        Rails.logger.debug { "[ContentAnalysisService] Added embedding to statement (ID: #{statement.id})" } if ENV["DEBUG"]
+        embedding_array = embedding_service.embed(text)
+
+        if embedding_array.present?
+          # Format the embedding array for pgvector
+          # This is the format PostgreSQL expects: [val1,val2,val3,...]
+          vector_string = "[#{embedding_array.join(',')}]"
+
+          # Update with properly formatted vector
+          statement.update(text_embedding: vector_string)
+          if ENV["DEBUG"]
+            Rails.logger.debug do
+              "[ContentAnalysisService] Added embedding to statement (ID: #{statement.id}) with #{embedding_array.size} dimensions"
+            end
+          end
+        end
       rescue StandardError => e
         Rails.logger.error { "[ContentAnalysisService] Error generating embedding for statement: #{e.message}" }
       end
     else
       Rails.logger.error { "[ContentAnalysisService] Failed to create statement: #{statement.errors.full_messages.join(', ')}" }
     end
-    
+
     statement
   end
 
@@ -366,20 +567,20 @@ class ContentAnalysisService
     return false unless result["description"].is_a?(String)
     return false unless result["annotated_description"].is_a?(String)
     return false unless result["rating"].is_a?(Numeric) && result["rating"].between?(0, 1)
-    
+
     # Check statements array
     return true if result["statements"].nil? # Allow missing statements for backward compatibility
-    
+
     return false unless result["statements"].is_a?(Array)
-    
+
     # Validate each statement
     result["statements"].all? do |statement|
       statement.is_a?(Hash) &&
-      statement["subject"].is_a?(String) &&
-      statement["text"].is_a?(String) &&
-      (statement["object"].nil? || statement["object"].is_a?(String)) &&
-      (statement["confidence"].nil? || 
-       (statement["confidence"].is_a?(Numeric) && statement["confidence"].between?(0, 1)))
+        statement["subject"].is_a?(String) &&
+        statement["text"].is_a?(String) &&
+        (statement["object"].nil? || statement["object"].is_a?(String)) &&
+        (statement["confidence"].nil? ||
+         (statement["confidence"].is_a?(Numeric) && statement["confidence"].between?(0, 1)))
     end
   end
 

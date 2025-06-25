@@ -96,8 +96,10 @@ X 1. Create new database migrations for the updated Entity model and new Stateme
 X 2. Update the ContentAnalysisService to extract statements about entities
 X 3. Modify the OpenAI prompt to generate statements rather than entity types
 X 4. Update the search functionality to search across statements
-5. Create a data migration path from V1 to V2 model
-6. Update UI to display entities with their statements
+X 5. Create a data migration path from V1 to V2 model
+X 6. Update UI to display entities with their statements
+7. Entity deduplication during creation should use vector search on name and all statements.  We need a way for the user to choose between existing entities or create a new one.
+8. We should have a way to merge an entity into another entity.  This should be done by moving all statements from the source entity to the target entity and then deleting the source entity.
 
 ## Technical Considerations
 

@@ -37,11 +37,9 @@
               <% @entities.each do |entity| %>
                 <li class="py-3">
                   <div class="flex items-start">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-blue-100 text-blue-800 mr-2">
-                      <%= entity.entity_type %>
-                    </span>
+
                     <div class="flex-grow">
-                      <p class="font-medium"><%= entity.value %></p>
+                      <p class="font-medium"><%= entity.name %></p>
                       <% if entity.content %>
                         <p class="text-xs text-gray-500">
                           From: <%= link_to truncate(entity.content.note, length: 50), content_path(entity.content), class: "underline" %>
@@ -179,7 +177,7 @@
                     <div class="flex flex-wrap gap-1 mt-2">
                       <% content.entities.limit(5).each do |entity| %>
                         <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-800">
-                          <%= entity.entity_type %>: <%= entity.value %>
+                          <%= entity.name %>
                         </span>
                       <% end %>
                     </div>

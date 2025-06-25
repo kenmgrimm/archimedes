@@ -32,6 +32,15 @@ class Entity < ApplicationRecord
   # @param limit [Integer] Maximum number of results to return
   # @param threshold [Float] Similarity threshold (lower = more similar)
   # @return [Array<Entity>] Collection of entities with similar names
+  
+  # Find similar entities by name (used by SearchController)
+  # @param query_text [String] The text to find similar entities for
+  # @param limit [Integer] Maximum number of results to return
+  # @return [Array<Entity>] Collection of entities with similar names
+  def self.find_similar(query_text, limit: 10)
+    Rails.logger.debug { "[Entity] Finding similar entities for: #{query_text}" } if ENV["DEBUG"]
+    find_by_name_similarity(query_text, limit: limit)
+  end
   def self.find_by_name_similarity(query_text, limit: 10, threshold: 0.8)
     return none if query_text.blank?
 
