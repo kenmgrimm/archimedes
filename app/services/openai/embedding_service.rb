@@ -20,8 +20,8 @@ module OpenAI
       Rails.logger.debug { "[OpenAI::EmbeddingService] Generating embedding for text: #{text.truncate(100)} (request_id: #{request_id})" }
       
       # Log detailed request to dedicated OpenAI logger
-      OPENAI_LOGGER.info("REQUEST #{request_id} (EMBEDDING)")
-      OPENAI_LOGGER.debug({
+      OpenAI.logger.info("REQUEST #{request_id} (EMBEDDING)")
+      OpenAI.logger.debug({
         request_type: "embedding",
         request_id: request_id,
         model: @model,
@@ -43,8 +43,8 @@ module OpenAI
       Rails.logger.debug { "[OpenAI::EmbeddingService] Generated embedding with #{embedding&.size || 0} dimensions (request_id: #{request_id})" }
       
       # Log detailed response to dedicated OpenAI logger
-      OPENAI_LOGGER.info("RESPONSE #{request_id} (EMBEDDING)")
-      OPENAI_LOGGER.debug({
+      OpenAI.logger.info("RESPONSE #{request_id} (EMBEDDING)")
+      OpenAI.logger.debug({
         request_id: request_id,
         model: response["model"],
         usage: response["usage"],
@@ -59,8 +59,8 @@ module OpenAI
       error_message = "[OpenAI::EmbeddingService] Error generating embedding: #{e.message}"
       Rails.logger.error(error_message)
       
-      OPENAI_LOGGER.error("ERROR #{request_id} (EMBEDDING)")
-      OPENAI_LOGGER.error({
+      OpenAI.logger.error("ERROR #{request_id} (EMBEDDING)")
+      OpenAI.logger.error({
         request_id: request_id,
         error_class: e.class.to_s,
         error_message: e.message,
@@ -82,8 +82,8 @@ module OpenAI
       Rails.logger.debug { "[OpenAI::EmbeddingService] Generating embeddings for #{texts.size} texts (request_id: #{request_id})" }
       
       # Log detailed request to dedicated OpenAI logger
-      OPENAI_LOGGER.info("REQUEST #{request_id} (BATCH_EMBEDDING)")
-      OPENAI_LOGGER.debug({
+      OpenAI.logger.info("REQUEST #{request_id} (BATCH_EMBEDDING)")
+      OpenAI.logger.debug({
         request_type: "batch_embedding",
         request_id: request_id,
         model: @model,
@@ -106,8 +106,8 @@ module OpenAI
       Rails.logger.debug { "[OpenAI::EmbeddingService] Generated #{embeddings.size} embeddings (request_id: #{request_id})" }
       
       # Log detailed response to dedicated OpenAI logger
-      OPENAI_LOGGER.info("RESPONSE #{request_id} (BATCH_EMBEDDING)")
-      OPENAI_LOGGER.debug({
+      OpenAI.logger.info("RESPONSE #{request_id} (BATCH_EMBEDDING)")
+      OpenAI.logger.debug({
         request_id: request_id,
         model: response["model"],
         usage: response["usage"],
@@ -123,8 +123,8 @@ module OpenAI
       error_message = "[OpenAI::EmbeddingService] Error generating batch embeddings: #{e.message}"
       Rails.logger.error(error_message)
       
-      OPENAI_LOGGER.error("ERROR #{request_id} (BATCH_EMBEDDING)")
-      OPENAI_LOGGER.error({
+      OpenAI.logger.error("ERROR #{request_id} (BATCH_EMBEDDING)")
+      OpenAI.logger.error({
         request_id: request_id,
         error_class: e.class.to_s,
         error_message: e.message,

@@ -17,8 +17,8 @@ module OpenAI
       Rails.logger.debug { "[OpenAI::ClientService] Sending chat prompt: #{prompt.truncate(120)} (request_id: #{request_id})" }
       
       # Log detailed request to dedicated OpenAI logger
-      OPENAI_LOGGER.info("REQUEST #{request_id}")
-      OPENAI_LOGGER.debug({
+      OpenAI.logger.info("REQUEST #{request_id}")
+      OpenAI.logger.debug({
         request_type: "chat",
         request_id: request_id,
         model: model,
@@ -51,8 +51,8 @@ module OpenAI
       Rails.logger.debug { "[OpenAI::ClientService] OpenAI response received: #{response_info.inspect} (request_id: #{request_id})" }
       
       # Log detailed response to dedicated OpenAI logger
-      OPENAI_LOGGER.info("RESPONSE #{request_id}")
-      OPENAI_LOGGER.debug({
+      OpenAI.logger.info("RESPONSE #{request_id}")
+      OpenAI.logger.debug({
         request_id: request_id,
         response_id: response["id"],
         model: response["model"],
@@ -67,8 +67,8 @@ module OpenAI
       error_message = "[OpenAI::ClientService] OpenAI API error: #{e.class} - #{e.message}"
       Rails.logger.error(error_message)
       
-      OPENAI_LOGGER.error("ERROR #{request_id}")
-      OPENAI_LOGGER.error({
+      OpenAI.logger.error("ERROR #{request_id}")
+      OpenAI.logger.error({
         request_id: request_id,
         error_class: e.class.to_s,
         error_message: e.message,
@@ -108,8 +108,8 @@ module OpenAI
       Rails.logger.debug { "[OpenAI::ClientService] Sending multimodal prompt with note and #{files.size} file(s): #{file_info.join(', ')} (request_id: #{request_id})" }
       
       # Log detailed request to dedicated OpenAI logger (without binary data)
-      OPENAI_LOGGER.info("REQUEST #{request_id} (MULTIMODAL)")
-      OPENAI_LOGGER.debug({
+      OpenAI.logger.info("REQUEST #{request_id} (MULTIMODAL)")
+      OpenAI.logger.debug({
         request_type: "chat_with_files",
         request_id: request_id,
         model: model,
@@ -143,8 +143,8 @@ module OpenAI
       Rails.logger.debug { "[OpenAI::ClientService] OpenAI multimodal response received: #{response_info.inspect} (request_id: #{request_id})" }
       
       # Log detailed response to dedicated OpenAI logger
-      OPENAI_LOGGER.info("RESPONSE #{request_id} (MULTIMODAL)")
-      OPENAI_LOGGER.debug({
+      OpenAI.logger.info("RESPONSE #{request_id} (MULTIMODAL)")
+      OpenAI.logger.debug({
         request_id: request_id,
         response_id: response["id"],
         model: response["model"],
@@ -159,8 +159,8 @@ module OpenAI
       error_message = "[OpenAI::ClientService] OpenAI API error (multimodal): #{e.class} - #{e.message}"
       Rails.logger.error(error_message)
       
-      OPENAI_LOGGER.error("ERROR #{request_id} (MULTIMODAL)")
-      OPENAI_LOGGER.error({
+      OpenAI.logger.error("ERROR #{request_id} (MULTIMODAL)")
+      OpenAI.logger.error({
         request_id: request_id,
         error_class: e.class.to_s,
         error_message: e.message,
