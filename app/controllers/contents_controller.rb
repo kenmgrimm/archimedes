@@ -21,18 +21,17 @@ class ContentsController < ApplicationController
     # the user to click the Analyze button first
     @analysis_results = []
 
-    # Group entities by type for display
-    entity_groups = @content.entities.group_by(&:entity_type)
+    # Group entities by their statements for display
+    # In V2 model, entities don't have types, they have statements
+    Rails.logger.debug { "[ContentsController] Preparing entities for display" } if ENV["DEBUG"]
 
     # Create a simulated analysis result with the entities
-    return unless entity_groups.any?
+    return unless @content.entities.any?
 
-    # Create an annotated description from the entities
+    # Create an annotated description from the entities and their statements
     annotated_description = "This content contains: "
-    entity_groups.each do |type, entities|
-      entities.each do |entity|
-        annotated_description += "[#{type}: #{entity.value}] "
-      end
+    @content.entities.each do |entity|
+      annotated_description += "[#{entity.name}] "
     end
 
     # Create a simple result hash that matches the format expected by the view
@@ -91,126 +90,114 @@ class ContentsController < ApplicationController
     redirect_to contents_url, notice: "Content was successfully destroyed."
   end
 
-  # POST /contents/1/analyze
+  # POST /contents/:id/analyze
+  # Analyze the content using OpenAI and extract entities
   def analyze
-    Rails.logger.debug { "[ContentsController] Analyzing content ##{@content.id}" }
+    # Find the content
+    @content = Content.find(params[:id])
+
+    # Create the service
+    service = ContentAnalysisService.new
 
     begin
-      service = ContentAnalysisService.new
-      notes = [@content.note].compact
-      files = []
-
       # Prepare files for analysis
-      @content.files.attachments.each do |attachment|
-        data = attachment.download
-        files << { filename: attachment.filename.to_s, data: data }
-        Rails.logger.debug { "[ContentsController] Prepared file #{attachment.filename} (#{data.size} bytes) for analysis" }
-      rescue StandardError => e
-        Rails.logger.error { "[ContentsController] Error downloading attachment: #{e.message}" }
-      end
+      files = prepare_files_for_analysis(@content)
+
+      # Get the notes
+      notes = [@content.note]
 
       # Perform analysis
+      Rails.logger.debug { "[ContentsController] Starting analysis for content ##{@content.id}" }
       results = service.analyze(notes: notes, files: files)
 
-      # Detailed debug logging of raw results
-      results.each_with_index do |result, index|
-        Rails.logger.debug { "[ContentsController] Analysis result ##{index + 1}:" }
-        Rails.logger.debug { "  - File: #{result[:file] || 'No file (note only)'}" }
-
-        if result[:result].present? && result[:result].is_a?(Hash)
-          Rails.logger.debug { "  - Description: #{result[:result]['description']}" }
-          Rails.logger.debug { "  - Annotated Description: #{result[:result]['annotated_description']}" }
-          Rails.logger.debug { "  - Confidence Rating: #{result[:result]['rating']}" }
-
-          # Extract and log entities from annotated_description
-          entities = result[:result]["annotated_description"].to_s.scan(/\[([^\]:]+):\s*([^\]]+)\]/).map do |type, value|
-            { "entity_type" => type.strip, "value" => value.strip }
-          end
-
-          Rails.logger.debug { "  - Extracted #{entities.size} entities from annotated_description:" }
-          entities.each do |entity|
-            Rails.logger.debug { "    * #{entity['entity_type']}: #{entity['value']}" }
-          end
-        else
-          Rails.logger.debug { "  - No valid result data" }
-        end
-      end
-
       # Process results and extract entities
-      results.each do |result|
-        # Extract entities from the OpenAI result and associate with content
-        next unless result[:result].present? && result[:result].is_a?(Hash)
+      Rails.logger.debug { "[ContentsController] Processing analysis results" }
+      processing_result = service.process_analysis_results(@content, results)
 
-        created_entities = service.extract_and_create_entities(@content, result[:result])
-        Rails.logger.debug { "[ContentsController] Processed and created #{created_entities.size} entities for content ##{@content.id}" }
+      if processing_result[:success]
+        # Store results for rendering
+        @analysis_results = processing_result[:results]
 
-        # Log each created entity
-        created_entities.each do |entity|
-          Rails.logger.debug { "[ContentsController] Created entity: #{entity.entity_type} - #{entity.value}" }
+        # Set flash messages based on processing results
+        set_analysis_flash_messages(processing_result)
+
+        # Add debug logging
+        Rails.logger.debug { "[ContentsController] Analysis completed with #{processing_result[:entity_count]} entities extracted" }
+
+        # Render appropriate response
+        respond_to do |format|
+          format.html { render :show }
+          format.json { render json: { content: @content, analysis: @analysis_results } }
+          format.turbo_stream { render_turbo_stream_response }
         end
-      end
-
-      # Store results for rendering
-      @analysis_results = results
-
-      # Save the OpenAI response to the database if we have valid results
-      if results.any? && results.last[:result].present?
-        @last_openai_response = results.last[:result]
-
-        # Save the OpenAI response to the content record
-        Rails.logger.debug { "[ContentsController] Saving OpenAI response to content ##{@content.id}" }
-        @content.update(openai_response: @last_openai_response)
-      end
-
-      # Add detailed flash messages for the successful analysis
-      entity_count = @content.entities.reload.count
-
-      # Check if any files were skipped
-      skipped_files = results.select { |r| r[:skipped] }.pluck(:file)
-
-      flash.now[:warning] = "Some files were skipped during analysis: #{skipped_files.join(', ')}" if skipped_files.any?
-
-      if entity_count.positive?
-        flash.now[:notice] = "Content was successfully analyzed. Found #{entity_count} entities."
       else
-        flash.now[:info] = "Analysis completed, but no entities were found."
-      end
-
-      # Add debug logging
-      Rails.logger.debug { "[ContentsController] Analysis completed with #{entity_count} entities extracted" }
-
-      respond_to do |format|
-        format.html { render :show }
-        format.json { render json: { content: @content, analysis: @analysis_results } }
-        format.turbo_stream do
-          # Add detailed debug logging for Turbo Stream response
-          Rails.logger.debug do
-            "[ContentsController] Rendering Turbo Stream response for content ##{@content.id} with #{@analysis_results&.size || 0} results"
-          end
-
-          # Render multiple Turbo Stream actions
-          render turbo_stream: [
-            # Replace the content
-            turbo_stream.replace(
-              @content,
-              partial: "contents/content",
-              locals: { content: @content, analysis_results: @analysis_results }
-            ),
-            # Add flash messages at the top of the page
-            turbo_stream.update(
-              "flash_messages",
-              partial: "shared/flash_messages"
-            )
-          ]
-        end
+        # Handle processing failure
+        flash[:alert] = processing_result[:message]
+        redirect_to @content
       end
     rescue StandardError => e
-      Rails.logger.error { "[ContentsController] Analysis failed: #{e.message}\n#{e.backtrace.join('\n')}" }
+      Rails.logger.error { "[ContentsController] Analysis failed: #{e.message}\n#{e.backtrace.join("\n")}" }
       redirect_to @content, alert: "Analysis failed: #{e.message}"
     end
   end
 
   private
+
+  # Prepare files for analysis from content attachments
+  # @param content [Content] The content with attachments
+  # @return [Array<Hash>] Array of file hashes with filename and data
+  def prepare_files_for_analysis(content)
+    files = []
+
+    content.files.attachments.each do |attachment|
+      data = attachment.download
+      files << { filename: attachment.filename.to_s, data: data }
+      Rails.logger.debug { "[ContentsController] Prepared file #{attachment.filename} (#{data.size} bytes) for analysis" }
+    rescue StandardError => e
+      Rails.logger.error { "[ContentsController] Error downloading attachment: #{e.message}" }
+    end
+
+    files
+  end
+
+  # Set flash messages based on analysis results
+  # @param processing_result [Hash] The result from process_analysis_results
+  def set_analysis_flash_messages(processing_result)
+    # Check if any files were skipped
+    if processing_result[:skipped_files].any?
+      flash.now[:warning] = "Some files were skipped during analysis: #{processing_result[:skipped_files].join(', ')}"
+    end
+
+    # Set success or info message based on entity count
+    if processing_result[:entity_count].positive?
+      flash.now[:notice] = "Content was successfully analyzed. Found #{processing_result[:entity_count]} entities."
+    else
+      flash.now[:info] = "Analysis completed, but no entities were found."
+    end
+  end
+
+  # Render Turbo Stream response for analysis results
+  def render_turbo_stream_response
+    # Add detailed debug logging for Turbo Stream response
+    Rails.logger.debug do
+      "[ContentsController] Rendering Turbo Stream response for content ##{@content.id} with #{@analysis_results&.size || 0} results"
+    end
+
+    # Render multiple Turbo Stream actions
+    render turbo_stream: [
+      # Replace the content
+      turbo_stream.replace(
+        @content,
+        partial: "contents/content",
+        locals: { content: @content, analysis_results: @analysis_results }
+      ),
+      # Add flash messages at the top of the page
+      turbo_stream.update(
+        "flash_messages",
+        partial: "shared/flash_messages"
+      )
+    ]
+  end
 
   def set_content
     @content = Content.find(params[:id])
