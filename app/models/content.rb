@@ -11,9 +11,22 @@ class Content < ApplicationRecord
   has_many :entities, dependent: :nullify
   has_many :statements, dependent: :destroy
 
+  # Validations
   validate :note_or_file_present
+  validate :validate_file_types_and_sizes
   before_save :generate_embedding
   after_save :log_file_attachments
+  
+  # Constants for file validation
+  ALLOWED_MIME_TYPES = [
+    "application/pdf", 
+    "text/plain", 
+    "image/jpeg", 
+    "image/png", 
+    "image/gif"
+  ].freeze
+  
+  MAX_FILE_SIZE = 4.megabytes # 4 MB
 
   # V2 Data Model helper methods
 
@@ -129,9 +142,52 @@ class Content < ApplicationRecord
   private
 
   def note_or_file_present
-    return unless note.blank? && !files.attached?
-
-    errors.add(:base, "You must provide a note or attach at least one file.")
+    if note.blank? && files.blank?
+      errors.add(:base, "Note or file must be present")
+    end
+  end
+  
+  # Validate file types and sizes
+  # Only allow specific file types and enforce size limits
+  def validate_file_types_and_sizes
+    return unless files.attached?
+    
+    files.each do |file|
+      # Check file size
+      if file.blob.byte_size > MAX_FILE_SIZE
+        file.purge
+        errors.add(:files, "#{file.filename} exceeds the maximum file size of #{MAX_FILE_SIZE / 1.megabyte} MB")
+      end
+      
+      # Check file type
+      # Handle special case for images with application/octet-stream mime type
+      unless valid_mime_type?(file.blob)
+        file.purge
+        errors.add(:files, "#{file.filename} has an unsupported file type")
+      end
+    end
+  end
+  
+  # Helper method to check if a file has a valid mime type
+  # @param blob [ActiveStorage::Blob] The blob to check
+  # @return [Boolean] Whether the mime type is valid
+  def valid_mime_type?(blob)
+    # Get the mime type and filename
+    mime_type = blob.content_type
+    filename = blob.filename.to_s
+    
+    # Check if mime type is directly allowed
+    return true if ALLOWED_MIME_TYPES.include?(mime_type)
+    
+    # Special handling for images that might be detected as application/octet-stream
+    image_extensions = [".jpg", ".jpeg", ".png", ".gif"]
+    if mime_type == "application/octet-stream" && image_extensions.any? { |ext| filename.downcase.end_with?(ext) }
+      return true
+    end
+    
+    # Check if it's an image type with a different subtype
+    image_types = ["image/jpeg", "image/png", "image/gif"]
+    image_types.any? { |type| mime_type.start_with?(type.split("/").first) }
   end
 
   def log_file_attachments

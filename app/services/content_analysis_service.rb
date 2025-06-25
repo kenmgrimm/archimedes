@@ -31,35 +31,12 @@ class ContentAnalysisService
       results << { note: notes.join("\n"), file: nil, result: result }
     else
       files.each do |file|
-        # File size and mime type validation
-        size = file_size(file)
-        mime_type = file_mime_type(file)
-
-        allowed_types = ["application/pdf", "text/plain", "image/jpeg", "image/png", "image/gif"]
-        max_size = 4 * 1024 * 1024 # 4 MB
-
-        unless size.nil? || size <= max_size
-          Rails.logger.warn("[ContentAnalysisService] Skipping file #{file[:filename] || (file.respond_to?(:filename) && file.filename.to_s)} due to size > 4MB (#{size} bytes)")
-          next
-        end
-        image_types = ["image/jpeg", "image/png", "image/gif"]
-        # Get filename for better error messages
+        # Get filename for logging
         filename = file[:filename] || (file.respond_to?(:filename) && file.filename.to_s) || "unknown"
-
-        # Check if mime type is allowed, with special handling for images
-        is_allowed = allowed_types.include?(mime_type) ||
-                     image_types.any? { |type| mime_type.start_with?(type.split("/").first) } ||
-                     (filename.end_with?(".jpg", ".jpeg", ".png", ".gif") && mime_type == "application/octet-stream")
-
-        unless is_allowed
-          # Don't log unsupported mime type messages for JPEGs with octet-stream type
-          unless filename.end_with?(".jpg", ".jpeg", ".png", ".gif") && mime_type == "application/octet-stream"
-            log_safe("Skipping file #{filename} due to unsupported mime type: #{mime_type}", :warn)
-          end
-          results << { note: notes.join("\n"), file: filename, result: nil, skipped: true }
-          next
-        end
-
+        
+        # Log that we're processing this file
+        Rails.logger.debug { "[ContentAnalysisService] Processing file #{filename} for analysis" }
+        
         prompt = build_prompt(notes)
         # Get file data without logging binary content
         begin
@@ -591,69 +568,5 @@ class ContentAnalysisService
     end
   end
 
-  # Returns the size (in bytes) of the file, or nil if not available
-  def file_size(file)
-    filename = nil
-
-    # Get filename for better logging
-    if file.respond_to?(:filename)
-      filename = file.filename.to_s
-    elsif file.is_a?(Hash) && file[:filename]
-      filename = file[:filename].to_s
-    end
-
-    size = if file.respond_to?(:byte_size)
-             file.byte_size
-           elsif file.is_a?(Hash) && file[:byte_size]
-             file[:byte_size]
-           elsif file.is_a?(Hash) && file[:data]
-             file[:data].respond_to?(:bytesize) ? file[:data].bytesize : file[:data].to_s.bytesize
-           end
-
-    # Log without including the full file object
-    log_safe("File size: #{filename || 'unnamed'} -> #{size} bytes")
-
-    size
-  end
-
-  # Returns the mime type for the file, or application/octet-stream if unknown
-  def file_mime_type(file)
-    mime_type = nil
-    filename = nil
-
-    # Get filename for better logging
-    if file.respond_to?(:filename)
-      filename = file.filename.to_s
-    elsif file.is_a?(Hash) && file[:filename]
-      filename = file[:filename].to_s
-    end
-
-    # First try to get content_type from the file object
-    if file.respond_to?(:content_type) && file.content_type.present?
-      mime_type = file.content_type
-    elsif file.is_a?(Hash) && file[:content_type].present?
-      mime_type = file[:content_type]
-    end
-
-    # If no content_type available, try to detect from filename extension
-    if mime_type.nil? && filename.present?
-      ext = File.extname(filename).delete(".").downcase
-      mime_type = case ext
-                  when "pdf" then "application/pdf"
-                  when "txt" then "text/plain"
-                  when "jpg", "jpeg" then "image/jpeg"
-                  when "png" then "image/png"
-                  when "gif" then "image/gif"
-                  else "application/octet-stream"
-                  end
-    end
-
-    # Default to octet-stream if we still don't have a mime type
-    mime_type ||= "application/octet-stream"
-
-    # Log without including the full file object
-    log_safe("File type: #{filename || 'unnamed'} -> #{mime_type}")
-
-    mime_type
-  end
+  # This duplicate log_safe method was removed as it already exists at line 439
 end
