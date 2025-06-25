@@ -114,7 +114,7 @@ For existing data, we'll need to:
 
 - Index statements table for efficient vector search
 - Consider caching frequently accessed entities and their statements
-- Optimize query patterns for common search scenarios
+- Optimize query patterns for common search scenario
 
 ### API Changes
 
