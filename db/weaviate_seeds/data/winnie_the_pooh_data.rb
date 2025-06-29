@@ -618,6 +618,7 @@ module WeaviateSeeds
             id: weaviate.upsert_object("Document", {
               title: "Winnie The Pooh - Professional Resume",
               description: "Comprehensive professional background, skills, and work history",
+              file_name: "winnie_pooh_resume_2023.pdf",
               file_type: "pdf",
               file_size: 1024000,
               created_at: "2023-01-15",
@@ -634,6 +635,7 @@ module WeaviateSeeds
             id: weaviate.upsert_object("Document", {
               title: "Mountain Climbing Guide - Rocky Mountains",
               description: "Personal notes on climbing routes, conditions, and safety",
+              file_name: "rocky_mountains_climbing_guide_2023.md",
               file_type: "markdown",
               file_size: 512000,
               created_at: "2023-03-22",
@@ -650,6 +652,7 @@ module WeaviateSeeds
             id: weaviate.upsert_object("Document", {
               title: "Woodworking Project Plans - 2023",
               description: "Detailed plans and sketches for woodworking projects",
+              file_name: "woodworking_plans_2023.pdf",
               file_type: "pdf",
               file_size: 2048000,
               created_at: "2023-02-10",
@@ -666,6 +669,7 @@ module WeaviateSeeds
             id: weaviate.upsert_object("Document", {
               title: "AI Research Notes - Neural Networks",
               description: "Research notes on advanced neural network architectures",
+              file_name: "ai_research_neural_networks_2023.ipynb",
               file_type: "ipynb",
               file_size: 3072000,
               created_at: "2023-04-05",
@@ -683,6 +687,7 @@ module WeaviateSeeds
             id: weaviate.upsert_object("Document", {
               title: "Ford Raptor - Front License Plate",
               description: "Front view of the Ford Raptor showing license plate COL-2022-RPT",
+              file_name: "ford_raptor_front_license_plate_20220105.jpg",
               file_type: "jpg",
               file_size: 3520000,
               width: 4032,
@@ -707,6 +712,7 @@ module WeaviateSeeds
             id: weaviate.upsert_object("Document", {
               title: "Ford Raptor - VIN and Door Jamb Sticker",
               description: "Close-up of the door jamb sticker showing VIN and manufacturing details",
+              file_name: "ford_raptor_vin_door_jamb_sticker_20211220.jpg",
               file_type: "jpg",
               file_size: 4120000,
               width: 3024,
@@ -733,6 +739,7 @@ module WeaviateSeeds
             id: weaviate.upsert_object("Document", {
               title: "Ford Raptor - Window Sticker",
               description: "Original window sticker showing MSRP and factory options",
+              file_name: "ford_raptor_window_sticker_20211215.pdf",
               file_type: "pdf",
               file_size: 1250000,
               created_at: "2021-12-15",
@@ -756,6 +763,7 @@ module WeaviateSeeds
             id: weaviate.upsert_object("Document", {
               title: "2024 Vehicle Registration - Ford Raptor",
               description: "2024 Colorado DMV registration document",
+              file_name: "ford_raptor_registration_2024.jpg",
               file_type: "jpg",
               file_size: 1850000,
               width: 2000,
@@ -781,6 +789,7 @@ module WeaviateSeeds
             id: weaviate.upsert_object("Document", {
               title: "2023 Vehicle Registration - Ford Raptor",
               description: "2023 Colorado DMV registration document",
+              file_name: "ford_raptor_registration_2023.jpg",
               file_type: "jpg",
               file_size: 1920000,
               width: 2000,
@@ -806,6 +815,7 @@ module WeaviateSeeds
             id: weaviate.upsert_object("Document", {
               title: "30,000 Mile Service - Ford Raptor",
               description: "30,000 mile maintenance service invoice",
+              file_name: "ford_raptor_30000_mile_service_20240315.pdf",
               file_type: "pdf",
               file_size: 1250000,
               created_at: "2024-03-15",
@@ -829,6 +839,7 @@ module WeaviateSeeds
             id: weaviate.upsert_object("Document", {
               title: "Tire Replacement - Ford Raptor",
               description: "Tire replacement and alignment service",
+              file_name: "ford_raptor_tire_replacement_20231110.jpg",
               file_type: "jpg",
               file_size: 2450000,
               width: 3000,
@@ -854,6 +865,7 @@ module WeaviateSeeds
             id: weaviate.upsert_object("Document", {
               title: "State Inspection - Ford Raptor",
               description: "Annual state safety and emissions inspection",
+              file_name: "ford_raptor_state_inspection_20240501.pdf",
               file_type: "pdf",
               file_size: 980000,
               created_at: "2024-05-01",
@@ -877,6 +889,7 @@ module WeaviateSeeds
             id: weaviate.upsert_object("Document", {
               title: "Brake Service - Ford Raptor",
               description: "Brake pad and rotor replacement",
+              file_name: "ford_raptor_brake_service_20230822.pdf",
               file_type: "pdf",
               file_size: 1120000,
               created_at: "2023-08-22",
