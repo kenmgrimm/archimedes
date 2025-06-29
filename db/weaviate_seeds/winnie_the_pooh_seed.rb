@@ -2,7 +2,7 @@ require_relative 'schema'
 require_relative 'data/winnie_the_pooh_data'
 
 module WeaviateSeeds
-  class SchemaSeed
+  class WinnieThePoohSeed
     class << self
       def run(weaviate)
         # Define the schema

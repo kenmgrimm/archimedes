@@ -1,0 +1,179 @@
+cabin:
+  name: "Pooh Family Cabin"
+  type: "Log Cabin"
+  description: "A cozy log cabin nestled in the woods near the Hundred Acre Wood, surrounded by tall pine trees and wildflowers."
+  address: "123 Forest Lane, Hundred Acre Wood"
+  coordinates: "47.6062,-122.3321"
+  features: 
+    - "Wood-burning Fireplace"
+    - "Wrap-around Porch"
+    - "Solar Panels"
+    - "Nearby Stream"
+  year_built: 1995
+  size_sqft: 1800
+  rooms:
+    - type: "Bedroom"
+      count: 3
+      description: "Spacious bedrooms with wooden beams and large windows"
+    - type: "Bathroom"
+      count: 2
+      description: "Rustic yet modern with clawfoot tubs"
+    - type: "Kitchen"
+      count: 1
+      description: "Fully equipped with modern appliances and a large island"
+    - type: "Living Room"
+      count: 1
+      description: "Vaulted ceilings with a stone fireplace"
+    - type: "Study"
+      count: 1
+      description: "Wood-paneled office with built-in bookshelves"
+  outdoor_features:
+    - "Fire Pit"
+    - "Vegetable Garden"
+    - "Hammock"
+    - "Hot Tub"
+  sustainability:
+    solar_panels: true
+    rainwater_harvesting: true
+    composting: true
+    garden: true
+  nearby_attractions:
+    - "Hundred Acre Wood Trails"
+    - "Pooh Bridge"
+    - "Rabbit's Garden"
+    - "Eeyore's Gloomy Place"
+
+workshop:
+  name: "The Workshop"
+  type: "Woodworking Shop"
+  description: "A fully equipped workshop where Winnie crafts furniture and builds custom projects."
+  address: "Behind the Cabin, Hundred Acre Wood"
+  coordinates: "47.6063,-122.3322"
+  elevation: 1200
+  year_built: 2015
+  features:
+    - "Dust Collection System"
+    - "Wood Storage"
+    - "Hand Tools"
+    - "Power Tools"
+    - "Finishing Area"
+  size_sqft: 1200
+  equipment:
+    - "Table Saw"
+    - "Band Saw"
+    - "Jointer"
+    - "Planer"
+    - "Router Table"
+    - "Lathe"
+    - "Drill Press"
+    - "Hand Tools Collection"
+  materials:
+    - "Hardwood Lumber"
+    - "Plywood"
+    - "Exotic Veneers"
+    - "Wood Glue & Finishes"
+  safety_equipment:
+    - "Dust Masks"
+    - "Safety Glasses"
+    - "Hearing Protection"
+    - "First Aid Kit"
+  projects:
+    - name: "Dining Table"
+      status: "Completed"
+      year: 2022
+    - name: "Rocking Chair"
+      status: "In Progress"
+      started: "2023-03-15"
+    - name: "Bookshelves"
+      status: "Planned"
+      priority: "Medium"
+
+mountain_retreat:
+  name: "Mountain Retreat"
+  type: "Cabin"
+  address: "123 Mountain View Rd, Aspen, CO 81611"
+  coordinates: "39.1880,-106.8170"
+  elevation: 2500
+  size_sqft: 3500
+  year_built: 2010
+  description: "A secluded mountain retreat with stunning views and modern amenities. Built with sustainable materials and powered by renewable energy."
+  features:
+    - "Solar Panels"
+    - "Wood Stove"
+    - "Hot Tub"
+    - "Satellite Internet"
+    - "Water Well"
+    - "Greenhouse"
+  rooms:
+    - type: "Bedroom"
+      count: 3
+      description: "Master suite with mountain views"
+    - type: "Bathroom"
+      count: 2
+      description: "One with a sauna"
+    - type: "Kitchen"
+      description: "Fully equipped with commercial-grade appliances"
+    - type: "Great Room"
+      description: "Open concept living area with floor-to-ceiling windows"
+    - type: "Study"
+      description: "Home office with extensive library"
+  sustainability:
+    solar_panels: true
+    rainwater_harvesting: true
+    composting: true
+    garden: true
+
+kaisers_workshop:
+  name: "Kaiser's Workshop"
+  type: "Workshop"
+  location: "Adjacent to main cabin"
+  size_sqft: 1200
+  year_built: 2012
+  description: "A well-equipped workshop for woodworking and metalworking projects. Features advanced tools and safety equipment."
+  equipment:
+    - "CNC Router"
+    - "3D Printers"
+    - "Laser Cutter"
+    - "Metal Lathe"
+    - "Milling Machine"
+    - "Welding Station"
+    - "Dust Collection System"
+  projects:
+    - name: "Custom Furniture"
+      status: "In Progress"
+    - name: "Blacksmithing Tools"
+      status: "Planned"
+    - name: "Electronics Prototyping"
+      status: "Ongoing"
+
+family_estate:
+  name: "Pooh Family Estate"
+  type: "Estate"
+  address: "1 Pooh Lane, Aspen, CO 81611"
+  description: "The original Pooh family home, now used for family gatherings and special events."
+  features:
+    - "Guest House"
+    - "Stables"
+    - "Greenhouse"
+    - "Orchard"
+    - "Swimming Pool"
+    - "Tennis Court"
+  size_sqft: 10000
+  year_built: 1985
+  rooms:
+    - type: "Bedroom"
+      count: 6
+      description: "Spacious bedrooms with en-suite bathrooms"
+    - type: "Bathroom"
+      count: 7
+      description: "Luxurious bathrooms with modern amenities"
+    - type: "Kitchen"
+      description: "Professional-grade kitchen with butler's pantry"
+    - type: "Dining Room"
+      description: "Formal dining room with seating for 12"
+    - type: "Living Room"
+      description: "Grand living room with fireplace"
+    - type: "Library"
+      description: "Two-story library with rolling ladder"
+    - type: "Home Theater"
+      description: "State-of-the-art home theater"

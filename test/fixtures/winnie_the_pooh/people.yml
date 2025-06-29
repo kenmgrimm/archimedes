@@ -1,0 +1,199 @@
+# test/fixtures/winnie_the_pooh/people.yml
+winnie_the_pooh:
+  name: "Winnie the Pooh"
+  birth_date: "1965-11-01"
+  occupation: "Entrepreneur, AI Researcher, Craftsman"
+  email: "winnie@pooh.com"
+  phone: "+1 (555) 123-4567"
+  skills: 
+    - "AI/ML"
+    - "Woodworking"
+    - "Blacksmithing"
+    - "Mountaineering"
+    - "Strategy"
+  description: >-
+    A legendary strategist and polymath with a mysterious past. Known for his expertise in multiple disciplines and his secluded mountain lifestyle.
+  address: "123 Mountain View Rd, Aspen, CO 81611"
+  website: "https://pooh.com"
+  social_media:
+    twitter: "@winniethepooh"
+    github: "winnie-the-pooh"
+    linkedin: "in/winnie-the-pooh"
+    other: {}
+  education:
+    - institution: "MIT"
+      degree: "PhD in Computer Science"
+      field_of_study: "Artificial Intelligence"
+      start_date: "1990-09-01"
+      end_date: "1995-05-30"
+      description: "Doctoral research in neural networks and machine learning"
+    - institution: "ETH Zurich"
+      degree: "MSc in Robotics"
+      field_of_study: "Robotics and Control Systems"
+      start_date: "1988-09-01"
+      end_date: "1990-07-15"
+      description: "Master's degree with focus on autonomous systems"
+
+heinrich_pooh:
+  name: "Heinrich Pooh"
+  birth_date: "1935-07-15"
+  occupation: "Retired Mechanical Engineer"
+  description: "Master craftsman and engineer who taught Winnie the value of precision and hard work."
+  social_media:
+    twitter: ""
+    github: ""
+    linkedin: ""
+    other: {}
+  education: []
+
+greta_pooh:
+  name: "Greta Pooh"
+  birth_date: "1940-03-22"
+  occupation: "Botanist (Retired)"
+  description: "Renowned botanist with a passion for alpine plants and sustainable living."
+  social_media:
+    twitter: ""
+    github: ""
+    linkedin: ""
+    other: {}
+  education: []
+
+nancy_pooh:
+  name: "Nancy Pooh"
+  birth_date: "1968-09-14"
+  occupation: "Neuroscientist"
+  description: "Leading researcher in cognitive neuroscience at Stanford University."
+  social_media:
+    twitter: "@nancypooh"
+    github: "npooh"
+    linkedin: "in/nancypooh"
+    other: {}
+  education:
+    - institution: "Stanford University"
+      degree: "PhD in Neuroscience"
+      field_of_study: "Cognitive Neuroscience"
+      start_date: "1995-09-01"
+      end_date: "2000-05-30"
+      description: "Research on neural mechanisms of memory"
+
+thomas_pooh:
+  name: "Thomas Pooh"
+  birth_date: "1971-04-05"
+  occupation: "Wildlife Photographer"
+  description: "Award-winning wildlife photographer specializing in Arctic and Alpine ecosystems."
+  social_media:
+    instagram: "@thomaspooh.photo"
+    website: "https://thomaspooh.photo"
+    other: {}
+  education: []
+
+emma_pooh:
+  name: "Emma Pooh"
+  birth_date: "1975-11-23"
+  occupation: "Environmental Lawyer"
+  description: "Environmental lawyer advocating for climate change policy and sustainable development."
+  social_media:
+    twitter: "@emmapooh_esq"
+    linkedin: "in/emmapooh"
+    other: {}
+  education:
+    - institution: "Yale Law School"
+      degree: "Juris Doctor"
+      field_of_study: "Environmental Law"
+      start_date: "1998-08-01"
+      end_date: "2001-05-15"
+      description: "Specialization in environmental and natural resources law"
+
+# Relationships between entities
+relationships:
+  - from: winnie_the_pooh
+    to: heinrich_pooh
+    type: father
+  - from: winnie_the_pooh
+    to: greta_pooh
+    type: mother
+  - from: winnie_the_pooh
+    to: nancy_pooh
+    type: sister
+  - from: winnie_the_pooh
+    to: thomas_pooh
+    type: brother
+  - from: winnie_the_pooh
+    to: emma_pooh
+    type: sister
+
+# Friends and colleagues
+tigger:
+  name: "Tigger"
+  birth_date: "1968-10-31"
+  occupation: "Extreme Sports Athlete"
+  description: "Energetic and adventurous, always ready for the next challenge."
+  skills: ["Rock Climbing", "Base Jumping", "Mountain Biking"]
+  social_media:
+    twitter: ""
+    github: ""
+    linkedin: ""
+    other: {}
+  education: []
+
+piglet:
+  name: "Piglet"
+  birth_date: "1969-04-25"
+  occupation: "Therapist"
+  description: "Compassionate listener and trusted confidant, always there when you need support."
+  skills: ["Counseling", "Active Listening", "Crisis Management"]
+  social_media:
+    twitter: "@piglet_therapist"
+    linkedin: "in/piglet-therapist"
+    other: {}
+  education:
+    - institution: "Harvard University"
+      degree: "PhD in Clinical Psychology"
+      field_of_study: "Trauma Therapy"
+      start_date: "1995-09-01"
+      end_date: "2000-05-30"
+      description: "Research on trauma recovery and resilience"
+
+rabbit:
+  name: "Rabbit"
+  birth_date: "1955-03-15"
+  occupation: "Retired Army Colonel"
+  description: "Retired military strategist who now consults on security and logistics."
+  skills: ["Strategic Planning", "Crisis Management", "Wilderness Survival"]
+  social_media:
+    linkedin: "in/rabbit-strategist"
+    other: {}
+  education: []
+
+owl:
+  name: "Owl"
+  birth_date: "1945-11-30"
+  occupation: "University Professor Emeritus"
+  description: "Wise old professor of philosophy and ethics, now retired but still sharing wisdom."
+  skills: ["Philosophy", "Ethics", "Public Speaking"]
+  social_media:
+    twitter: "@wiseoldowl"
+    website: "https://wiseoldowl.edu"
+    other: {}
+  education:
+    - institution: "Oxford University"
+      degree: "DPhil in Philosophy"
+      field_of_study: "Ethics and Moral Philosophy"
+      start_date: "1970-10-01"
+      end_date: "1975-06-30"
+      description: "Doctoral research on ethical decision-making"
+
+# Add friend relationships
+relationships:
+  - from: winnie_the_pooh
+    to: tigger
+    type: best_friend
+  - from: winnie_the_pooh
+    to: piglet
+    type: close_friend
+  - from: winnie_the_pooh
+    to: rabbit
+    type: mentor
+  - from: winnie_the_pooh
+    to: owl
+    type: mentor

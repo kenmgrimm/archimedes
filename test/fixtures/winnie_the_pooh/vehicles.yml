@@ -1,0 +1,95 @@
+# test/fixtures/winnie_the_pooh/vehicles.yml
+raptor:
+  name: "Ford Raptor"
+  make: "Ford"
+  model: "F-150 Raptor"
+  year: 2022
+  color: "Code Orange"
+  vin: "1FTFW1RGXNKE12345"
+  license_plate: "COL-2022-RPT"
+  type: "Truck"
+  description: "High-performance off-road pickup truck with 3.5L EcoBoost V6"
+  features: ["SuperCrew Cab", "802A High Package", "Twin-Panel Moonroof", "Carbon Fiber Package", "Beadlock Capable Wheels"]
+  mileage: 18500
+  last_service_date: "2023-05-15"
+  next_service_due: "2023-11-15"
+  service_history:
+    - date: "2022-05-10"
+      service_type: "Oil Change"
+      odometer: 5000
+      description: "Synthetic oil change and tire rotation"
+      cost: 89.99
+    - date: "2022-11-12"
+      service_type: "Scheduled Maintenance"
+      odometer: 10000
+      description: "30K mile service - oil change, air filter, inspection"
+      cost: 249.99
+  insurance: "Provider: Gecko Insurance, Policy: GECKO-2022-RPT, Expires: 2024-05-01"
+  registration: "State: CO, County: Pitkin, Expires: 2024-03-31"
+  purchase_date: "2022-01-15"
+  warranty_expiry: "2027-01-15"
+  status: "Active"
+  maintenance: 
+    - type: "Oil Change"
+      description: "Full synthetic oil and filter change"
+      frequency_miles: 5000
+      frequency_months: 6
+      last_completed_date: "2023-05-15"
+      next_due_date: "2023-11-15"
+      cost: 89.99
+      notes: "Uses full synthetic 5W-50 oil"
+    - type: "Tire Rotation"
+      description: "Rotate all four tires"
+      frequency_miles: 5000
+      frequency_months: 6
+      last_completed_date: "2023-05-15"
+      next_due_date: "2023-11-15"
+      cost: 29.99
+
+tourneo:
+  name: "Ford Tourneo"
+  make: "Ford"
+  model: "Tourneo Custom"
+  year: 2021
+  color: "Magnetic Gray"
+  vin: "WF0EXXTTGMFJ54321"
+  license_plate: "GRY-2021-TRN"
+  type: "Minivan"
+  description: "Full-size luxury people carrier with premium features"
+  features: ["Titanium X Sport", "2.0L EcoBlue Diesel", "10-Speed Automatic", "Panoramic Roof", "Premium Leather Seats"]
+  mileage: 32500
+  last_service_date: "2023-04-10"
+  next_service_due: "2023-10-10"
+  service_history:
+    - date: "2021-10-15"
+      service_type: "First Service"
+      odometer: 10000
+      description: "Oil change and inspection"
+      cost: 109.99
+    - date: "2022-04-12"
+      service_type: "Scheduled Maintenance"
+      odometer: 20000
+      description: "20K mile service - oil, filters, and inspection"
+      cost: 199.99
+  insurance: "Provider: Gecko Insurance, Policy: GECKO-2021-TRN, Expires: 2024-06-01"
+  registration: "State: CO, County: Pitkin, Expires: 2024-05-31"
+  purchase_date: "2021-06-20"
+  warranty_expiry: "2026-06-20"
+  status: "Active"
+  maintenance: 
+    - type: "Oil Change"
+      description: "Diesel oil and filter change"
+      frequency_miles: 10000
+      frequency_months: 12
+      last_completed_date: "2023-04-10"
+      next_due_date: "2023-10-10"
+      cost: 109.99
+      notes: "Uses 5W-30 C1 oil"
+    - type: "Diesel Particulate Filter"
+      description: "DPF regeneration check"
+      frequency_miles: 10000
+      frequency_months: 12
+      last_completed_date: "2023-04-10"
+      next_due_date: "2023-10-10"
+      cost: 89.99
+      notes: "Ensure regular highway driving to prevent DPF clogging"

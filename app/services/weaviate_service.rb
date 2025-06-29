@@ -137,7 +137,8 @@ class WeaviateService
 
     response = http.request(request)
 
-    unless response.code == "200"
+    if response.code != "200"
+      debugger
       @logger.error("Failed to add reference: #{response.code} - #{response.body}")
       raise "Failed to add reference: #{response.message}"
     end

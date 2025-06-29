@@ -1,7 +1,6 @@
-
 #!/bin/bash
 
-# Get all vehicles owned by Winnie The Pooh
+### Get all vehicles owned by Winnie The Pooh
 echo "Vehicles owned by Winnie The Pooh:"
 curl -s -X POST http://localhost:8080/v1/graphql \
   -H "Content-Type: application/json" \
@@ -9,7 +8,8 @@ curl -s -X POST http://localhost:8080/v1/graphql \
 
 echo -e "\nSearching for vehicles similar to 'Ford F-150 Raptor'..."
 
-# Find vehicle using vector search
+
+### Find vehicle using vector search
 VEHICLE_QUERY='{
   "query": "query {\n    Get {\n      Vehicle(\n        nearText: {\n          concepts: [\"Ford F-150 Raptor\"],\n          certainty: 0.7\n        },\n        limit: 1\n      ) {\n        _additional {\n          id\n          certainty\n        }\n        make\n        model\n        year\n        vin\n      }\n    }\n  }"
 }'
@@ -34,7 +34,7 @@ CERTAINTY=$(echo "$VEHICLE_DATA" | jq -r '._additional.certainty')
 
 echo -e "\nFound vehicle: $VEHICLE_MAKE $VEHICLE_MODEL (ID: $VEHICLE_ID, Certainty: $CERTAINTY)"
 
-# Query for documents related to this vehicle
+### Query for documents related to this vehicle
 DOCUMENTS_QUERY='{
   "query": "{\n    Get {\n      Document(\n        where: {\n          operator: And,\n          operands: [\n            {\n              path: [\"related_to\", \"Vehicle\", \"_id\"],\n              operator: Equal,\n              valueString: \"'$VEHICLE_ID'\"\n            }\n          ]\n        }\n      ) {\n        title\n        description\n        file_name\n        file_type\n        content_summary\n        extracted_text\n        created_at\n        _additional {\n          id\n        }\n      }\n    }\n  }"
 }'
@@ -44,3 +44,5 @@ echo -e "\nDocuments related to $VEHICLE_MAKE $VEHICLE_MODEL:"
 curl -s -X POST http://localhost:8080/v1/graphql \
   -H "Content-Type: application/json" \
   -d "$DOCUMENTS_QUERY" | jq
+
+
