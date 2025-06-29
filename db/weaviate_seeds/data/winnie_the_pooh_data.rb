@@ -116,98 +116,23 @@ module WeaviateSeeds
 
         # --- Create vehicles from YAML ---
         puts "🚗 Adding vehicles..."
+        vehicles = []
         
-        # Initialize vehicles array
-        # Ford F-150 Raptor
-        raptor_id = weaviate.upsert_object("Vehicle", {
-          name: "Ford F-150 Raptor",
-          make: "Ford",
-          model: "F-150 Raptor",
-          year: 2022,
-          vin: "1FTFW1RGXNKE12345",
-          color: "Magnetic Gray",
-          type: "Truck",
-          fuel_type: "Gasoline",
-          transmission: "10-Speed Automatic",
-          engine: "3.5L EcoBoost V6",
-          mileage: 12500,
-          registration: "COL-2022-RPT",
-          insurance: "Geico",
-          purchase_date: "2021-12-15",
-          description: "Off-road capable truck for mountain adventures. Equipped with off-road package and custom modifications.",
-          features: [
-            "4x4", "Twin-Turbo V6 (450hp)", "FOX Live Valve Shocks",
-            "Baja Mode", "Trail Control", "360-Degree Camera",
-            "Twin-Panel Moonroof", "Recaro Seats"
-          ],
-          maintenance: [
-            { date: "2023-01-10", mileage: 5000, service: "Oil Change" },
-            { date: "2023-07-22", mileage: 10000, service: "Tire Rotation" },
-            { date: "2023-07-22", mileage: 10000, service: "Oil Change" }
-          ]
-        })
-        object_ids[:raptor] = raptor_id
-        # Toyota 4Runner TRD Pro
-        toyota_id = weaviate.upsert_object("Vehicle", {
-          name: "Toyota 4Runner TRD Pro",
-          make: "Toyota",
-          model: "4Runner TRD Pro",
-          year: 2021,
-          vin: "JTERU5JRXML567890",
-          color: "Army Green",
-          type: "SUV",
-          fuel_type: "Gasoline",
-          transmission: "5-Speed Automatic",
-          engine: "4.0L V6",
-          mileage: 18750,
-          registration: "COL-2021-4RN",
-          insurance: "Geico",
-          purchase_date: "2021-03-10",
-          description: "Reliable off-road SUV for backcountry exploration. Equipped with roof rack and off-road accessories.",
-          features: [
-            "4x4", "TRD-Tuned Suspension", "Multi-Terrain Select",
-            "Crawl Control", "Rear Locking Differential", "Skid Plates"
-          ],
-          maintenance: [
-            { date: "2022-06-15", mileage: 7500, service: "Oil Change" },
-            { date: "2022-12-10", mileage: 12500, service: "Tire Rotation" },
-            { date: "2023-05-20", mileage: 17500, service: "Oil Change" }
-          ]
-        })
-        object_ids[:toyota] = toyota_id 
-        # Honda CRF450L Motorcycle
-        honda_id = weaviate.upsert_object("Vehicle", {
-          name: "Honda CRF450L",
-          make: "Honda",
-          model: "CRF450L",
-          year: 2022,
-          vin: "MLHNC7600N2001234",
-          color: "Red",
-          type: "Dual-Sport Motorcycle",
-          fuel_type: "Gasoline",
-          engine: "449cc Single-Cylinder",
-          mileage: 3250,
-          registration: "COL-2022-CRF",
-          insurance: "Progressive",
-          purchase_date: "2022-04-15",
-          description: "Lightweight and powerful dual-sport motorcycle for trail riding and backcountry exploration.",
-          features: [
-            "Electric Start", "Six-Speed Transmission", "Fuel Injection",
-            "LED Lighting", "Off-Road Tires", "Hand Guards"
-          ],
-          maintenance: [
-            { date: "2022-07-01", mileage: 1000, service: "Break-in Service" },
-            { date: "2022-10-15", mileage: 2000, service: "Oil Change" },
-            { date: "2023-04-01", mileage: 3000, service: "Oil Change" }
-          ]
-        })
-        object_ids[:honda] = honda_id
-        # Store vehicle references for relationship creation
-        vehicles = [
-          { id: raptor_id, name: "Ford F-150 Raptor" },
-          { id: toyota_id, name: "Toyota 4Runner TRD Pro" },
-          { id: honda_id, name: "Honda CRF450L" }
-        ]
+        # Load and create vehicles from YAML
+        vehicles_file = Rails.root.join('test/fixtures/winnie_the_pooh/vehicles.yml')
+        if File.exist?(vehicles_file)
+          vehicles_data = YAML.load_file(vehicles_file)
+          vehicles_data.each do |vehicle_key, vehicle_attrs|
+            vehicle_id = weaviate.upsert_object("Vehicle", vehicle_attrs.symbolize_keys)
+            object_ids[vehicle_key.to_sym] = vehicle_id
+            vehicles << { id: vehicle_id, name: vehicle_attrs['name'] }
+            puts "✅ Created #{vehicle_attrs['name']} (ID: #{vehicle_id})"
+          end
+        else
+          puts "ℹ️  No vehicles.yml file found at #{vehicles_file}"
+          # Initialize with empty vehicles array if no file found
+          vehicles = []
+        end
         
         puts "📝 Adding documents..."
         documents = [
