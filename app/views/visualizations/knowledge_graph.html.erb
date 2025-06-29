@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Knowledge Graph Visualization</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
+    #graph-container {
+      width: 100%;
+      height: 100vh;
+      background-color: #f0f2f5;
+    }
+    .node {
+      stroke: #fff;
+      stroke-width: 1.5px;
+      cursor: pointer;
+    }
+    .link {
+      stroke: #999;
+      stroke-opacity: 0.6;
+    }
+    .node text {
+      pointer-events: none;
+      font-size: 10px;
+      fill: #333 !important;
+      font-weight: bold;
+      paint-order: stroke;
+      stroke: white;
+      stroke-width: 3px;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-opacity: 0.8;
+    }
+    .node circle {
+      cursor: pointer;
+    }
+    #tooltip {
+      position: absolute;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.95);
+      color: #333;
+      border-radius: 6px;
+      font-size: 13px;
+      pointer-events: none;
+      max-width: 350px;
+      z-index: 10;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      border: 1px solid #ddd;
+    }
+    .property-panel {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 350px;
+      max-height: calc(100vh - 40px);
+      overflow-y: auto;
+      background: white;
+      padding: 15px;
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 100;
+      display: none;
+    }
+    .property-panel h3 {
+      margin-top: 0;
+      color: #333;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 8px;
+    }
+    .property-group {
+      margin-bottom: 10px;
+    }
+    .property-name {
+      color: #4a5568;
+      font-size: 0.9em;
+      font-weight: 500;
+    }
+    .property-value {
+      color: #2d3748;
+      font-size: 0.95em;
+      word-break: break-word;
+      line-height: 1.5;
+    }
+    .property-section {
+      margin: 16px 0;
+      border-radius: 6px;
+      background: #f8f9fa;
+      padding: 12px;
+    }
+    .property-section-title {
+      font-size: 0.85em;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #7f8c8d;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .property-array {
+      margin-left: 15px;
+    }
+    .property-array-item {
+      background: #f0f2f5;
+      margin: 3px 0;
+      padding: 4px 8px;
+      border-radius: 3px;
+      font-size: 12px;
+    }
+    .legend {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      z-index: 100;
+    }
+    .legend-item {
+      margin: 5px 0;
+      display: flex;
+      align-items: center;
+    }
+    .legend-color {
+      width: 15px;
+      height: 15px;
+      margin-right: 5px;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+  <div id="graph-container"></div>
+  <div id="tooltip" style="display: none;"></div>
+  <div id="property-panel" class="property-panel">
+    <h3>Properties</h3>
+    <div id="property-content"></div>
+  </div>
+  <div class="legend">
+    <h3>Node Types</h3>
+    <div id="legend-items"></div>
+  </div>
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script>
+    // Configuration
+    const config = {
+      width: window.innerWidth,
+      height: window.innerHeight,
+      nodeRadius: 8,
+      linkDistance: 150,
+      chargeStrength: -500,
+      colors: d3.scaleOrdinal(d3.schemeCategory10)
+    };
+
+    // Initialize SVG
+    const svg = d3.select("#graph-container")
+      .append("svg")
+      .attr("width", config.width)
+      .attr("height", config.height);
+
+    // Add zoom/pan behavior
+    const g = svg.append("g");
+    
+    const zoom = d3.zoom()
+      .scaleExtent([0.1, 4])
+      .on("zoom", (event) => {
+        g.attr("transform", event.transform);
+      });
+    
+    svg.call(zoom);
+
+    // Tooltip
+    const tooltip = d3.select("#tooltip");
+    
+    // Update legend with class colors
+    const legendData = [
+      { class: 'Person', color: '#1f77b4' },
+      { class: 'Place', color: '#ff7f0e' },
+      { class: 'Project', color: '#2ca02c' },
+      { class: 'Pet', color: '#d62728' },
+      { class: 'Document', color: '#9467bd' },
+      { class: 'List', color: '#8c564b' },
+      { class: 'ListItem', color: '#e377c2' },
+      { class: 'Other', color: '#7f7f7f' }
+    ];
+    
+    const legendItems = d3.select("#legend-items")
+      .selectAll(".legend-item")
+      .data(legendData)
+      .enter()
+      .append("div")
+      .attr("class", "legend-item");
+      
+    legendItems.append("div")
+      .attr("class", "legend-color")
+      .style("background-color", d => d.color);
+      
+    legendItems.append("div")
+      .text(d => d.class);
+
+    // Load data from the JSON endpoint
+    d3.json("<%= visualization_knowledge_graph_path(format: :json) %>")
+      .then(data => {
+        console.log("Loaded graph data:", data); // Debug log
+        
+        // Process nodes and links from the response
+        const nodes = data.nodes || [];
+        const links = data.links || [];
+        
+        console.log(`Found ${nodes.length} nodes and ${links.length} links`); // Debug log
+        console.log("Sample nodes:", nodes.slice(0, 3));
+        console.log("Sample links:", links.slice(0, 3));
+
+        // Create a map of node IDs to their index for quick lookup
+        const nodeMap = new Map();
+        nodes.forEach((node, i) => {
+          if (!node.id) {
+            console.warn("Node is missing ID:", node);
+            node.id = `missing_${i}`; // Assign a temporary ID
+          }
+          nodeMap.set(String(node.id), i); // Ensure ID is a string for consistent lookup
+          
+          // Add initial positions if not present
+          if (node.x === undefined) {
+            node.x = Math.random() * config.width;
+          }
+          if (node.y === undefined) {
+            node.y = Math.random() * config.height;
+          }
+          
+          // Ensure required properties exist
+          node.group = node.group || 1;
+          node.connections = node.connections || 0;
+        });
+
+        // Process links - ensure they reference valid nodes
+        const validLinks = [];
+        links.forEach((link, i) => {
+          // Links should use array indices that match the nodes array
+          const sourceIndex = link.source;
+          const targetIndex = link.target;
+          
+          // Ensure the indices are valid
+          if (sourceIndex === undefined || targetIndex === undefined || 
+              !nodes[sourceIndex] || !nodes[targetIndex]) {
+            console.warn(`Link ${i} has invalid node references:`, link);
+            return; // Skip this link
+          }
+          
+          validLinks.push({
+            source: sourceIndex,
+            target: targetIndex,
+            type: link.type || 'related_to',
+            value: link.value || 1
+          });
+        });
+        
+        console.log(`Using ${validLinks.length} valid links out of ${links.length}`);
+        
+        if (validLinks.length === 0) {
+          console.warn("No valid links found in the graph data");
+        }
+        
+        if (nodes.length === 0) {
+          console.error("No valid nodes found in the graph data");
+          return; // Can't render without nodes
+        }
+
+        // Create a force simulation
+        const simulation = d3.forceSimulation(nodes)
+          .force("link", d3.forceLink(validLinks).id((d, i) => i).distance(config.linkDistance))
+          .force("charge", d3.forceManyBody().strength(config.chargeStrength))
+          .force("center", d3.forceCenter(config.width / 2, config.height / 2))
+          .force("x", d3.forceX(config.width / 2).strength(0.1))
+          .force("y", d3.forceY(config.height / 2).strength(0.1))
+          .force("collision", d3.forceCollide().radius(config.nodeRadius * 2));
+
+        // Create links
+        const link = g.append("g")
+          .selectAll("line")
+          .data(validLinks)
+          .enter().append("line")
+          .attr("class", "link")
+          .attr("stroke-width", d => d.value || 1)
+          .attr("stroke", "#999")
+          .attr("stroke-opacity", 0.6);
+
+        // Create node groups
+        const node = g.append("g")
+          .selectAll(".node")
+          .data(nodes)
+          .enter().append("g")
+          .attr("class", "node")
+          .call(d3.drag()
+            .on("start", dragstarted)
+            .on("drag", dragged)
+            .on("end", dragended));
+            
+        // Add circles to nodes with size based on connections
+        node.append("circle")
+          .attr("r", d => Math.min(20, Math.max(5, 5 + Math.sqrt(d.connections || 1) * 2)))
+          .attr("fill", d => {
+            // Use a consistent color for each class
+            const classColors = {
+              'Person': '#1f77b4',
+              'Place': '#ff7f0e',
+              'Project': '#2ca02c',
+              'Pet': '#d62728',
+              'Document': '#9467bd',
+              'List': '#8c564b',
+              'ListItem': '#e377c2',
+              'default': '#7f7f7f'
+            };
+            return classColors[d.class] || classColors['default'];
+          })
+          .attr("stroke", "#fff")
+          .attr("stroke-width", 1.5);
+
+        // Add node labels with improved visibility
+        node.append("text")
+          .attr("dx", d => Math.min(20, Math.max(5, 5 + Math.sqrt(d.connections || 1) * 2)) + 5)
+          .attr("dy", ".35em")
+          .text(d => {
+            // Truncate long names
+            const maxLength = 15;
+            const text = d.name || d.id || 'Unnamed';
+            return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+          })
+          .attr('font-size', '10px')
+          .attr('fill', '#333')
+          .attr('paint-order', 'stroke')
+          .attr('stroke', 'white')
+          .attr('stroke-width', '3px')
+          .attr('stroke-linecap', 'round')
+          .attr('stroke-linejoin', 'round')
+          .attr('stroke-opacity', '0.8')
+          .attr('pointer-events', 'none');
+
+        // Update positions on each tick
+        simulation.on("tick", () => {
+          link
+            .attr("x1", d => d.source.x)
+            .attr("y1", d => d.source.y)
+            .attr("x2", d => d.target.x)
+            .attr("y2", d => d.target.y);
+
+          node
+            .attr("transform", d => `translate(${Math.max(5, Math.min(config.width - 5, d.x))},${Math.max(5, Math.min(config.height - 5, d.y))})`);
+        });
+
+        // Function to format properties for display
+        function formatPropertyValue(value, depth = 0, key = '') {
+          // Skip null, undefined, or empty values
+          if (value === null || value === undefined || value === '') return null;
+          
+          // Format dates
+          if (typeof value === 'string' && value.match(/\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2})?/)) {
+            return new Date(value).toLocaleDateString(undefined, { 
+              year: 'numeric', 
+              month: 'short', 
+              day: 'numeric' 
+            });
+          }
+          
+          // Format arrays (for references like children, projects, etc.)
+          if (Array.isArray(value)) {
+            if (value.length === 0) return null;
+            
+            // For reference arrays, show count and first few items
+            if (depth === 0 && (key === 'children' || key === 'projects' || key === 'pets' || key === 'vehicles')) {
+              const count = value.length;
+              const items = value.slice(0, 3).map(item => {
+                if (typeof item === 'object' && item.beacon) {
+                  const parts = item.beacon.split('/');
+                  return parts[parts.length - 2]; // Just show the class name
+                }
+                return String(item);
+              });
+              
+              let result = `${count} ${key}`;
+              if (items.length > 0) {
+                result += ` (${items.join(', ')}${count > 3 ? ', ...' : ''})`;
+              }
+              return result;
+            }
+            
+            // For other arrays, join with commas
+            const items = value.map(item => formatPropertyValue(item, depth + 1, key)).filter(Boolean);
+            return items.length > 0 ? items.join(', ') : null;
+          }
+          
+          // Format objects (like beacon references)
+          if (typeof value === 'object') {
+            // Handle beacon references
+            if (value.beacon) {
+              const parts = value.beacon.split('/');
+              const className = parts[parts.length - 2];
+              const id = parts[parts.length - 1];
+              
+              // Special handling for different reference types
+              switch(key) {
+                case 'home':
+                  return `🏠 ${className}`;
+                case 'spouse':
+                  return `💑 ${className}`;
+                case 'owner':
+                  return `👤 ${className}`;
+                default:
+                  return `${className}:${id.substring(0, 4)}...`;
+              }
+            }
+            
+            // Handle other objects (shouldn't normally happen with current schema)
+            const entries = Object.entries(value)
+              .map(([k, v]) => {
+                const formatted = formatPropertyValue(v, depth + 1, k);
+                return formatted !== null ? `${k}: ${formatted}` : null;
+              })
+              .filter(Boolean);
+              
+            return entries.length > 0 ? `{ ${entries.join(', ')} }` : null;
+          }
+          
+          // Format file sizes
+          if (typeof value === 'number' && (key === 'file_size' || key.endsWith('Size'))) {
+            if (value >= 1000000) {
+              return (value / 1000000).toFixed(1) + ' MB';
+            } else if (value >= 1000) {
+              return (value / 1000).toFixed(1) + ' KB';
+            }
+            return value + ' B';
+          }
+          
+          // Format booleans
+          if (typeof value === 'boolean') {
+            return value ? '✓' : '✗';
+          }
+          
+          // Default string conversion with smart formatting
+          let strValue = String(value);
+          
+          // Add line breaks for long descriptions
+          if (key === 'description' && strValue.length > 80) {
+            strValue = strValue.match(/.{1,80}(\s|$)/g).join('\n');
+          }
+          
+          return strValue;
+        }
+
+        // Function to show properties in the side panel
+        function showPropertiesInPanel(d) {
+          const panel = d3.select('#property-panel');
+          const content = d3.select('#property-content');
+          
+          if (panel.style('display') === 'block' && panel.attr('data-node-id') === d.id) {
+            panel.style('display', 'none');
+            return;
+          }
+          
+          // Set panel title
+          panel.attr('data-node-id', d.id);
+          
+          // Build properties HTML
+          let html = `
+            <div style="border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 12px;">
+              <h3 style="margin: 0 0 4px 0; font-size: 1.2em; color: #2c3e50;">${d.name || 'Unnamed ' + d.class}</h3>
+              <div style="font-size: 0.9em; color: #7f8c8d; margin-bottom: 8px;">${d.class}</div>
+            </div>`;
+          
+          if (d.properties) {
+            // Define property display order and groupings
+            const propertyOrder = {
+              'Person': ['name', 'birthDate', 'occupation', 'description', 'home', 'spouse', 'children', 'parents', 'pets', 'projects', 'vehicles'],
+              'Place': ['name', 'type', 'elevation', 'description', 'residents', 'pets', 'vehicles', 'documents', 'lists', 'projects'],
+              'Project': ['name', 'description', 'members', 'documents', 'lists', 'related_to'],
+              'Document': ['title', 'description', 'file_type', 'file_size', 'created_at', 'created_by', 'related_to'],
+              'List': ['title', 'description', 'created_at', 'is_shared', 'items', 'related_to', 'created_by', 'documents'],
+              'ListItem': ['content', 'is_completed', 'priority', 'created_at', 'list', 'assigned_to', 'related_to'],
+              'Pet': ['name', 'species', 'age', 'description', 'owner', 'home'],
+              'Vehicle': ['make', 'model', 'year', 'type', 'color', 'is_electric', 'owner', 'garaged_at', 'related_to']
+            };
+            
+            // Get the order for this class, or use alphabetical
+            const order = propertyOrder[d.class] || [];
+            
+            // Get all properties, sorted according to order
+            const properties = Object.entries(d.properties)
+              .map(([key, value]) => ({
+                key,
+                value: formatPropertyValue(value, 0, key),
+                order: order.indexOf(key) >= 0 ? order.indexOf(key) : 999 // Put unordered items at the end
+              }))
+              .filter(prop => prop.value !== null)
+              .sort((a, b) => a.order - b.order);
+            
+            if (properties.length > 0) {
+              // Group properties into sections
+              const sections = [];
+              let currentSection = [];
+              
+              properties.forEach((prop, index) => {
+                // Start a new section for reference types
+                if (['home', 'spouse', 'children', 'parents', 'pets', 'projects', 'vehicles', 
+                     'owner', 'garaged_at', 'members', 'related_to', 'items', 'list', 'documents'].includes(prop.key)) {
+                  if (currentSection.length > 0) {
+                    sections.push(currentSection);
+                    currentSection = [];
+                  }
+                  sections.push([prop]);
+                } else {
+                  currentSection.push(prop);
+                }
+                
+                // Add the last section if needed
+                if (index === properties.length - 1 && currentSection.length > 0) {
+                  sections.push(currentSection);
+                }
+              });
+              
+              // Render each section
+              sections.forEach(section => {
+                if (section.length === 0) return;
+                
+                const isReferenceSection = ['home', 'spouse', 'owner', 'garaged_at', 'members', 'related_to', 'items', 'list'].includes(section[0].key);
+                
+                if (isReferenceSection) {
+                  // For reference sections, show a header
+                  const title = {
+                    'home': '🏠 Home',
+                    'spouse': '💑 Spouse',
+                    'owner': '👤 Owner',
+                    'garaged_at': '🏠 Garage Location',
+                    'members': '👥 Team Members',
+                    'related_to': '🔗 Related To',
+                    'items': '📋 Items',
+                    'list': '📋 Parent List',
+                    'children': '👶 Children',
+                    'parents': '👨‍👩‍👧‍👦 Parents',
+                    'pets': '🐾 Pets',
+                    'projects': '📂 Projects',
+                    'vehicles': '🚗 Vehicles',
+                    'documents': '📄 Documents'
+                  }[section[0].key] || section[0].key;
+                  
+                  html += `
+                    <div style="margin: 16px 0 8px 0; padding-bottom: 4px; border-bottom: 1px solid #eee;">
+                      <div style="font-weight: 600; color: #2c3e50; text-transform: uppercase; font-size: 0.8em; letter-spacing: 0.5px;">
+                        ${title}
+                      </div>
+                    </div>`;
+                }
+                
+                // Render the properties in this section
+                section.forEach(prop => {
+                  if (isReferenceSection) {
+                    // For references, show just the value (already formatted with emoji)
+                    html += `
+                      <div style="margin: 8px 0; padding-left: 8px; border-left: 3px solid #3498db;">
+                        <div class="property-value" style="font-size: 0.95em; line-height: 1.4;">
+                          ${prop.value}
+                        </div>
+                      </div>`;
+                  } else {
+                    // For regular properties, show key: value
+                    html += `
+                      <div style="display: flex; margin: 8px 0;">
+                        <div class="property-name" style="min-width: 120px; font-weight: 500; color: #7f8c8d;">
+                          ${prop.key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:
+                        </div>
+                        <div class="property-value" style="flex: 1; white-space: pre-wrap;">
+                          ${prop.value}
+                        </div>
+                      </div>`;
+                  }
+                });
+              });
+            }
+          }
+          
+          content.html(html);
+          panel.style('display', 'block');
+        }
+        
+        // Click handler to show properties in panel
+        node.on("click", (event, d) => {
+          event.stopPropagation();
+          showPropertiesInPanel(d);
+        });
+        
+        // Click on document to close panel
+        d3.select('body').on('click', () => {
+          d3.select('#property-panel').style('display', 'none');
+        });
+        
+        // Prevent panel clicks from closing it
+        d3.select('#property-panel').on('click', (event) => {
+          event.stopPropagation();
+        });
+        
+        // Add tooltip on hover
+        node.on("mouseover", (event, d) => {
+          // Show tooltip
+          tooltip
+            .style("display", "block")
+            .style("left", (event.pageX + 10) + "px")
+            .style("top", (event.pageY - 10) + "px");
+          
+          // Highlight connected links
+          link
+            .style("stroke", l => 
+              (l.source.id === d.id || l.target.id === d.id) ? "#ff7f0e" : "#999")
+            .style("stroke-width", l => 
+              (l.source.id === d.id || l.target.id === d.id) ? 2 : 1);
+          
+          // Build tooltip content (simplified since we have the panel)
+          let tooltipHtml = `<strong>${d.name || d.id}</strong><br/>`;
+          tooltipHtml += `<em>Type:</em> ${d.class}`;
+          tooltip.html(tooltipHtml);
+        });
+        
+        node.on("mousemove", (event) => {
+          tooltip
+            .style("left", (event.pageX + 10) + "px")
+            .style("top", (event.pageY - 10) + "px");
+        });
+        
+        node.on("mouseout", () => {
+          tooltip.style("display", "none");
+          link
+            .style("stroke", "#999")
+            .style("stroke-width", 1);
+        });
+
+        // Create legend
+        const legendData = [...new Set(nodes.map(d => d.class))];
+        const legendItems = d3.select("#legend-items")
+          .selectAll(".legend-item")
+          .data(legendData)
+          .enter()
+          .append("div")
+          .attr("class", "legend-item");
+        
+        legendItems.append("div")
+          .attr("class", "legend-color")
+          .style("background-color", (d, i) => config.colors(i));
+        
+        legendItems.append("span")
+          .text(d => d);
+
+        // Drag functions
+        function dragstarted(event, d) {
+          if (!event.active) simulation.alphaTarget(0.3).restart();
+          d.fx = d.x;
+          d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+          d.fx = event.x;
+          d.fy = event.y;
+        }
+
+        function dragended(event, d) {
+          if (!event.active) simulation.alphaTarget(0);
+          d.fx = event.x;
+          d.fy = event.y;
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+          config.width = window.innerWidth;
+          config.height = window.innerHeight;
+          
+          svg.attr("width", config.width)
+             .attr("height", config.height);
+          
+          simulation.force("center", d3.forceCenter(config.width / 2, config.height / 2));
+          simulation.alpha(0.3).restart();
+        });
+      })
+      .catch(error => {
+        console.error("Error loading graph data:", error);
+        d3.select("#graph-container")
+          .html(`<div style="padding: 20px; color: red;">Error loading graph data: ${error.message}</div>`);
+      });
+  </script>
+</body>
+</html>

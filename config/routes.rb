@@ -5,11 +5,27 @@ Rails.application.routes.draw do
     end
   end
   
+  # Entity routes with verification and merge functionality
+  resources :entities do
+    member do
+      post :merge
+    end
+    
+    collection do
+      post :verify
+      get :merge_form
+    end
+  end
+  
   # Search routes for vector similarity search
   get 'search', to: 'search#index'
   
   get 'home/index'
   devise_for :users
+  # Visualization routes
+  get 'visualizations/knowledge_graph', to: 'visualizations#knowledge_graph', as: 'visualization_knowledge_graph'
+  get 'visualizations/connection_stats', to: 'visualizations#connection_stats', as: 'visualization_connection_stats'
+  
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

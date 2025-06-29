@@ -1,0 +1,208 @@
+{
+  "elements": {
+    "nodes": [
+      {
+        "data": {
+          "id": "Person_019271a3-789f-4c66-adcf-07bfcdce47bb",
+          "name": "Kaiser Soze",
+          "class": "Person",
+          "connections": 13
+        }
+      },
+      {
+        "data": {
+          "id": "Person_4779a427-d83f-4bb2-afab-1779adb87ba9",
+          "name": "John Soze",
+          "class": "Person",
+          "connections": 1
+        }
+      },
+      {
+        "data": {
+          "id": "Person_67d434a6-d6bf-4526-a779-e979bd598217",
+          "name": "Heinrich Soze",
+          "class": "Person",
+          "connections": 1
+        }
+      },
+      {
+        "data": {
+          "id": "Person_c32da0f7-9017-4cdc-9ee5-7451188222c2",
+          "name": "Greta Soze",
+          "class": "Person",
+          "connections": 1
+        }
+      },
+      {
+        "data": {
+          "id": "Person_f55e422c-157d-4cd3-9c4d-0cedd94de454",
+          "name": "Sarah Soze",
+          "class": "Person",
+          "connections": 1
+        }
+      },
+      {
+        "data": {
+          "id": "Person_fdca03ce-b416-44fe-b18c-797a72a90892",
+          "name": "Nancy Soze",
+          "class": "Person",
+          "connections": 1
+        }
+      },
+      {
+        "data": {
+          "id": "Pet_0de43b21-4fd2-44f5-9d1a-e4c6ccc8c939",
+          "name": "Whiskers",
+          "class": "Pet",
+          "connections": 1
+        }
+      },
+      {
+        "data": {
+          "id": "Pet_a662fdca-d55d-44b3-afdb-b6f9bfb599d9",
+          "name": "Max",
+          "class": "Pet",
+          "connections": 1
+        }
+      },
+      {
+        "data": {
+          "id": "Place_1ee5fe6b-95a3-402b-86ca-75a275a49663",
+          "name": "Soze Family Cabin",
+          "class": "Place",
+          "connections": 1
+        }
+      },
+      {
+        "data": {
+          "id": "Project_0b5d63f2-20e7-4da8-9b58-ecdc3accbac0",
+          "name": "Leadville Historical Database",
+          "class": "Project",
+          "connections": 1
+        }
+      },
+      {
+        "data": {
+          "id": "Project_81695974-5a43-4813-95a1-45186713cd9f",
+          "name": "Sustainable Cabin Upgrades",
+          "class": "Project",
+          "connections": 1
+        }
+      },
+      {
+        "data": {
+          "id": "Project_b5345a99-1350-4d66-9436-40914eba3518",
+          "name": "Wildlife Monitoring System",
+          "class": "Project",
+          "connections": 1
+        }
+      },
+      {
+        "data": {
+          "id": "Project_e9c680c4-5d39-49b1-b28d-585c65f4f191",
+          "name": "Personal AI Assistant \"Summit\"",
+          "class": "Project",
+          "connections": 1
+        }
+      }
+    ],
+    "edges": [
+      {
+        "data": {
+          "id": "e0",
+          "source": "Person_019271a3-789f-4c66-adcf-07bfcdce47bb",
+          "target": "Person_fdca03ce-b416-44fe-b18c-797a72a90892",
+          "type": "spouse"
+        }
+      },
+      {
+        "data": {
+          "id": "e1",
+          "source": "Person_019271a3-789f-4c66-adcf-07bfcdce47bb",
+          "target": "Person_f55e422c-157d-4cd3-9c4d-0cedd94de454",
+          "type": "children"
+        }
+      },
+      {
+        "data": {
+          "id": "e2",
+          "source": "Person_019271a3-789f-4c66-adcf-07bfcdce47bb",
+          "target": "Person_4779a427-d83f-4bb2-afab-1779adb87ba9",
+          "type": "children"
+        }
+      },
+      {
+        "data": {
+          "id": "e3",
+          "source": "Person_019271a3-789f-4c66-adcf-07bfcdce47bb",
+          "target": "Person_67d434a6-d6bf-4526-a779-e979bd598217",
+          "type": "parents"
+        }
+      },
+      {
+        "data": {
+          "id": "e4",
+          "source": "Person_019271a3-789f-4c66-adcf-07bfcdce47bb",
+          "target": "Person_c32da0f7-9017-4cdc-9ee5-7451188222c2",
+          "type": "parents"
+        }
+      },
+      {
+        "data": {
+          "id": "e5",
+          "source": "Person_019271a3-789f-4c66-adcf-07bfcdce47bb",
+          "target": "Pet_a662fdca-d55d-44b3-afdb-b6f9bfb599d9",
+          "type": "pets"
+        }
+      },
+      {
+        "data": {
+          "id": "e6",
+          "source": "Person_019271a3-789f-4c66-adcf-07bfcdce47bb",
+          "target": "Pet_0de43b21-4fd2-44f5-9d1a-e4c6ccc8c939",
+          "type": "pets"
+        }
+      },
+      {
+        "data": {
+          "id": "e7",
+          "source": "Person_019271a3-789f-4c66-adcf-07bfcdce47bb",
+          "target": "Place_1ee5fe6b-95a3-402b-86ca-75a275a49663",
+          "type": "home"
+        }
+      },
+      {
+        "data": {
+          "id": "e8",
+          "source": "Person_019271a3-789f-4c66-adcf-07bfcdce47bb",
+          "target": "Project_0b5d63f2-20e7-4da8-9b58-ecdc3accbac0",
+          "type": "projects"
+        }
+      },
+      {
+        "data": {
+          "id": "e9",
+          "source": "Person_019271a3-789f-4c66-adcf-07bfcdce47bb",
+          "target": "Project_b5345a99-1350-4d66-9436-40914eba3518",
+          "type": "projects"
+        }
+      },
+      {
+        "data": {
+          "id": "e10",
+          "source": "Person_019271a3-789f-4c66-adcf-07bfcdce47bb",
+          "target": "Project_e9c680c4-5d39-49b1-b28d-585c65f4f191",
+          "type": "projects"
+        }
+      },
+      {
+        "data": {
+          "id": "e11",
+          "source": "Person_019271a3-789f-4c66-adcf-07bfcdce47bb",
+          "target": "Project_81695974-5a43-4813-95a1-45186713cd9f",
+          "type": "projects"
+        }
+      }
+    ]
+  }
+}

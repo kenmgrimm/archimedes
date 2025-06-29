@@ -1,0 +1,566 @@
+
+📁 [1;34mPERSON[0m (23 objects)
+────────────────────────────────────────────────────────────
+  [1;32m● Greta Soze[0m (19b5871a...)
+D, [2025-06-28T19:39:13.717650 #28380] DEBUG -- : Could not fetch references for spouse: Fragment on Pet can't be spread inside PersonSpouseObj
+D, [2025-06-28T19:39:13.718403 #28380] DEBUG -- : Could not fetch references for children: Fragment on Pet can't be spread inside PersonChildrenObj
+D, [2025-06-28T19:39:13.719080 #28380] DEBUG -- : Could not fetch references for parents: Fragment on Pet can't be spread inside PersonParentsObj
+D, [2025-06-28T19:39:13.719694 #28380] DEBUG -- : Could not fetch references for pets: Fragment on Person can't be spread inside PersonPetsObj
+D, [2025-06-28T19:39:13.720280 #28380] DEBUG -- : Could not fetch references for home: Fragment on Person can't be spread inside PersonHomeObj
+D, [2025-06-28T19:39:13.720875 #28380] DEBUG -- : Could not fetch references for projects: Fragment on Person can't be spread inside PersonProjectsObj
+
+  [1;32m● Sarah Soze[0m (223693db...)
+D, [2025-06-28T19:39:13.721455 #28380] DEBUG -- : Could not fetch references for spouse: Fragment on Pet can't be spread inside PersonSpouseObj
+D, [2025-06-28T19:39:13.722026 #28380] DEBUG -- : Could not fetch references for children: Fragment on Pet can't be spread inside PersonChildrenObj
+D, [2025-06-28T19:39:13.722538 #28380] DEBUG -- : Could not fetch references for parents: Fragment on Pet can't be spread inside PersonParentsObj
+D, [2025-06-28T19:39:13.723057 #28380] DEBUG -- : Could not fetch references for pets: Fragment on Person can't be spread inside PersonPetsObj
+D, [2025-06-28T19:39:13.723647 #28380] DEBUG -- : Could not fetch references for home: Fragment on Person can't be spread inside PersonHomeObj
+D, [2025-06-28T19:39:13.724173 #28380] DEBUG -- : Could not fetch references for projects: Fragment on Person can't be spread inside PersonProjectsObj
+
+  [1;32m● Nancy Soze[0m (2b8ecabb...)
+D, [2025-06-28T19:39:13.724677 #28380] DEBUG -- : Could not fetch references for spouse: Fragment on Pet can't be spread inside PersonSpouseObj
+D, [2025-06-28T19:39:13.725177 #28380] DEBUG -- : Could not fetch references for children: Fragment on Pet can't be spread inside PersonChildrenObj
+D, [2025-06-28T19:39:13.725677 #28380] DEBUG -- : Could not fetch references for parents: Fragment on Pet can't be spread inside PersonParentsObj
+D, [2025-06-28T19:39:13.726204 #28380] DEBUG -- : Could not fetch references for pets: Fragment on Person can't be spread inside PersonPetsObj
+D, [2025-06-28T19:39:13.726721 #28380] DEBUG -- : Could not fetch references for home: Fragment on Person can't be spread inside PersonHomeObj
+D, [2025-06-28T19:39:13.727403 #28380] DEBUG -- : Could not fetch references for projects: Fragment on Person can't be spread inside PersonProjectsObj
+
+  [1;32m● John Soze[0m (3c49d3cc...)
+D, [2025-06-28T19:39:13.728081 #28380] DEBUG -- : Could not fetch references for spouse: Fragment on Pet can't be spread inside PersonSpouseObj
+D, [2025-06-28T19:39:13.728694 #28380] DEBUG -- : Could not fetch references for children: Fragment on Pet can't be spread inside PersonChildrenObj
+D, [2025-06-28T19:39:13.729258 #28380] DEBUG -- : Could not fetch references for parents: Fragment on Pet can't be spread inside PersonParentsObj
+D, [2025-06-28T19:39:13.729893 #28380] DEBUG -- : Could not fetch references for pets: Fragment on Person can't be spread inside PersonPetsObj
+D, [2025-06-28T19:39:13.730455 #28380] DEBUG -- : Could not fetch references for home: Fragment on Person can't be spread inside PersonHomeObj
+D, [2025-06-28T19:39:13.730959 #28380] DEBUG -- : Could not fetch references for projects: Fragment on Person can't be spread inside PersonProjectsObj
+
+  [1;32m● Nancy Soze[0m (5da44155...)
+D, [2025-06-28T19:39:13.731482 #28380] DEBUG -- : Could not fetch references for spouse: Fragment on Pet can't be spread inside PersonSpouseObj
+D, [2025-06-28T19:39:13.731983 #28380] DEBUG -- : Could not fetch references for children: Fragment on Pet can't be spread inside PersonChildrenObj
+D, [2025-06-28T19:39:13.732529 #28380] DEBUG -- : Could not fetch references for parents: Fragment on Pet can't be spread inside PersonParentsObj
+D, [2025-06-28T19:39:13.733026 #28380] DEBUG -- : Could not fetch references for pets: Fragment on Person can't be spread inside PersonPetsObj
+D, [2025-06-28T19:39:13.733575 #28380] DEBUG -- : Could not fetch references for home: Fragment on Person can't be spread inside PersonHomeObj
+D, [2025-06-28T19:39:13.734092 #28380] DEBUG -- : Could not fetch references for projects: Fragment on Person can't be spread inside PersonProjectsObj
+
+  [1;32m● Kaiser Soze[0m (6b4a2be3...)
+    birthDate: 1965-11-01
+    children: [{"beacon" => "weaviate://localhost/Person/b7b435c3-5988-4...
+    description: Legendary strategist and polymath. Enjoys mountaineering, ...
+    home: [{"beacon" => "weaviate://localhost/Place/6aa1270d-665f-40...
+    occupation: Entrepreneur, AI Enthusiast
+    parents: [{"beacon" => "weaviate://localhost/Person/7ac9b394-e472-4...
+    pets: [{"beacon" => "weaviate://localhost/Pet/b2bfb57a-2050-43d2...
+    projects: [{"beacon" => "weaviate://localhost/Project/0237cc86-74c4-...
+    spouse: [{"beacon" => "weaviate://localhost/Person/e42ced48-6d07-4...
+D, [2025-06-28T19:39:13.734742 #28380] DEBUG -- : Could not fetch references for spouse: Fragment on Pet can't be spread inside PersonSpouseObj
+D, [2025-06-28T19:39:13.735243 #28380] DEBUG -- : Could not fetch references for children: Fragment on Pet can't be spread inside PersonChildrenObj
+D, [2025-06-28T19:39:13.735788 #28380] DEBUG -- : Could not fetch references for parents: Fragment on Pet can't be spread inside PersonParentsObj
+D, [2025-06-28T19:39:13.736292 #28380] DEBUG -- : Could not fetch references for pets: Fragment on Person can't be spread inside PersonPetsObj
+D, [2025-06-28T19:39:13.736817 #28380] DEBUG -- : Could not fetch references for home: Fragment on Person can't be spread inside PersonHomeObj
+D, [2025-06-28T19:39:13.737317 #28380] DEBUG -- : Could not fetch references for projects: Fragment on Person can't be spread inside PersonProjectsObj
+
+  [1;32m● Greta Soze[0m (6cec96d7...)
+D, [2025-06-28T19:39:13.737811 #28380] DEBUG -- : Could not fetch references for spouse: Fragment on Pet can't be spread inside PersonSpouseObj
+D, [2025-06-28T19:39:13.738310 #28380] DEBUG -- : Could not fetch references for children: Fragment on Pet can't be spread inside PersonChildrenObj
+D, [2025-06-28T19:39:13.738799 #28380] DEBUG -- : Could not fetch references for parents: Fragment on Pet can't be spread inside PersonParentsObj
+D, [2025-06-28T19:39:13.739288 #28380] DEBUG -- : Could not fetch references for pets: Fragment on Person can't be spread inside PersonPetsObj
+D, [2025-06-28T19:39:13.739783 #28380] DEBUG -- : Could not fetch references for home: Fragment on Person can't be spread inside PersonHomeObj
+D, [2025-06-28T19:39:13.740273 #28380] DEBUG -- : Could not fetch references for projects: Fragment on Person can't be spread inside PersonProjectsObj
+
+  [1;32m● Ingrid Soze[0m (6e69c3b6...)
+D, [2025-06-28T19:39:13.740785 #28380] DEBUG -- : Could not fetch references for spouse: Fragment on Pet can't be spread inside PersonSpouseObj
+D, [2025-06-28T19:39:13.741279 #28380] DEBUG -- : Could not fetch references for children: Fragment on Pet can't be spread inside PersonChildrenObj
+D, [2025-06-28T19:39:13.742034 #28380] DEBUG -- : Could not fetch references for parents: Fragment on Pet can't be spread inside PersonParentsObj
+D, [2025-06-28T19:39:13.742525 #28380] DEBUG -- : Could not fetch references for pets: Fragment on Person can't be spread inside PersonPetsObj
+D, [2025-06-28T19:39:13.743023 #28380] DEBUG -- : Could not fetch references for home: Fragment on Person can't be spread inside PersonHomeObj
+D, [2025-06-28T19:39:13.743529 #28380] DEBUG -- : Could not fetch references for projects: Fragment on Person can't be spread inside PersonProjectsObj
+
+  [1;32m● Heinrich Soze[0m (7ac9b394...)
+D, [2025-06-28T19:39:13.744066 #28380] DEBUG -- : Could not fetch references for spouse: Fragment on Pet can't be spread inside PersonSpouseObj
+D, [2025-06-28T19:39:13.744572 #28380] DEBUG -- : Could not fetch references for children: Fragment on Pet can't be spread inside PersonChildrenObj
+D, [2025-06-28T19:39:13.745081 #28380] DEBUG -- : Could not fetch references for parents: Fragment on Pet can't be spread inside PersonParentsObj
+D, [2025-06-28T19:39:13.745567 #28380] DEBUG -- : Could not fetch references for pets: Fragment on Person can't be spread inside PersonPetsObj
+D, [2025-06-28T19:39:13.746061 #28380] DEBUG -- : Could not fetch references for home: Fragment on Person can't be spread inside PersonHomeObj
+D, [2025-06-28T19:39:13.746542 #28380] DEBUG -- : Could not fetch references for projects: Fragment on Person can't be spread inside PersonProjectsObj
+
+  [1;32m● Kaiser Soze[0m (a59a0b1d...)
+    birthDate: 1965-11-01
+    description: Legendary strategist and polymath. Enjoys mountaineering, ...
+    occupation: Entrepreneur, AI Enthusiast
+D, [2025-06-28T19:39:13.750919 #28380] DEBUG -- : Could not fetch references for spouse: Fragment on Pet can't be spread inside PersonSpouseObj
+D, [2025-06-28T19:39:13.751702 #28380] DEBUG -- : Could not fetch references for children: Fragment on Pet can't be spread inside PersonChildrenObj
+D, [2025-06-28T19:39:13.752626 #28380] DEBUG -- : Could not fetch references for parents: Fragment on Pet can't be spread inside PersonParentsObj
+D, [2025-06-28T19:39:13.753228 #28380] DEBUG -- : Could not fetch references for pets: Fragment on Person can't be spread inside PersonPetsObj
+D, [2025-06-28T19:39:13.753964 #28380] DEBUG -- : Could not fetch references for home: Fragment on Person can't be spread inside PersonHomeObj
+D, [2025-06-28T19:39:13.754491 #28380] DEBUG -- : Could not fetch references for projects: Fragment on Person can't be spread inside PersonProjectsObj
+
+  [1;32m● Greta Soze[0m (b33f080d...)
+D, [2025-06-28T19:39:13.755336 #28380] DEBUG -- : Could not fetch references for spouse: Fragment on Pet can't be spread inside PersonSpouseObj
+D, [2025-06-28T19:39:13.755866 #28380] DEBUG -- : Could not fetch references for children: Fragment on Pet can't be spread inside PersonChildrenObj
+D, [2025-06-28T19:39:13.756385 #28380] DEBUG -- : Could not fetch references for parents: Fragment on Pet can't be spread inside PersonParentsObj
+D, [2025-06-28T19:39:13.757259 #28380] DEBUG -- : Could not fetch references for pets: Fragment on Person can't be spread inside PersonPetsObj
+D, [2025-06-28T19:39:13.757775 #28380] DEBUG -- : Could not fetch references for home: Fragment on Person can't be spread inside PersonHomeObj
+D, [2025-06-28T19:39:13.758630 #28380] DEBUG -- : Could not fetch references for projects: Fragment on Person can't be spread inside PersonProjectsObj
+
+  [1;32m● Sarah Soze[0m (b7b435c3...)
+D, [2025-06-28T19:39:13.759128 #28380] DEBUG -- : Could not fetch references for spouse: Fragment on Pet can't be spread inside PersonSpouseObj
+D, [2025-06-28T19:39:13.759948 #28380] DEBUG -- : Could not fetch references for children: Fragment on Pet can't be spread inside PersonChildrenObj
+D, [2025-06-28T19:39:13.760436 #28380] DEBUG -- : Could not fetch references for parents: Fragment on Pet can't be spread inside PersonParentsObj
+D, [2025-06-28T19:39:13.761365 #28380] DEBUG -- : Could not fetch references for pets: Fragment on Person can't be spread inside PersonPetsObj
+D, [2025-06-28T19:39:13.761938 #28380] DEBUG -- : Could not fetch references for home: Fragment on Person can't be spread inside PersonHomeObj
+D, [2025-06-28T19:39:13.762868 #28380] DEBUG -- : Could not fetch references for projects: Fragment on Person can't be spread inside PersonProjectsObj
+
+  [1;32m● Heinrich Soze[0m (bb0a0b21...)
+D, [2025-06-28T19:39:13.763367 #28380] DEBUG -- : Could not fetch references for spouse: Fragment on Pet can't be spread inside PersonSpouseObj
+D, [2025-06-28T19:39:13.763874 #28380] DEBUG -- : Could not fetch references for children: Fragment on Pet can't be spread inside PersonChildrenObj
+D, [2025-06-28T19:39:13.764769 #28380] DEBUG -- : Could not fetch references for parents: Fragment on Pet can't be spread inside PersonParentsObj
+D, [2025-06-28T19:39:13.765256 #28380] DEBUG -- : Could not fetch references for pets: Fragment on Person can't be spread inside PersonPetsObj
+D, [2025-06-28T19:39:13.765738 #28380] DEBUG -- : Could not fetch references for home: Fragment on Person can't be spread inside PersonHomeObj
+D, [2025-06-28T19:39:13.766655 #28380] DEBUG -- : Could not fetch references for projects: Fragment on Person can't be spread inside PersonProjectsObj
+
+  [1;32m● Greta Soze[0m (c4a5290a...)
+D, [2025-06-28T19:39:13.767136 #28380] DEBUG -- : Could not fetch references for spouse: Fragment on Pet can't be spread inside PersonSpouseObj
+D, [2025-06-28T19:39:13.768060 #28380] DEBUG -- : Could not fetch references for children: Fragment on Pet can't be spread inside PersonChildrenObj
+D, [2025-06-28T19:39:13.768582 #28380] DEBUG -- : Could not fetch references for parents: Fragment on Pet can't be spread inside PersonParentsObj
+D, [2025-06-28T19:39:13.769133 #28380] DEBUG -- : Could not fetch references for pets: Fragment on Person can't be spread inside PersonPetsObj
+D, [2025-06-28T19:39:13.769771 #28380] DEBUG -- : Could not fetch references for home: Fragment on Person can't be spread inside PersonHomeObj
+D, [2025-06-28T19:39:13.770271 #28380] DEBUG -- : Could not fetch references for projects: Fragment on Person can't be spread inside PersonProjectsObj
+
+  [1;32m● Kaiser Soze[0m (cee1088a...)
+    birthDate: 1965-11-01
+    children: [{"beacon" => "weaviate://localhost/Person/ec35e9b6-860a-4...
+    description: Legendary strategist and polymath. Enjoys mountaineering, ...
+    home: [{"beacon" => "weaviate://localhost/Place/68565784-a9a5-43...
+    occupation: Entrepreneur, AI Enthusiast
+    parents: [{"beacon" => "weaviate://localhost/Person/e8e5536a-5201-4...
+    pets: [{"beacon" => "weaviate://localhost/Pet/2a1c6545-0e8d-435c...
+    projects: [{"beacon" => "weaviate://localhost/Project/63724ecf-679d-...
+    spouse: [{"beacon" => "weaviate://localhost/Person/2b8ecabb-3f27-4...
+D, [2025-06-28T19:39:13.770910 #28380] DEBUG -- : Could not fetch references for spouse: Fragment on Pet can't be spread inside PersonSpouseObj
+D, [2025-06-28T19:39:13.771426 #28380] DEBUG -- : Could not fetch references for children: Fragment on Pet can't be spread inside PersonChildrenObj
+D, [2025-06-28T19:39:13.771931 #28380] DEBUG -- : Could not fetch references for parents: Fragment on Pet can't be spread inside PersonParentsObj
+D, [2025-06-28T19:39:13.772509 #28380] DEBUG -- : Could not fetch references for pets: Fragment on Person can't be spread inside PersonPetsObj
+D, [2025-06-28T19:39:13.773017 #28380] DEBUG -- : Could not fetch references for home: Fragment on Person can't be spread inside PersonHomeObj
+D, [2025-06-28T19:39:13.773523 #28380] DEBUG -- : Could not fetch references for projects: Fragment on Person can't be spread inside PersonProjectsObj
+
+  [1;32m● Nancy Soze[0m (d6510c1a...)
+D, [2025-06-28T19:39:13.774078 #28380] DEBUG -- : Could not fetch references for spouse: Fragment on Pet can't be spread inside PersonSpouseObj
+D, [2025-06-28T19:39:13.774559 #28380] DEBUG -- : Could not fetch references for children: Fragment on Pet can't be spread inside PersonChildrenObj
+D, [2025-06-28T19:39:13.775056 #28380] DEBUG -- : Could not fetch references for parents: Fragment on Pet can't be spread inside PersonParentsObj
+D, [2025-06-28T19:39:13.775591 #28380] DEBUG -- : Could not fetch references for pets: Fragment on Person can't be spread inside PersonPetsObj
+D, [2025-06-28T19:39:13.776093 #28380] DEBUG -- : Could not fetch references for home: Fragment on Person can't be spread inside PersonHomeObj
+D, [2025-06-28T19:39:13.776580 #28380] DEBUG -- : Could not fetch references for projects: Fragment on Person can't be spread inside PersonProjectsObj
+
+  [1;32m● John Soze[0m (db80db58...)
+D, [2025-06-28T19:39:13.777207 #28380] DEBUG -- : Could not fetch references for spouse: Fragment on Pet can't be spread inside PersonSpouseObj
+D, [2025-06-28T19:39:13.777840 #28380] DEBUG -- : Could not fetch references for children: Fragment on Pet can't be spread inside PersonChildrenObj
+D, [2025-06-28T19:39:13.778458 #28380] DEBUG -- : Could not fetch references for parents: Fragment on Pet can't be spread inside PersonParentsObj
+D, [2025-06-28T19:39:13.779022 #28380] DEBUG -- : Could not fetch references for pets: Fragment on Person can't be spread inside PersonPetsObj
+D, [2025-06-28T19:39:13.779543 #28380] DEBUG -- : Could not fetch references for home: Fragment on Person can't be spread inside PersonHomeObj
+D, [2025-06-28T19:39:13.780072 #28380] DEBUG -- : Could not fetch references for projects: Fragment on Person can't be spread inside PersonProjectsObj
+
+  [1;32m● Nancy Soze[0m (e42ced48...)
+D, [2025-06-28T19:39:13.780634 #28380] DEBUG -- : Could not fetch references for spouse: Fragment on Pet can't be spread inside PersonSpouseObj
+D, [2025-06-28T19:39:13.781147 #28380] DEBUG -- : Could not fetch references for children: Fragment on Pet can't be spread inside PersonChildrenObj
+D, [2025-06-28T19:39:13.781656 #28380] DEBUG -- : Could not fetch references for parents: Fragment on Pet can't be spread inside PersonParentsObj
+D, [2025-06-28T19:39:13.782192 #28380] DEBUG -- : Could not fetch references for pets: Fragment on Person can't be spread inside PersonPetsObj
+D, [2025-06-28T19:39:13.782691 #28380] DEBUG -- : Could not fetch references for home: Fragment on Person can't be spread inside PersonHomeObj
+D, [2025-06-28T19:39:13.783169 #28380] DEBUG -- : Could not fetch references for projects: Fragment on Person can't be spread inside PersonProjectsObj
+
+  [1;32m● Heinrich Soze[0m (e8e5536a...)
+D, [2025-06-28T19:39:13.783680 #28380] DEBUG -- : Could not fetch references for spouse: Fragment on Pet can't be spread inside PersonSpouseObj
+D, [2025-06-28T19:39:13.784154 #28380] DEBUG -- : Could not fetch references for children: Fragment on Pet can't be spread inside PersonChildrenObj
+D, [2025-06-28T19:39:13.784676 #28380] DEBUG -- : Could not fetch references for parents: Fragment on Pet can't be spread inside PersonParentsObj
+D, [2025-06-28T19:39:13.786446 #28380] DEBUG -- : Could not fetch references for pets: Fragment on Person can't be spread inside PersonPetsObj
+D, [2025-06-28T19:39:13.786956 #28380] DEBUG -- : Could not fetch references for home: Fragment on Person can't be spread inside PersonHomeObj
+D, [2025-06-28T19:39:13.787459 #28380] DEBUG -- : Could not fetch references for projects: Fragment on Person can't be spread inside PersonProjectsObj
+
+  [1;32m● Sarah Soze[0m (ec35e9b6...)
+D, [2025-06-28T19:39:13.787941 #28380] DEBUG -- : Could not fetch references for spouse: Fragment on Pet can't be spread inside PersonSpouseObj
+D, [2025-06-28T19:39:13.788420 #28380] DEBUG -- : Could not fetch references for children: Fragment on Pet can't be spread inside PersonChildrenObj
+D, [2025-06-28T19:39:13.788894 #28380] DEBUG -- : Could not fetch references for parents: Fragment on Pet can't be spread inside PersonParentsObj
+D, [2025-06-28T19:39:13.789395 #28380] DEBUG -- : Could not fetch references for pets: Fragment on Person can't be spread inside PersonPetsObj
+D, [2025-06-28T19:39:13.789866 #28380] DEBUG -- : Could not fetch references for home: Fragment on Person can't be spread inside PersonHomeObj
+D, [2025-06-28T19:39:13.790365 #28380] DEBUG -- : Could not fetch references for projects: Fragment on Person can't be spread inside PersonProjectsObj
+
+  [1;32m● Heinrich Soze[0m (f27c738f...)
+D, [2025-06-28T19:39:13.790845 #28380] DEBUG -- : Could not fetch references for spouse: Fragment on Pet can't be spread inside PersonSpouseObj
+D, [2025-06-28T19:39:13.791350 #28380] DEBUG -- : Could not fetch references for children: Fragment on Pet can't be spread inside PersonChildrenObj
+D, [2025-06-28T19:39:13.791878 #28380] DEBUG -- : Could not fetch references for parents: Fragment on Pet can't be spread inside PersonParentsObj
+D, [2025-06-28T19:39:13.792432 #28380] DEBUG -- : Could not fetch references for pets: Fragment on Person can't be spread inside PersonPetsObj
+D, [2025-06-28T19:39:13.792923 #28380] DEBUG -- : Could not fetch references for home: Fragment on Person can't be spread inside PersonHomeObj
+D, [2025-06-28T19:39:13.793466 #28380] DEBUG -- : Could not fetch references for projects: Fragment on Person can't be spread inside PersonProjectsObj
+
+  [1;32m● Kaiser Soze[0m (f4b3e3a8...)
+    birthDate: 1965-11-01
+    children: [{"beacon" => "weaviate://localhost/Person/223693db-5992-4...
+    description: Legendary strategist and polymath. Enjoys mountaineering, ...
+    home: [{"beacon" => "weaviate://localhost/Place/b80811c7-4fe2-4e...
+    occupation: Entrepreneur, AI Enthusiast
+    parents: [{"beacon" => "weaviate://localhost/Person/bb0a0b21-0017-4...
+    pets: [{"beacon" => "weaviate://localhost/Pet/6d0e5b2c-1c62-44d8...
+    projects: [{"beacon" => "weaviate://localhost/Project/cb8fa3ff-a93e-...
+    spouse: [{"beacon" => "weaviate://localhost/Person/d6510c1a-9a7b-4...
+D, [2025-06-28T19:39:13.794022 #28380] DEBUG -- : Could not fetch references for spouse: Fragment on Pet can't be spread inside PersonSpouseObj
+D, [2025-06-28T19:39:13.794542 #28380] DEBUG -- : Could not fetch references for children: Fragment on Pet can't be spread inside PersonChildrenObj
+D, [2025-06-28T19:39:13.795035 #28380] DEBUG -- : Could not fetch references for parents: Fragment on Pet can't be spread inside PersonParentsObj
+D, [2025-06-28T19:39:13.795511 #28380] DEBUG -- : Could not fetch references for pets: Fragment on Person can't be spread inside PersonPetsObj
+D, [2025-06-28T19:39:13.796012 #28380] DEBUG -- : Could not fetch references for home: Fragment on Person can't be spread inside PersonHomeObj
+D, [2025-06-28T19:39:13.796484 #28380] DEBUG -- : Could not fetch references for projects: Fragment on Person can't be spread inside PersonProjectsObj
+
+  [1;32m● John Soze[0m (f936af21...)
+D, [2025-06-28T19:39:13.797002 #28380] DEBUG -- : Could not fetch references for spouse: Fragment on Pet can't be spread inside PersonSpouseObj
+D, [2025-06-28T19:39:13.797498 #28380] DEBUG -- : Could not fetch references for children: Fragment on Pet can't be spread inside PersonChildrenObj
+D, [2025-06-28T19:39:13.797993 #28380] DEBUG -- : Could not fetch references for parents: Fragment on Pet can't be spread inside PersonParentsObj
+D, [2025-06-28T19:39:13.798471 #28380] DEBUG -- : Could not fetch references for pets: Fragment on Person can't be spread inside PersonPetsObj
+D, [2025-06-28T19:39:13.798978 #28380] DEBUG -- : Could not fetch references for home: Fragment on Person can't be spread inside PersonHomeObj
+D, [2025-06-28T19:39:13.799455 #28380] DEBUG -- : Could not fetch references for projects: Fragment on Person can't be spread inside PersonProjectsObj
+
+I, [2025-06-28T19:39:13.799556 #28380]  INFO -- : request: GET http://localhost:8080/v1/objects?class=Pet
+I, [2025-06-28T19:39:13.799564 #28380]  INFO -- : request: User-Agent: "Faraday v2.13.1"
+I, [2025-06-28T19:39:13.803308 #28380]  INFO -- : response: Status 200
+I, [2025-06-28T19:39:13.803321 #28380]  INFO -- : response: access-control-allow-headers: "Content-Type, Authorization, Batch, X-Openai-Api-Key, X-Openai-Organization, X-Openai-Baseurl, X-Anyscale-Baseurl, X-Anyscale-Api-Key, X-Cohere-Api-Key, X-Cohere-Baseurl, X-Huggingface-Api-Key, X-Azure-Api-Key, X-Azure-Deployment-Id, X-Azure-Resource-Name, X-Azure-Concurrency, X-Azure-Block-Size, X-Google-Api-Key, X-Google-Vertex-Api-Key, X-Google-Studio-Api-Key, X-Goog-Api-Key, X-Goog-Vertex-Api-Key, X-Goog-Studio-Api-Key, X-Palm-Api-Key, X-Jinaai-Api-Key, X-Aws-Access-Key, X-Aws-Secret-Key, X-Voyageai-Baseurl, X-Voyageai-Api-Key, X-Mistral-Baseurl, X-Mistral-Api-Key, X-Anthropic-Baseurl, X-Anthropic-Api-Key, X-Databricks-Endpoint, X-Databricks-Token, X-Databricks-User-Agent, X-Friendli-Token, X-Friendli-Baseurl, X-Weaviate-Api-Key, X-Weaviate-Cluster-Url, X-Nvidia-Api-Key, X-Nvidia-Baseurl"
+access-control-allow-methods: "*"
+access-control-allow-origin: "*"
+content-type: "application/json"
+vary: "Origin"
+date: "Sun, 29 Jun 2025 01:39:13 GMT"
+content-length: "1222"
+I, [2025-06-28T19:39:13.803695 #28380]  INFO -- : response: {"deprecations" => [],
+ "objects" =>
+  [{"class" => "Pet",
+    "creationTimeUnix" => 1751161151556,
+    "id" => "2a1c6545-0e8d-435c-81ee-3606926b1c38",
+    "lastUpdateTimeUnix" => 1751161151556,
+    "properties" => {"name" => "Max", "species" => "Dog"},
+    "vectorWeights" => nil},
+   {"class" => "Pet",
+    "creationTimeUnix" => 1751160958389,
+    "id" => "6d0e5b2c-1c62-44d8-b6d0-4c4f6d181465",
+    "lastUpdateTimeUnix" => 1751160958389,
+    "properties" => {"name" => "Max", "species" => "Dog"},
+    "vectorWeights" => nil},
+   {"class" => "Pet",
+    "creationTimeUnix" => 1751161152086,
+    "id" => "762d0ec0-51c7-4c5b-8dfc-626215253213",
+    "lastUpdateTimeUnix" => 1751161152086,
+    "properties" => {"name" => "Whiskers", "species" => "Cat"},
+    "vectorWeights" => nil},
+   {"class" => "Pet",
+    "creationTimeUnix" => 1751159807395,
+    "id" => "96faed41-9715-4cbd-96d4-271cbf7f9286",
+    "lastUpdateTimeUnix" => 1751159807395,
+    "properties" => {"name" => "Whiskers", "species" => "Cat"},
+    "vectorWeights" => nil},
+   {"class" => "Pet",
+    "creationTimeUnix" => 1751160958575,
+    "id" => "b095aaa1-0c24-49a8-b736-1e46924e8d2b",
+    "lastUpdateTimeUnix" => 1751160958575,
+    "properties" => {"name" => "Whiskers", "species" => "Cat"},
+    "vectorWeights" => nil},
+   {"class" => "Pet",
+    "creationTimeUnix" => 1751159807151,
+    "id" => "b2bfb57a-2050-43d2-917e-18e848aa2e5b",
+    "lastUpdateTimeUnix" => 1751159807151,
+    "properties" => {"name" => "Max", "species" => "Dog"},
+    "vectorWeights" => nil}],
+ "totalResults" => 6}
+
+
+📁 [1;34mPET[0m (6 objects)
+────────────────────────────────────────────────────────────
+  [1;33m● Max[0m (2a1c6545...)
+    species: Dog
+D, [2025-06-28T19:39:13.804160 #28380] DEBUG -- : Could not fetch references for owner: Field 'owner' doesn't exist on type 'Pet'
+
+  [1;33m● Max[0m (6d0e5b2c...)
+    species: Dog
+D, [2025-06-28T19:39:13.804523 #28380] DEBUG -- : Could not fetch references for owner: Field 'owner' doesn't exist on type 'Pet'
+
+  [1;33m● Whiskers[0m (762d0ec0...)
+    species: Cat
+D, [2025-06-28T19:39:13.804888 #28380] DEBUG -- : Could not fetch references for owner: Field 'owner' doesn't exist on type 'Pet'
+
+  [1;33m● Whiskers[0m (96faed41...)
+    species: Cat
+D, [2025-06-28T19:39:13.808791 #28380] DEBUG -- : Could not fetch references for owner: Field 'owner' doesn't exist on type 'Pet'
+
+  [1;33m● Whiskers[0m (b095aaa1...)
+    species: Cat
+D, [2025-06-28T19:39:13.809159 #28380] DEBUG -- : Could not fetch references for owner: Field 'owner' doesn't exist on type 'Pet'
+
+  [1;33m● Max[0m (b2bfb57a...)
+    species: Dog
+D, [2025-06-28T19:39:13.809985 #28380] DEBUG -- : Could not fetch references for owner: Field 'owner' doesn't exist on type 'Pet'
+
+I, [2025-06-28T19:39:13.810052 #28380]  INFO -- : request: GET http://localhost:8080/v1/objects?class=Place
+I, [2025-06-28T19:39:13.810058 #28380]  INFO -- : request: User-Agent: "Faraday v2.13.1"
+I, [2025-06-28T19:39:13.812676 #28380]  INFO -- : response: Status 200
+I, [2025-06-28T19:39:13.812687 #28380]  INFO -- : response: access-control-allow-headers: "Content-Type, Authorization, Batch, X-Openai-Api-Key, X-Openai-Organization, X-Openai-Baseurl, X-Anyscale-Baseurl, X-Anyscale-Api-Key, X-Cohere-Api-Key, X-Cohere-Baseurl, X-Huggingface-Api-Key, X-Azure-Api-Key, X-Azure-Deployment-Id, X-Azure-Resource-Name, X-Azure-Concurrency, X-Azure-Block-Size, X-Google-Api-Key, X-Google-Vertex-Api-Key, X-Google-Studio-Api-Key, X-Goog-Api-Key, X-Goog-Vertex-Api-Key, X-Goog-Studio-Api-Key, X-Palm-Api-Key, X-Jinaai-Api-Key, X-Aws-Access-Key, X-Aws-Secret-Key, X-Voyageai-Baseurl, X-Voyageai-Api-Key, X-Mistral-Baseurl, X-Mistral-Api-Key, X-Anthropic-Baseurl, X-Anthropic-Api-Key, X-Databricks-Endpoint, X-Databricks-Token, X-Databricks-User-Agent, X-Friendli-Token, X-Friendli-Baseurl, X-Weaviate-Api-Key, X-Weaviate-Cluster-Url, X-Nvidia-Api-Key, X-Nvidia-Baseurl"
+access-control-allow-methods: "*"
+access-control-allow-origin: "*"
+content-type: "application/json"
+vary: "Origin"
+date: "Sun, 29 Jun 2025 01:39:13 GMT"
+content-length: "952"
+I, [2025-06-28T19:39:13.812917 #28380]  INFO -- : response: {"deprecations" => [],
+ "objects" =>
+  [{"class" => "Place",
+    "creationTimeUnix" => 1751161152264,
+    "id" => "68565784-a9a5-435c-a22a-465036f539e5",
+    "lastUpdateTimeUnix" => 1751161152264,
+    "properties" =>
+     {"description" =>
+       "Custom log cabin at 10,200ft elevation, Leadville, CO.",
+      "elevation" => 10200,
+      "name" => "Soze Family Cabin",
+      "type" => "Log Cabin"},
+    "vectorWeights" => nil},
+   {"class" => "Place",
+    "creationTimeUnix" => 1751159814881,
+    "id" => "6aa1270d-665f-40e5-8328-6637590b7c3c",
+    "lastUpdateTimeUnix" => 1751159814881,
+    "properties" =>
+     {"description" =>
+       "Custom log cabin at 10,200ft elevation, Leadville, CO.",
+      "elevation" => 10200,
+      "name" => "Soze Family Cabin",
+      "type" => "Log Cabin"},
+    "vectorWeights" => nil},
+   {"class" => "Place",
+    "creationTimeUnix" => 1751160958792,
+    "id" => "b80811c7-4fe2-4ed4-8ae3-af8a85ec524a",
+    "lastUpdateTimeUnix" => 1751160958792,
+    "properties" =>
+     {"description" =>
+       "Custom log cabin at 10,200ft elevation, Leadville, CO.",
+      "elevation" => 10200,
+      "name" => "Soze Family Cabin",
+      "type" => "Log Cabin"},
+    "vectorWeights" => nil}],
+ "totalResults" => 3}
+
+
+📁 [1;34mPLACE[0m (3 objects)
+────────────────────────────────────────────────────────────
+  [1;35m● Soze Family Cabin[0m (68565784...)
+    description: Custom log cabin at 10,200ft elevation, Leadville, CO.
+    elevation: 10200
+    type: Log Cabin
+D, [2025-06-28T19:39:13.813378 #28380] DEBUG -- : Could not fetch references for residents: Field 'residents' doesn't exist on type 'Place'
+
+  [1;35m● Soze Family Cabin[0m (6aa1270d...)
+    description: Custom log cabin at 10,200ft elevation, Leadville, CO.
+    elevation: 10200
+    type: Log Cabin
+D, [2025-06-28T19:39:13.814270 #28380] DEBUG -- : Could not fetch references for residents: Field 'residents' doesn't exist on type 'Place'
+
+  [1;35m● Soze Family Cabin[0m (b80811c7...)
+    description: Custom log cabin at 10,200ft elevation, Leadville, CO.
+    elevation: 10200
+    type: Log Cabin
+D, [2025-06-28T19:39:13.814617 #28380] DEBUG -- : Could not fetch references for residents: Field 'residents' doesn't exist on type 'Place'
+
+I, [2025-06-28T19:39:13.814671 #28380]  INFO -- : request: GET http://localhost:8080/v1/objects?class=Project
+I, [2025-06-28T19:39:13.814675 #28380]  INFO -- : request: User-Agent: "Faraday v2.13.1"
+I, [2025-06-28T19:39:13.817652 #28380]  INFO -- : response: Status 200
+I, [2025-06-28T19:39:13.817665 #28380]  INFO -- : response: access-control-allow-headers: "Content-Type, Authorization, Batch, X-Openai-Api-Key, X-Openai-Organization, X-Openai-Baseurl, X-Anyscale-Baseurl, X-Anyscale-Api-Key, X-Cohere-Api-Key, X-Cohere-Baseurl, X-Huggingface-Api-Key, X-Azure-Api-Key, X-Azure-Deployment-Id, X-Azure-Resource-Name, X-Azure-Concurrency, X-Azure-Block-Size, X-Google-Api-Key, X-Google-Vertex-Api-Key, X-Google-Studio-Api-Key, X-Goog-Api-Key, X-Goog-Vertex-Api-Key, X-Goog-Studio-Api-Key, X-Palm-Api-Key, X-Jinaai-Api-Key, X-Aws-Access-Key, X-Aws-Secret-Key, X-Voyageai-Baseurl, X-Voyageai-Api-Key, X-Mistral-Baseurl, X-Mistral-Api-Key, X-Anthropic-Baseurl, X-Anthropic-Api-Key, X-Databricks-Endpoint, X-Databricks-Token, X-Databricks-User-Agent, X-Friendli-Token, X-Friendli-Baseurl, X-Weaviate-Api-Key, X-Weaviate-Cluster-Url, X-Nvidia-Api-Key, X-Nvidia-Baseurl"
+access-control-allow-methods: "*"
+access-control-allow-origin: "*"
+content-type: "application/json"
+vary: "Origin"
+date: "Sun, 29 Jun 2025 01:39:13 GMT"
+transfer-encoding: "chunked"
+I, [2025-06-28T19:39:13.818880 #28380]  INFO -- : response: {"deprecations" => [],
+ "objects" =>
+  [{"class" => "Project",
+    "creationTimeUnix" => 1751159815133,
+    "id" => "0237cc86-74c4-4bd8-a8a8-fd147f689b44",
+    "lastUpdateTimeUnix" => 1751159815133,
+    "properties" =>
+     {"description" =>
+       "Digitizing and connecting Leadville's rich historical records.",
+      "name" => "Leadville Historical Database"},
+    "vectorWeights" => nil},
+   {"class" => "Project",
+    "creationTimeUnix" => 1751161153283,
+    "id" => "1be105cb-557e-4fde-914a-eda32b76dca1",
+    "lastUpdateTimeUnix" => 1751161153283,
+    "properties" =>
+     {"description" => "Solar, insulation, and eco-friendly improvements.",
+      "name" => "Sustainable Cabin Upgrades"},
+    "vectorWeights" => nil},
+   {"class" => "Project",
+    "creationTimeUnix" => 1751159815368,
+    "id" => "47d8fed7-cced-4872-9090-81380c055349",
+    "lastUpdateTimeUnix" => 1751159815368,
+    "properties" =>
+     {"description" => "IoT and AI-powered wildlife tracking for the Rockies.",
+      "name" => "Wildlife Monitoring System"},
+    "vectorWeights" => nil},
+   {"class" => "Project",
+    "creationTimeUnix" => 1751159816665,
+    "id" => "535faef3-18ab-45ec-ac7e-b22ec0e3e374",
+    "lastUpdateTimeUnix" => 1751159816665,
+    "properties" =>
+     {"description" => "Solar, insulation, and eco-friendly improvements.",
+      "name" => "Sustainable Cabin Upgrades"},
+    "vectorWeights" => nil},
+   {"class" => "Project",
+    "creationTimeUnix" => 1751161152544,
+    "id" => "63724ecf-679d-49af-882c-2ea4587bb173",
+    "lastUpdateTimeUnix" => 1751161152544,
+    "properties" =>
+     {"description" =>
+       "Digitizing and connecting Leadville's rich historical records.",
+      "name" => "Leadville Historical Database"},
+    "vectorWeights" => nil},
+   {"class" => "Project",
+    "creationTimeUnix" => 1751159816422,
+    "id" => "72f7973c-3f10-4077-8860-b01a4e19c430",
+    "lastUpdateTimeUnix" => 1751159816422,
+    "properties" =>
+     {"description" => "Personal knowledge graph and AI assistant.",
+      "name" => "Personal AI Assistant \"Summit\""},
+    "vectorWeights" => nil},
+   {"class" => "Project",
+    "creationTimeUnix" => 1751160961369,
+    "id" => "926ea229-f56b-44ce-8542-c9d03e9aa7cf",
+    "lastUpdateTimeUnix" => 1751160961369,
+    "properties" =>
+     {"description" => "Solar, insulation, and eco-friendly improvements.",
+      "name" => "Sustainable Cabin Upgrades"},
+    "vectorWeights" => nil},
+   {"class" => "Project",
+    "creationTimeUnix" => 1751160961186,
+    "id" => "a976ad47-e5f8-4a42-b6d3-eada46b8ef15",
+    "lastUpdateTimeUnix" => 1751160961186,
+    "properties" =>
+     {"description" => "Personal knowledge graph and AI assistant.",
+      "name" => "Personal AI Assistant \"Summit\""},
+    "vectorWeights" => nil},
+   {"class" => "Project",
+    "creationTimeUnix" => 1751160960169,
+    "id" => "cb8fa3ff-a93e-4027-9dfd-671f2fafc342",
+    "lastUpdateTimeUnix" => 1751160960169,
+    "properties" =>
+     {"description" =>
+       "Digitizing and connecting Leadville's rich historical records.",
+      "name" => "Leadville Historical Database"},
+    "vectorWeights" => nil},
+   {"class" => "Project",
+    "creationTimeUnix" => 1751160961010,
+    "id" => "d0335ae9-e273-4f84-be45-4e55c2bd0f10",
+    "lastUpdateTimeUnix" => 1751160961010,
+    "properties" =>
+     {"description" => "IoT and AI-powered wildlife tracking for the Rockies.",
+      "name" => "Wildlife Monitoring System"},
+    "vectorWeights" => nil},
+   {"class" => "Project",
+    "creationTimeUnix" => 1751161153086,
+    "id" => "eb1dace3-89e7-411f-8c19-10965f743b16",
+    "lastUpdateTimeUnix" => 1751161153086,
+    "properties" =>
+     {"description" => "Personal knowledge graph and AI assistant.",
+      "name" => "Personal AI Assistant \"Summit\""},
+    "vectorWeights" => nil},
+   {"class" => "Project",
+    "creationTimeUnix" => 1751161152789,
+    "id" => "f19ed8a6-54df-414e-a98a-5161d642ba2a",
+    "lastUpdateTimeUnix" => 1751161152789,
+    "properties" =>
+     {"description" => "IoT and AI-powered wildlife tracking for the Rockies.",
+      "name" => "Wildlife Monitoring System"},
+    "vectorWeights" => nil}],
+ "totalResults" => 12}
+
+
+📁 [1;34mPROJECT[0m (12 objects)
+────────────────────────────────────────────────────────────
+  [1;36m● Leadville Historical Database[0m (0237cc86...)
+    description: Digitizing and connecting Leadville's rich historical reco...
+D, [2025-06-28T19:39:13.819832 #28380] DEBUG -- : Could not fetch references for owner: Field 'owner' doesn't exist on type 'Project'
+
+  [1;36m● Sustainable Cabin Upgrades[0m (1be105cb...)
+    description: Solar, insulation, and eco-friendly improvements.
+D, [2025-06-28T19:39:13.820210 #28380] DEBUG -- : Could not fetch references for owner: Field 'owner' doesn't exist on type 'Project'
+
+  [1;36m● Wildlife Monitoring System[0m (47d8fed7...)
+    description: IoT and AI-powered wildlife tracking for the Rockies.
+D, [2025-06-28T19:39:13.820569 #28380] DEBUG -- : Could not fetch references for owner: Field 'owner' doesn't exist on type 'Project'
+
+  [1;36m● Sustainable Cabin Upgrades[0m (535faef3...)
+    description: Solar, insulation, and eco-friendly improvements.
+D, [2025-06-28T19:39:13.820930 #28380] DEBUG -- : Could not fetch references for owner: Field 'owner' doesn't exist on type 'Project'
+
+  [1;36m● Leadville Historical Database[0m (63724ecf...)
+    description: Digitizing and connecting Leadville's rich historical reco...
+D, [2025-06-28T19:39:13.821762 #28380] DEBUG -- : Could not fetch references for owner: Field 'owner' doesn't exist on type 'Project'
+
+  [1;36m● Personal AI Assistant "Summit"[0m (72f7973c...)
+    description: Personal knowledge graph and AI assistant.
+D, [2025-06-28T19:39:13.822101 #28380] DEBUG -- : Could not fetch references for owner: Field 'owner' doesn't exist on type 'Project'
+
+  [1;36m● Sustainable Cabin Upgrades[0m (926ea229...)
+    description: Solar, insulation, and eco-friendly improvements.
+D, [2025-06-28T19:39:13.822438 #28380] DEBUG -- : Could not fetch references for owner: Field 'owner' doesn't exist on type 'Project'
+
+  [1;36m● Personal AI Assistant "Summit"[0m (a976ad47...)
+    description: Personal knowledge graph and AI assistant.
+D, [2025-06-28T19:39:13.823228 #28380] DEBUG -- : Could not fetch references for owner: Field 'owner' doesn't exist on type 'Project'
+
+  [1;36m● Leadville Historical Database[0m (cb8fa3ff...)
+    description: Digitizing and connecting Leadville's rich historical reco...
+D, [2025-06-28T19:39:13.823566 #28380] DEBUG -- : Could not fetch references for owner: Field 'owner' doesn't exist on type 'Project'
+
+  [1;36m● Wildlife Monitoring System[0m (d0335ae9...)
+    description: IoT and AI-powered wildlife tracking for the Rockies.
+D, [2025-06-28T19:39:13.824334 #28380] DEBUG -- : Could not fetch references for owner: Field 'owner' doesn't exist on type 'Project'
+
+  [1;36m● Personal AI Assistant "Summit"[0m (eb1dace3...)
+    description: Personal knowledge graph and AI assistant.
+D, [2025-06-28T19:39:13.824664 #28380] DEBUG -- : Could not fetch references for owner: Field 'owner' doesn't exist on type 'Project'
+
+  [1;36m● Wildlife Monitoring System[0m (f19ed8a6...)
+    description: IoT and AI-powered wildlife tracking for the Rockies.
+D, [2025-06-28T19:39:13.824993 #28380] DEBUG -- : Could not fetch references for owner: Field 'owner' doesn't exist on type 'Project'
+
+I, [2025-06-28T19:39:13.825039 #28380]  INFO -- : request: GET http://localhost:8080/v1/objects?class=Document
+I, [2025-06-28T19:39:13.825044 #28380]  INFO -- : request: User-Agent: "Faraday v2.13.1"
+I, [2025-06-28T19:39:13.827352 #28380]  INFO -- : response: Status 200
+I, [2025-06-28T19:39:13.827369 #28380]  INFO -- : response: access-control-allow-headers: "Content-Type, Authorization, Batch, X-Openai-Api-Key, X-Openai-Organization, X-Openai-Baseurl, X-Anyscale-Baseurl, X-Anyscale-Api-Key, X-Cohere-Api-Key, X-Cohere-Baseurl, X-Huggingface-Api-Key, X-Azure-Api-Key, X-Azure-Deployment-Id, X-Azure-Resource-Name, X-Azure-Concurrency, X-Azure-Block-Size, X-Google-Api-Key, X-Google-Vertex-Api-Key, X-Google-Studio-Api-Key, X-Goog-Api-Key, X-Goog-Vertex-Api-Key, X-Goog-Studio-Api-Key, X-Palm-Api-Key, X-Jinaai-Api-Key, X-Aws-Access-Key, X-Aws-Secret-Key, X-Voyageai-Baseurl, X-Voyageai-Api-Key, X-Mistral-Baseurl, X-Mistral-Api-Key, X-Anthropic-Baseurl, X-Anthropic-Api-Key, X-Databricks-Endpoint, X-Databricks-Token, X-Databricks-User-Agent, X-Friendli-Token, X-Friendli-Baseurl, X-Weaviate-Api-Key, X-Weaviate-Cluster-Url, X-Nvidia-Api-Key, X-Nvidia-Baseurl"
+access-control-allow-methods: "*"
+access-control-allow-origin: "*"
+content-type: "application/json"
+vary: "Origin"
+date: "Sun, 29 Jun 2025 01:39:13 GMT"
+content-length: "33"
+I, [2025-06-28T19:39:13.827419 #28380]  INFO -- : response: {"deprecations" => [], "objects" => []}
+
+I, [2025-06-28T19:39:13.827451 #28380]  INFO -- : request: GET http://localhost:8080/v1/objects?class=List
+I, [2025-06-28T19:39:13.827455 #28380]  INFO -- : request: User-Agent: "Faraday v2.13.1"
+I, [2025-06-28T19:39:13.829031 #28380]  INFO -- : response: Status 200
+I, [2025-06-28T19:39:13.829041 #28380]  INFO -- : response: access-control-allow-headers: "Content-Type, Authorization, Batch, X-Openai-Api-Key, X-Openai-Organization, X-Openai-Baseurl, X-Anyscale-Baseurl, X-Anyscale-Api-Key, X-Cohere-Api-Key, X-Cohere-Baseurl, X-Huggingface-Api-Key, X-Azure-Api-Key, X-Azure-Deployment-Id, X-Azure-Resource-Name, X-Azure-Concurrency, X-Azure-Block-Size, X-Google-Api-Key, X-Google-Vertex-Api-Key, X-Google-Studio-Api-Key, X-Goog-Api-Key, X-Goog-Vertex-Api-Key, X-Goog-Studio-Api-Key, X-Palm-Api-Key, X-Jinaai-Api-Key, X-Aws-Access-Key, X-Aws-Secret-Key, X-Voyageai-Baseurl, X-Voyageai-Api-Key, X-Mistral-Baseurl, X-Mistral-Api-Key, X-Anthropic-Baseurl, X-Anthropic-Api-Key, X-Databricks-Endpoint, X-Databricks-Token, X-Databricks-User-Agent, X-Friendli-Token, X-Friendli-Baseurl, X-Weaviate-Api-Key, X-Weaviate-Cluster-Url, X-Nvidia-Api-Key, X-Nvidia-Baseurl"
+access-control-allow-methods: "*"
+access-control-allow-origin: "*"
+content-type: "application/json"
+vary: "Origin"
+date: "Sun, 29 Jun 2025 01:39:13 GMT"
+content-length: "33"
+I, [2025-06-28T19:39:13.829089 #28380]  INFO -- : response: {"deprecations" => [], "objects" => []}
+
+I, [2025-06-28T19:39:13.829116 #28380]  INFO -- : request: GET http://localhost:8080/v1/objects?class=ListItem
+I, [2025-06-28T19:39:13.829120 #28380]  INFO -- : request: User-Agent: "Faraday v2.13.1"
+I, [2025-06-28T19:39:13.830771 #28380]  INFO -- : response: Status 200
+I, [2025-06-28T19:39:13.830784 #28380]  INFO -- : response: access-control-allow-headers: "Content-Type, Authorization, Batch, X-Openai-Api-Key, X-Openai-Organization, X-Openai-Baseurl, X-Anyscale-Baseurl, X-Anyscale-Api-Key, X-Cohere-Api-Key, X-Cohere-Baseurl, X-Huggingface-Api-Key, X-Azure-Api-Key, X-Azure-Deployment-Id, X-Azure-Resource-Name, X-Azure-Concurrency, X-Azure-Block-Size, X-Google-Api-Key, X-Google-Vertex-Api-Key, X-Google-Studio-Api-Key, X-Goog-Api-Key, X-Goog-Vertex-Api-Key, X-Goog-Studio-Api-Key, X-Palm-Api-Key, X-Jinaai-Api-Key, X-Aws-Access-Key, X-Aws-Secret-Key, X-Voyageai-Baseurl, X-Voyageai-Api-Key, X-Mistral-Baseurl, X-Mistral-Api-Key, X-Anthropic-Baseurl, X-Anthropic-Api-Key, X-Databricks-Endpoint, X-Databricks-Token, X-Databricks-User-Agent, X-Friendli-Token, X-Friendli-Baseurl, X-Weaviate-Api-Key, X-Weaviate-Cluster-Url, X-Nvidia-Api-Key, X-Nvidia-Baseurl"
+access-control-allow-methods: "*"
+access-control-allow-origin: "*"
+content-type: "application/json"
+vary: "Origin"
+date: "Sun, 29 Jun 2025 01:39:13 GMT"
+content-length: "33"
+I, [2025-06-28T19:39:13.830835 #28380]  INFO -- : response: {"deprecations" => [], "objects" => []}
+
+
+================================================================================
+                      ✅ Knowledge Graph Display Complete!                       
+================================================================================

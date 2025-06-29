@@ -1,0 +1,255 @@
+{
+  "nodes": [
+    {
+      "id": "Person_019271a3-789f-4c66-adcf-07bfcdce47bb",
+      "name": "Kaiser Soze",
+      "class": "Person",
+      "properties": {
+        "birthDate": "1965-11-01",
+        "children": [
+          {
+            "beacon": "weaviate://localhost/Person/f55e422c-157d-4cd3-9c4d-0cedd94de454",
+            "href": "/v1/objects/Person/f55e422c-157d-4cd3-9c4d-0cedd94de454"
+          },
+          {
+            "beacon": "weaviate://localhost/Person/4779a427-d83f-4bb2-afab-1779adb87ba9",
+            "href": "/v1/objects/Person/4779a427-d83f-4bb2-afab-1779adb87ba9"
+          }
+        ],
+        "description": "Legendary strategist and polymath. Enjoys mountaineering, AI/ML, woodworking, blacksmithing.",
+        "home": [
+          {
+            "beacon": "weaviate://localhost/Place/1ee5fe6b-95a3-402b-86ca-75a275a49663",
+            "href": "/v1/objects/Place/1ee5fe6b-95a3-402b-86ca-75a275a49663"
+          }
+        ],
+        "name": "Kaiser Soze",
+        "occupation": "Entrepreneur, AI Enthusiast",
+        "parents": [
+          {
+            "beacon": "weaviate://localhost/Person/67d434a6-d6bf-4526-a779-e979bd598217",
+            "href": "/v1/objects/Person/67d434a6-d6bf-4526-a779-e979bd598217"
+          },
+          {
+            "beacon": "weaviate://localhost/Person/c32da0f7-9017-4cdc-9ee5-7451188222c2",
+            "href": "/v1/objects/Person/c32da0f7-9017-4cdc-9ee5-7451188222c2"
+          }
+        ],
+        "pets": [
+          {
+            "beacon": "weaviate://localhost/Pet/a662fdca-d55d-44b3-afdb-b6f9bfb599d9",
+            "href": "/v1/objects/Pet/a662fdca-d55d-44b3-afdb-b6f9bfb599d9"
+          },
+          {
+            "beacon": "weaviate://localhost/Pet/0de43b21-4fd2-44f5-9d1a-e4c6ccc8c939",
+            "href": "/v1/objects/Pet/0de43b21-4fd2-44f5-9d1a-e4c6ccc8c939"
+          }
+        ],
+        "projects": [
+          {
+            "beacon": "weaviate://localhost/Project/0b5d63f2-20e7-4da8-9b58-ecdc3accbac0",
+            "href": "/v1/objects/Project/0b5d63f2-20e7-4da8-9b58-ecdc3accbac0"
+          },
+          {
+            "beacon": "weaviate://localhost/Project/b5345a99-1350-4d66-9436-40914eba3518",
+            "href": "/v1/objects/Project/b5345a99-1350-4d66-9436-40914eba3518"
+          },
+          {
+            "beacon": "weaviate://localhost/Project/e9c680c4-5d39-49b1-b28d-585c65f4f191",
+            "href": "/v1/objects/Project/e9c680c4-5d39-49b1-b28d-585c65f4f191"
+          },
+          {
+            "beacon": "weaviate://localhost/Project/81695974-5a43-4813-95a1-45186713cd9f",
+            "href": "/v1/objects/Project/81695974-5a43-4813-95a1-45186713cd9f"
+          }
+        ],
+        "spouse": [
+          {
+            "beacon": "weaviate://localhost/Person/fdca03ce-b416-44fe-b18c-797a72a90892",
+            "href": "/v1/objects/Person/fdca03ce-b416-44fe-b18c-797a72a90892"
+          }
+        ]
+      },
+      "connections": 13
+    },
+    {
+      "id": "Person_4779a427-d83f-4bb2-afab-1779adb87ba9",
+      "name": "John Soze",
+      "class": "Person",
+      "properties": {
+        "name": "John Soze"
+      },
+      "connections": 1
+    },
+    {
+      "id": "Person_67d434a6-d6bf-4526-a779-e979bd598217",
+      "name": "Heinrich Soze",
+      "class": "Person",
+      "properties": {
+        "name": "Heinrich Soze"
+      },
+      "connections": 1
+    },
+    {
+      "id": "Person_c32da0f7-9017-4cdc-9ee5-7451188222c2",
+      "name": "Greta Soze",
+      "class": "Person",
+      "properties": {
+        "name": "Greta Soze"
+      },
+      "connections": 1
+    },
+    {
+      "id": "Person_f55e422c-157d-4cd3-9c4d-0cedd94de454",
+      "name": "Sarah Soze",
+      "class": "Person",
+      "properties": {
+        "name": "Sarah Soze"
+      },
+      "connections": 1
+    },
+    {
+      "id": "Person_fdca03ce-b416-44fe-b18c-797a72a90892",
+      "name": "Nancy Soze",
+      "class": "Person",
+      "properties": {
+        "name": "Nancy Soze"
+      },
+      "connections": 1
+    },
+    {
+      "id": "Pet_0de43b21-4fd2-44f5-9d1a-e4c6ccc8c939",
+      "name": "Whiskers",
+      "class": "Pet",
+      "properties": {
+        "name": "Whiskers",
+        "species": "Cat"
+      },
+      "connections": 1
+    },
+    {
+      "id": "Pet_a662fdca-d55d-44b3-afdb-b6f9bfb599d9",
+      "name": "Max",
+      "class": "Pet",
+      "properties": {
+        "name": "Max",
+        "species": "Dog"
+      },
+      "connections": 1
+    },
+    {
+      "id": "Place_1ee5fe6b-95a3-402b-86ca-75a275a49663",
+      "name": "Soze Family Cabin",
+      "class": "Place",
+      "properties": {
+        "description": "Custom log cabin at 10,200ft elevation, Leadville, CO.",
+        "elevation": 10200,
+        "name": "Soze Family Cabin",
+        "type": "Log Cabin"
+      },
+      "connections": 1
+    },
+    {
+      "id": "Project_0b5d63f2-20e7-4da8-9b58-ecdc3accbac0",
+      "name": "Leadville Historical Database",
+      "class": "Project",
+      "properties": {
+        "description": "Digitizing and connecting Leadville's rich historical records.",
+        "name": "Leadville Historical Database"
+      },
+      "connections": 1
+    },
+    {
+      "id": "Project_81695974-5a43-4813-95a1-45186713cd9f",
+      "name": "Sustainable Cabin Upgrades",
+      "class": "Project",
+      "properties": {
+        "description": "Solar, insulation, and eco-friendly improvements.",
+        "name": "Sustainable Cabin Upgrades"
+      },
+      "connections": 1
+    },
+    {
+      "id": "Project_b5345a99-1350-4d66-9436-40914eba3518",
+      "name": "Wildlife Monitoring System",
+      "class": "Project",
+      "properties": {
+        "description": "IoT and AI-powered wildlife tracking for the Rockies.",
+        "name": "Wildlife Monitoring System"
+      },
+      "connections": 1
+    },
+    {
+      "id": "Project_e9c680c4-5d39-49b1-b28d-585c65f4f191",
+      "name": "Personal AI Assistant \"Summit\"",
+      "class": "Project",
+      "properties": {
+        "description": "Personal knowledge graph and AI assistant.",
+        "name": "Personal AI Assistant \"Summit\""
+      },
+      "connections": 1
+    }
+  ],
+  "links": [
+    {
+      "source": "Person_019271a3-789f-4c66-adcf-07bfcdce47bb",
+      "target": "Person_fdca03ce-b416-44fe-b18c-797a72a90892",
+      "type": "spouse"
+    },
+    {
+      "source": "Person_019271a3-789f-4c66-adcf-07bfcdce47bb",
+      "target": "Person_f55e422c-157d-4cd3-9c4d-0cedd94de454",
+      "type": "children"
+    },
+    {
+      "source": "Person_019271a3-789f-4c66-adcf-07bfcdce47bb",
+      "target": "Person_4779a427-d83f-4bb2-afab-1779adb87ba9",
+      "type": "children"
+    },
+    {
+      "source": "Person_019271a3-789f-4c66-adcf-07bfcdce47bb",
+      "target": "Person_67d434a6-d6bf-4526-a779-e979bd598217",
+      "type": "parents"
+    },
+    {
+      "source": "Person_019271a3-789f-4c66-adcf-07bfcdce47bb",
+      "target": "Person_c32da0f7-9017-4cdc-9ee5-7451188222c2",
+      "type": "parents"
+    },
+    {
+      "source": "Person_019271a3-789f-4c66-adcf-07bfcdce47bb",
+      "target": "Pet_a662fdca-d55d-44b3-afdb-b6f9bfb599d9",
+      "type": "pets"
+    },
+    {
+      "source": "Person_019271a3-789f-4c66-adcf-07bfcdce47bb",
+      "target": "Pet_0de43b21-4fd2-44f5-9d1a-e4c6ccc8c939",
+      "type": "pets"
+    },
+    {
+      "source": "Person_019271a3-789f-4c66-adcf-07bfcdce47bb",
+      "target": "Place_1ee5fe6b-95a3-402b-86ca-75a275a49663",
+      "type": "home"
+    },
+    {
+      "source": "Person_019271a3-789f-4c66-adcf-07bfcdce47bb",
+      "target": "Project_0b5d63f2-20e7-4da8-9b58-ecdc3accbac0",
+      "type": "projects"
+    },
+    {
+      "source": "Person_019271a3-789f-4c66-adcf-07bfcdce47bb",
+      "target": "Project_b5345a99-1350-4d66-9436-40914eba3518",
+      "type": "projects"
+    },
+    {
+      "source": "Person_019271a3-789f-4c66-adcf-07bfcdce47bb",
+      "target": "Project_e9c680c4-5d39-49b1-b28d-585c65f4f191",
+      "type": "projects"
+    },
+    {
+      "source": "Person_019271a3-789f-4c66-adcf-07bfcdce47bb",
+      "target": "Project_81695974-5a43-4813-95a1-45186713cd9f",
+      "type": "projects"
+    }
+  ]
+}

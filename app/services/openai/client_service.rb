@@ -8,85 +8,17 @@ module OpenAI
       @client = client
     end
 
-    # Example: Chat completion for entity extraction
-    def chat(prompt, model: "gpt-4o", temperature: 0.2, max_tokens: 2048)
-      # Generate a unique request ID for tracking
-      request_id = SecureRandom.uuid
-
-      # Log truncated prompt to regular Rails logger
-      Rails.logger.debug { "[OpenAI::ClientService] Sending chat prompt: #{prompt.truncate(120)} (request_id: #{request_id})" }
-
-      # Log detailed request to dedicated OpenAI logger
-      OpenAI.logger.info("REQUEST #{request_id}")
-      parameters = {
-        model: model,
-        messages: [
-          { role: "system", content: "You are an AI assistant that extracts structured entities from user content." },
-          { role: "user", content: prompt }
-        ],
-        temperature: temperature,
-        max_tokens: max_tokens
-      }
-      OpenAI.logger.debug(clean_parameters(parameters))
-
-      # Make the API call
-      response = @client.chat(
-        parameters: parameters
-      )
-
-      # Log response metadata to regular Rails logger
-      response_info = {
-        id: response["id"],
-        model: response["model"],
-        usage: response["usage"],
-        choices_count: response["choices"]&.size
-      }
-      Rails.logger.debug { "[OpenAI::ClientService] OpenAI response received: #{response_info.inspect} (request_id: #{request_id})" }
-
-      # Log detailed response to dedicated OpenAI logger
-      OpenAI.logger.info("RESPONSE #{request_id}")
-      OpenAI.logger.debug(
-        {
-          usage: response["usage"],
-          content: response["choices"].first["message"]["content"],
-          finish_reason: response["choices"].first["finish_reason"]
-        }
-      )
-
-      response
-    rescue StandardError => e
-      # Log error to both loggers
-      error_message = "[OpenAI::ClientService] OpenAI API error: #{e.class} - #{e.message}"
-      Rails.logger.error(error_message)
-
-      OpenAI.logger.error("ERROR #{request_id}")
-      OpenAI.logger.error({
-                            request_id: request_id,
-                            error_class: e.class.to_s,
-                            error_message: e.message,
-                            backtrace: e.backtrace.first(5)
-                          })
-
-      raise
-    end
-
     # Vision/multimodal: Accepts a note and one or more image files
-    # files: array of { filename:, io: File/IO or StringIO, or :data => binary string }
-    def chat_with_files(note:, files:, model: "gpt-4o", temperature: 0.2, max_tokens: 2048)
+    # files: array of { filename:, data: binary }
+    def chat_with_files(prompt:, files:, model: "gpt-4o", temperature: 0.5, max_tokens: 2048)
       # Generate a unique request ID for tracking
       request_id = SecureRandom.uuid
 
       user_content = []
-      user_content << { type: "text", text: note } if note.present?
+      user_content << { type: "text", text: prompt }
 
       files.each do |file|
-        image_data = if file[:io]
-                       Base64.strict_encode64(file[:io].read)
-                     elsif file[:data]
-                       Base64.strict_encode64(file[:data])
-                     else
-                       raise ArgumentError, "File must have :io or :data"
-                     end
+        image_data = Base64.strict_encode64(file[:data])
         ext = File.extname(file[:filename]).delete(".").downcase
         mime = ext == "jpg" ? "jpeg" : ext
         user_content << {
@@ -104,7 +36,7 @@ module OpenAI
       parameters = {
         model: model,
         messages: [
-          { role: "system", content: "You are an AI assistant that extracts structured entities from user content." },
+          # { role: "system", content: "You are an AI assistant that extracts structured entities from user content." },
           { role: "user", content: user_content }
         ],
         temperature: temperature,
@@ -116,34 +48,16 @@ module OpenAI
       # Make the API call
       response = @client.chat(parameters: parameters)
 
-      # Log response metadata to regular Rails logger
-      response_info = {
-        id: response["id"],
-        model: response["model"],
-        usage: response["usage"],
-        choices_count: response["choices"]&.size
-      }
-      Rails.logger.debug { "[OpenAI::ClientService] OpenAI multimodal response received: #{response_info.inspect} (request_id: #{request_id})" }
-
       # Log detailed response to dedicated OpenAI logger
       OpenAI.logger.info("RESPONSE #{request_id} (MULTIMODAL)")
-      OpenAI.logger.debug(
-        {
-          usage: response["usage"],
-          content: response["choices"].first["message"]["content"],
-          finish_reason: response["choices"].first["finish_reason"]
-        }
-      )
+      OpenAI.logger.debug(response)
 
       response
     rescue StandardError => e
-      # Log error to both loggers
-      error_message = "[OpenAI::ClientService] OpenAI API error (multimodal): #{e.class} - #{e.message}"
-      Rails.logger.error(error_message)
+      Rails.logger.error("[OpenAI::ClientService] OpenAI API error (multimodal): #{e.class} - #{e.message}")
 
       OpenAI.logger.error("ERROR #{request_id} (MULTIMODAL)")
       OpenAI.logger.error({
-                            request_id: request_id,
                             error_class: e.class.to_s,
                             error_message: e.message,
                             backtrace: e.backtrace.first(5)

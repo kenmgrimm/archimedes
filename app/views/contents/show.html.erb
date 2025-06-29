@@ -189,6 +189,30 @@
               </div>
             </div>
           <% end %>
+          
+          <!-- Raw OpenAI Response -->
+          <div class="mt-4">
+            <div class="bg-white rounded border">
+              <div class="p-3 text-sm font-medium text-gray-700 bg-gray-50 border-b">
+                <span class="inline-flex items-center">
+                  <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                  </svg>
+                  Raw OpenAI Response
+                </span>
+              </div>
+              <div class="p-3 bg-gray-50">
+                <div class="mb-2">
+                  <span class="text-xs text-gray-500">
+                    Response received: <%= @content.updated_at.strftime("%B %d, %Y at %I:%M %p") %>
+                  </span>
+                </div>
+                <div class="bg-gray-900 text-green-400 p-4 rounded text-sm font-mono overflow-auto max-h-96 w-full">
+                  <pre class="whitespace-pre-wrap break-words"><%= JSON.pretty_generate(@content.openai_response) rescue @content.openai_response.inspect %></pre>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     <% end %>

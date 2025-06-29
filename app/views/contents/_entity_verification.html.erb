@@ -1,0 +1,146 @@
+<%# Partial for entity verification during content analysis %>
+<% if entities_needing_verification.present? %>
+  <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+    <h3 class="text-lg font-semibold text-amber-800 mb-2">Entity Verification Required</h3>
+    <p class="text-amber-700 mb-4">
+      The following entities need verification before they can be added to the knowledge graph.
+      Please review each one and decide whether to use an existing entity, create a new one, or merge entities.
+    </p>
+    
+    <div class="space-y-6">
+      <% entities_needing_verification.each do |entity_data| %>
+        <div class="bg-white rounded-md shadow p-4">
+          <h4 class="font-medium text-gray-900 mb-2">
+            Candidate Entity: <span class="font-bold"><%= entity_data[:candidate_name] %></span>
+          </h4>
+          
+          <% if entity_data[:similar_entities].any? %>
+            <div class="mb-4">
+              <p class="text-sm text-gray-600 mb-2">Similar existing entities:</p>
+              <div class="space-y-2">
+                <% entity_data[:similar_entities].each do |similar_entity| %>
+                  <div class="flex items-center justify-between border border-gray-200 rounded p-2">
+                    <div>
+                      <span class="font-medium"><%= similar_entity.name %></span>
+                      <% if similar_entity.similarity.present? %>
+                        <span class="text-xs text-gray-500 ml-2">
+                          (<%= (similar_entity.similarity * 100).round(1) %>% similar)
+                        </span>
+                      <% end %>
+                    </div>
+                    <div class="flex space-x-2">
+                      <%= form_with url: verify_entities_path, method: :post, class: "inline" do |f| %>
+                        <%= f.hidden_field :entity_name, value: entity_data[:candidate_name] %>
+                        <%= f.hidden_field :content_id, value: @content.id %>
+                        <%= f.hidden_field :existing_entity_id, value: similar_entity.id %>
+                        <%= f.hidden_field :verification_action, value: "use_existing" %>
+                        <%= f.submit "Use This", class: "bg-blue-500 hover:bg-blue-600 text-white text-xs py-1 px-2 rounded" %>
+                      <% end %>
+                      
+                      <%= link_to "View", entity_path(similar_entity), 
+                          class: "bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs py-1 px-2 rounded",
+                          target: "_blank" %>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          <% else %>
+            <p class="text-sm text-gray-600 mb-4">No similar entities found.</p>
+          <% end %>
+          
+          <div class="flex space-x-3 mt-4">
+            <%= form_with url: verify_entities_path, method: :post, class: "inline" do |f| %>
+              <%= f.hidden_field :entity_name, value: entity_data[:candidate_name] %>
+              <%= f.hidden_field :content_id, value: @content.id %>
+              <%= f.hidden_field :verification_action, value: "create_new" %>
+              <%= f.submit "Create New Entity", class: "bg-green-500 hover:bg-green-600 text-white py-1 px-3 rounded text-sm" %>
+            <% end %>
+            
+            <% if entity_data[:similar_entities].any? %>
+              <button 
+                class="bg-amber-500 hover:bg-amber-600 text-white py-1 px-3 rounded text-sm"
+                data-controller="modal"
+                data-action="click->modal#open"
+                data-modal-target="merge-modal-<%= entity_data[:candidate_name].parameterize %>">
+                Merge Entities
+              </button>
+              
+              <%# Merge Modal %>
+              <div id="merge-modal-<%= entity_data[:candidate_name].parameterize %>" class="hidden fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+                <div class="bg-white rounded-lg p-6 max-w-lg w-full">
+                  <h3 class="text-lg font-bold mb-4">Merge Entities</h3>
+                  <p class="mb-4">Select which entity to merge into:</p>
+                  
+                  <%= form_with url: verify_entities_path, method: :post do |f| %>
+                    <%= f.hidden_field :entity_name, value: entity_data[:candidate_name] %>
+                    <%= f.hidden_field :content_id, value: @content.id %>
+                    <%= f.hidden_field :verification_action, value: "merge" %>
+                    
+                    <div class="mb-4">
+                      <label class="block text-gray-700 mb-2">Source Entity:</label>
+                      <div class="relative">
+                        <select name="source_entity_id" class="block appearance-none w-full bg-gray-50 border border-gray-300 text-gray-700 py-2 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500">
+                          <option value="new" selected>New: <%= entity_data[:candidate_name] %></option>
+                          <% entity_data[:similar_entities].each do |entity| %>
+                            <option value="<%= entity.id %>"><%= entity.name %></option>
+                          <% end %>
+                        </select>
+                      </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                      <label class="block text-gray-700 mb-2">Target Entity (to keep):</label>
+                      <div class="relative">
+                        <select name="target_entity_id" class="block appearance-none w-full bg-gray-50 border border-gray-300 text-gray-700 py-2 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500">
+                          <% entity_data[:similar_entities].each do |entity| %>
+                            <option value="<%= entity.id %>"><%= entity.name %></option>
+                          <% end %>
+                        </select>
+                      </div>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3">
+                      <button type="button" class="bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded" data-action="modal#close">
+                        Cancel
+                      </button>
+                      <%= f.submit "Merge Entities", class: "bg-amber-500 hover:bg-amber-600 text-white py-2 px-4 rounded" %>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+          
+          <% if entity_data[:statements].any? %>
+            <div class="mt-4 pt-3 border-t border-gray-200">
+              <p class="text-sm text-gray-600 mb-2">
+                <strong><%= entity_data[:statements].size %></strong> statements will be created after verification:
+              </p>
+              <ul class="text-xs text-gray-600 list-disc pl-5 space-y-1">
+                <% entity_data[:statements].first(3).each do |statement| %>
+                  <li>
+                    <%= statement["subject"] %> <%= statement["predicate"] %> 
+                    <% if statement["object_type"] == "entity" %>
+                      [Entity: <%= statement["object"] %>]
+                    <% else %>
+                      <%= statement["object"] %>
+                    <% end %>
+                  </li>
+                <% end %>
+                <% if entity_data[:statements].size > 3 %>
+                  <li class="text-gray-500">...and <%= entity_data[:statements].size - 3 %> more</li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+  
+  <%# Add debug logging %>
+  <% if ENV["DEBUG"] %>
+    <% Rails.logger.debug { "Rendering entity verification for #{entities_needing_verification.size} entities" } %>
+  <% end %>
+<% end %>

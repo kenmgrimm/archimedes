@@ -184,7 +184,10 @@ CREATE TABLE public.entities (
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
     name_embedding public.vector(1536),
-    description text
+    description text,
+    verification_status character varying DEFAULT 'verified'::character varying,
+    verified_at timestamp(6) without time zone,
+    verified_by character varying
 );
 
 
@@ -205,6 +208,40 @@ CREATE SEQUENCE public.entities_id_seq
 --
 
 ALTER SEQUENCE public.entities_id_seq OWNED BY public.entities.id;
+
+
+--
+-- Name: entity_merges; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.entity_merges (
+    id bigint NOT NULL,
+    source_entity_id bigint,
+    target_entity_id bigint NOT NULL,
+    transferred_statements_count integer,
+    initiated_by character varying,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: entity_merges_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.entity_merges_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: entity_merges_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.entity_merges_id_seq OWNED BY public.entity_merges.id;
 
 
 --
@@ -229,7 +266,12 @@ CREATE TABLE public.statements (
     confidence double precision DEFAULT 1.0,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    text_embedding public.vector(1536)
+    text_embedding public.vector(1536),
+    predicate character varying,
+    object character varying,
+    object_type character varying DEFAULT 'literal'::character varying,
+    source character varying,
+    extraction_method character varying DEFAULT 'ai'::character varying
 );
 
 
@@ -323,6 +365,42 @@ ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
 
 
 --
+-- Name: verification_requests; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.verification_requests (
+    id bigint NOT NULL,
+    content_id bigint NOT NULL,
+    candidate_name character varying NOT NULL,
+    status character varying DEFAULT 'pending'::character varying,
+    similar_entities json,
+    pending_statements json,
+    verified_entity_id bigint,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: verification_requests_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.verification_requests_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: verification_requests_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.verification_requests_id_seq OWNED BY public.verification_requests.id;
+
+
+--
 -- Name: active_storage_attachments id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -358,6 +436,13 @@ ALTER TABLE ONLY public.entities ALTER COLUMN id SET DEFAULT nextval('public.ent
 
 
 --
+-- Name: entity_merges id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.entity_merges ALTER COLUMN id SET DEFAULT nextval('public.entity_merges_id_seq'::regclass);
+
+
+--
 -- Name: statements id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -369,6 +454,13 @@ ALTER TABLE ONLY public.statements ALTER COLUMN id SET DEFAULT nextval('public.s
 --
 
 ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
+
+
+--
+-- Name: verification_requests id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.verification_requests ALTER COLUMN id SET DEFAULT nextval('public.verification_requests_id_seq'::regclass);
 
 
 --
@@ -420,6 +512,14 @@ ALTER TABLE ONLY public.entities
 
 
 --
+-- Name: entity_merges entity_merges_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.entity_merges
+    ADD CONSTRAINT entity_merges_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: schema_migrations schema_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -441,6 +541,14 @@ ALTER TABLE ONLY public.statements
 
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: verification_requests verification_requests_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.verification_requests
+    ADD CONSTRAINT verification_requests_pkey PRIMARY KEY (id);
 
 
 --
@@ -500,6 +608,20 @@ CREATE INDEX index_entities_on_name_embedding ON public.entities USING ivfflat (
 
 
 --
+-- Name: index_entity_merges_on_source_entity_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_entity_merges_on_source_entity_id ON public.entity_merges USING btree (source_entity_id);
+
+
+--
+-- Name: index_entity_merges_on_target_entity_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_entity_merges_on_target_entity_id ON public.entity_merges USING btree (target_entity_id);
+
+
+--
 -- Name: index_statements_on_content_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -514,10 +636,38 @@ CREATE INDEX index_statements_on_entity_id ON public.statements USING btree (ent
 
 
 --
+-- Name: index_statements_on_entity_id_and_predicate; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_statements_on_entity_id_and_predicate ON public.statements USING btree (entity_id, predicate);
+
+
+--
 -- Name: index_statements_on_object_entity_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX index_statements_on_object_entity_id ON public.statements USING btree (object_entity_id);
+
+
+--
+-- Name: index_statements_on_object_entity_id_and_predicate; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_statements_on_object_entity_id_and_predicate ON public.statements USING btree (object_entity_id, predicate);
+
+
+--
+-- Name: index_statements_on_object_type; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_statements_on_object_type ON public.statements USING btree (object_type);
+
+
+--
+-- Name: index_statements_on_predicate; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_statements_on_predicate ON public.statements USING btree (predicate);
 
 
 --
@@ -535,10 +685,63 @@ CREATE UNIQUE INDEX index_users_on_reset_password_token ON public.users USING bt
 
 
 --
+-- Name: index_verification_requests_on_content_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_verification_requests_on_content_id ON public.verification_requests USING btree (content_id);
+
+
+--
+-- Name: index_verification_requests_on_content_id_and_candidate_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_verification_requests_on_content_id_and_candidate_name ON public.verification_requests USING btree (content_id, candidate_name);
+
+
+--
+-- Name: index_verification_requests_on_verified_entity_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_verification_requests_on_verified_entity_id ON public.verification_requests USING btree (verified_entity_id);
+
+
+--
 -- Name: statements_text_embedding_idx; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX statements_text_embedding_idx ON public.statements USING ivfflat (text_embedding public.vector_cosine_ops);
+
+
+--
+-- Name: verification_requests fk_rails_0b202b196c; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.verification_requests
+    ADD CONSTRAINT fk_rails_0b202b196c FOREIGN KEY (verified_entity_id) REFERENCES public.entities(id);
+
+
+--
+-- Name: entity_merges fk_rails_2519e311e7; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.entity_merges
+    ADD CONSTRAINT fk_rails_2519e311e7 FOREIGN KEY (target_entity_id) REFERENCES public.entities(id);
+
+
+--
+-- Name: verification_requests fk_rails_775eb4705d; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.verification_requests
+    ADD CONSTRAINT fk_rails_775eb4705d FOREIGN KEY (content_id) REFERENCES public.contents(id);
+
+
+--
+-- Name: entity_merges fk_rails_7e85dd8717; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.entity_merges
+    ADD CONSTRAINT fk_rails_7e85dd8717 FOREIGN KEY (source_entity_id) REFERENCES public.entities(id);
 
 
 --
@@ -564,6 +767,8 @@ ALTER TABLE ONLY public.active_storage_attachments
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20250625000000'),
+('20250624233500'),
 ('20250624211254'),
 ('20250624210618'),
 ('20250624210606'),

@@ -14,6 +14,11 @@ gem "pg", "~> 1.1"
 gem "dotenv-rails", groups: [:development, :test]
 gem "ruby-openai", "~> 5.0"
 
+gem "httparty"
+
+# Weaviate
+gem "weaviate-ruby"
+
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
 
@@ -57,6 +62,7 @@ gem "bootsnap", require: false
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
+  gem "amazing_print"
   gem "database_cleaner-active_record"
   gem "debug", platforms: [:mri, :windows]
   gem "factory_bot_rails"

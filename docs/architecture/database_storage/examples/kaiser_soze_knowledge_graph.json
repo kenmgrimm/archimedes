@@ -1,0 +1,429 @@
+{
+  "@context": {
+    "schema": "https://schema.org/",
+    "foaf": "http://xmlns.com/foaf/0.1/",
+    "dc": "http://purl.org/dc/terms/",
+    "custom": "https://archimedes.local/ontology/"
+  },
+  "entities": [
+    {
+      "@type": "schema:Person",
+      "@id": "person:kaiser-soze",
+      "schema:name": "Kaiser Soze",
+      "schema:givenName": "Kaiser",
+      "schema:familyName": "Soze",
+      "schema:gender": "Male",
+      "schema:birthDate": "1969",
+      "schema:birthPlace": {
+        "@type": "schema:Place",
+        "@id": "place:denver-co",
+        "schema:name": "Denver, Colorado",
+        "schema:addressRegion": "Colorado",
+        "schema:addressCountry": "United States"
+      },
+      "schema:nationality": "American",
+      "schema:ethnicity": "German",
+      "schema:age": 55,
+      "schema:homeLocation": {
+        "@type": "schema:Place",
+        "@id": "place:leadville-cabin",
+        "schema:name": "Custom Log Cabin",
+        "schema:address": {
+          "@type": "schema:PostalAddress",
+          "schema:addressLocality": "Leadville",
+          "schema:addressRegion": "Colorado",
+          "schema:addressCountry": "United States"
+        },
+        "schema:geo": {
+          "@type": "schema:GeoCoordinates",
+          "schema:elevation": "10200 feet"
+        },
+        "schema:floorSize": "2400 square feet",
+        "schema:numberOfRooms": "Multiple",
+        "custom:landSize": "5 acres",
+        "custom:constructionPeriod": "2005-2008",
+        "custom:features": [
+          "Vaulted ceilings",
+          "Stone fireplace",
+          "Floor-to-ceiling windows",
+          "Wraparound deck",
+          "Solar panels",
+          "Greenhouse"
+        ]
+      },
+      "schema:spouse": {
+        "@type": "schema:Person",
+        "@id": "person:nancy-soze",
+        "schema:name": "Nancy Soze",
+        "schema:jobTitle": "Freelance Graphic Designer",
+        "foaf:interest": ["Outdoor adventures", "Rock climbing", "Gardening"]
+      },
+      "schema:children": [
+        {
+          "@type": "schema:Person",
+          "@id": "person:sarah-soze",
+          "schema:name": "Sarah Soze",
+          "schema:age": 22,
+          "schema:gender": "Female",
+          "schema:alumniOf": {
+            "@type": "schema:CollegeOrUniversity",
+            "schema:name": "Colorado College"
+          },
+          "schema:hasCredential": {
+            "@type": "schema:EducationalOccupationalCredential",
+            "schema:credentialCategory": "Bachelor's Degree",
+            "schema:educationalCredentialAwarded": "Environmental Science"
+          },
+          "schema:worksFor": {
+            "@type": "schema:Organization",
+            "schema:name": "Colorado Parks and Wildlife"
+          }
+        },
+        {
+          "@type": "schema:Person",
+          "@id": "person:john-soze",
+          "schema:name": "John Soze",
+          "schema:age": 19,
+          "schema:gender": "Male",
+          "schema:memberOf": {
+            "@type": "schema:CollegeOrUniversity",
+            "schema:name": "Colorado School of Mines"
+          },
+          "custom:studyField": "Mechanical Engineering",
+          "custom:academicYear": "Sophomore"
+        }
+      ],
+      "schema:parent": [
+        {
+          "@type": "schema:Person",
+          "@id": "person:heinrich-soze",
+          "schema:name": "Heinrich Soze",
+          "schema:jobTitle": "Mechanical Engineer",
+          "schema:worksFor": {
+            "@type": "schema:Organization",
+            "schema:name": "Lockheed Martin"
+          },
+          "schema:nationality": "German",
+          "schema:birthPlace": "Bavaria, Germany"
+        },
+        {
+          "@type": "schema:Person",
+          "@id": "person:greta-soze",
+          "schema:name": "Greta Soze",
+          "schema:jobTitle": "High School German Teacher",
+          "schema:nationality": "German",
+          "schema:birthPlace": "Bavaria, Germany"
+        }
+      ],
+      "schema:sibling": {
+        "@type": "schema:Person",
+        "@id": "person:ingrid-soze",
+        "schema:name": "Ingrid Soze",
+        "schema:jobTitle": "Translator",
+        "schema:worksFor": {
+          "@type": "schema:Organization",
+          "schema:name": "European Union"
+        },
+        "schema:homeLocation": {
+          "@type": "schema:Place",
+          "schema:name": "Munich, Germany"
+        }
+      },
+      "foaf:knows": [
+        "@id:person:nancy-soze",
+        "@id:person:sarah-soze", 
+        "@id:person:john-soze",
+        "@id:person:heinrich-soze",
+        "@id:person:greta-soze",
+        "@id:person:ingrid-soze"
+      ],
+      "schema:owns": [
+        {
+          "@type": "schema:Pet",
+          "@id": "pet:max",
+          "schema:name": "Max",
+          "schema:species": "Dog",
+          "schema:breed": "Golden Retriever",
+          "schema:age": 7,
+          "custom:role": "Hiking companion and trail guide"
+        },
+        {
+          "@type": "schema:Pet",
+          "@id": "pet:whiskers",
+          "schema:name": "Whiskers",
+          "schema:species": "Cat",
+          "schema:breed": "Maine Coon",
+          "schema:age": 4,
+          "custom:origin": "Denver animal shelter rescue"
+        }
+      ],
+      "schema:hasCredential": [
+        {
+          "@type": "schema:EducationalOccupationalCredential",
+          "schema:credentialCategory": "Bachelor's Degree",
+          "schema:educationalCredentialAwarded": "Computer Science",
+          "schema:recognizedBy": {
+            "@type": "schema:CollegeOrUniversity",
+            "schema:name": "Colorado State University"
+          },
+          "schema:dateCreated": "1991"
+        },
+        {
+          "@type": "schema:EducationalOccupationalCredential",
+          "schema:credentialCategory": "Master's Degree",
+          "schema:educationalCredentialAwarded": "Software Engineering",
+          "schema:recognizedBy": {
+            "@type": "schema:CollegeOrUniversity",
+            "schema:name": "University of Colorado Boulder"
+          },
+          "schema:dateCreated": "1994"
+        }
+      ],
+      "schema:worksFor": {
+        "@type": "schema:Organization",
+        "@id": "org:alpine-code-solutions",
+        "schema:name": "Alpine Code Solutions",
+        "schema:foundingDate": "2001",
+        "schema:founder": "@id:person:kaiser-soze",
+        "schema:description": "Software consulting company specializing in custom database systems for small businesses throughout Colorado"
+      },
+      "foaf:interest": [
+        "Artificial Intelligence",
+        "Machine Learning", 
+        "Python Programming",
+        "Neural Networks",
+        "Environmental Conservation",
+        "Mountaineering",
+        "Backcountry Skiing",
+        "Fly Fishing",
+        "Wildlife Photography",
+        "Woodworking",
+        "Blacksmithing",
+        "Sustainable Living"
+      ],
+      "custom:mountaineeringAchievements": {
+        "fourteenersClimbed": 47,
+        "totalFourteeners": 58,
+        "completionPercentage": "81%"
+      }
+    }
+  ],
+  "events": [
+    {
+      "@type": "schema:Event",
+      "@id": "event:marriage-kaiser-nancy",
+      "schema:name": "Kaiser and Nancy Wedding",
+      "schema:startDate": "2000",
+      "schema:location": {
+        "@type": "schema:Place",
+        "schema:name": "Rocky Mountain National Park"
+      },
+      "schema:attendee": [
+        "@id:person:kaiser-soze",
+        "@id:person:nancy-soze"
+      ]
+    },
+    {
+      "@type": "schema:Event",
+      "@id": "event:first-meeting-kaiser-nancy",
+      "schema:name": "Kaiser and Nancy First Meeting",
+      "schema:startDate": "1998",
+      "schema:location": {
+        "@type": "schema:Place",
+        "schema:name": "Rock Climbing Gym",
+        "schema:address": {
+          "@type": "schema:PostalAddress",
+          "schema:addressLocality": "Boulder",
+          "schema:addressRegion": "Colorado"
+        }
+      }
+    },
+    {
+      "@type": "schema:Event",
+      "@id": "event:backpacking-collegiate-peaks-2024",
+      "schema:name": "Solo Backpacking Trip - Collegiate Peaks Wilderness",
+      "schema:startDate": "2024-07",
+      "schema:duration": "8 days",
+      "schema:location": {
+        "@type": "schema:Place",
+        "schema:name": "Collegiate Peaks Wilderness"
+      },
+      "custom:distance": "85 miles",
+      "schema:participant": "@id:person:kaiser-soze"
+    },
+    {
+      "@type": "schema:Event",
+      "@id": "event:anniversary-climb-2024",
+      "schema:name": "24th Anniversary Mount Princeton Climb",
+      "schema:startDate": "2024-09",
+      "schema:location": {
+        "@type": "schema:Place",
+        "schema:name": "Mount Princeton"
+      },
+      "schema:attendee": [
+        "@id:person:kaiser-soze",
+        "@id:person:nancy-soze"
+      ],
+      "custom:significance": "Nancy's first fourteener"
+    },
+    {
+      "@type": "schema:EducationEvent",
+      "@id": "event:blacksmithing-learning-2024",
+      "schema:name": "Blacksmithing Learning Experience",
+      "schema:startDate": "2024-12",
+      "schema:duration": "3 months",
+      "schema:location": {
+        "@type": "schema:Place",
+        "schema:name": "Salida, Colorado"
+      },
+      "schema:participant": "@id:person:kaiser-soze",
+      "custom:outcome": "Created custom door handles for cabin"
+    }
+  ],
+  "projects": [
+    {
+      "@type": "schema:Project",
+      "@id": "project:leadville-historical-database",
+      "schema:name": "Leadville Historical Database Project",
+      "schema:description": "Digitizing and organizing over 10,000 historical photographs and documents from the 1880s mining boom",
+      "schema:participant": "@id:person:kaiser-soze",
+      "schema:organizer": {
+        "@type": "schema:Organization",
+        "schema:name": "Leadville Historical Society"
+      },
+      "custom:scope": [
+        "Scanning and cataloging historical documents",
+        "Building searchable database with metadata", 
+        "Creating web interface for researchers and tourists",
+        "Training volunteers on digital archiving"
+      ],
+      "custom:status": "In Progress"
+    },
+    {
+      "@type": "schema:Project",
+      "@id": "project:alpine-wildlife-monitoring",
+      "schema:name": "Alpine Wildlife Monitoring System",
+      "schema:description": "Network of trail cameras and sensors monitoring wildlife movement patterns around Leadville",
+      "schema:participant": "@id:person:kaiser-soze",
+      "schema:sponsor": {
+        "@type": "schema:Organization",
+        "schema:name": "Colorado Parks and Wildlife"
+      },
+      "custom:technicalComponents": [
+        "Solar-powered camera systems at 15 locations",
+        "AI algorithms for species identification and counting",
+        "Real-time dashboard for wildlife biologists",
+        "Migration pattern and habitat usage analysis"
+      ]
+    },
+    {
+      "@type": "schema:SoftwareApplication",
+      "@id": "project:summit-ai-assistant",
+      "schema:name": "Summit - Personal AI Assistant",
+      "schema:description": "AI system for managing personal interests, projects, and knowledge",
+      "schema:creator": "@id:person:kaiser-soze",
+      "schema:applicationCategory": "Personal Productivity",
+      "schema:featureList": [
+        "Natural language interface for knowledge base queries",
+        "Integration with project management systems",
+        "Automated hiking and photography data analysis",
+        "Recommendations for trails, projects, and learning"
+      ],
+      "custom:status": "In Development"
+    },
+    {
+      "@type": "schema:Project",
+      "@id": "project:sustainable-cabin-upgrades",
+      "schema:name": "Sustainable Cabin Upgrades",
+      "schema:description": "Continuous improvements to home sustainability",
+      "schema:participant": "@id:person:kaiser-soze",
+      "custom:components": [
+        "Greywater recycling system for greenhouse",
+        "Root cellar for food storage",
+        "Efficient wood-burning stove upgrade",
+        "Battery storage for solar panel system"
+      ]
+    }
+  ],
+  "goals": [
+    {
+      "@type": "custom:Goal",
+      "@id": "goal:complete-fourteeners",
+      "schema:name": "Complete All Colorado Fourteeners",
+      "schema:description": "Climb all 58 peaks over 14,000 feet in Colorado",
+      "custom:timeframe": "Short-term (1-2 years)",
+      "custom:progress": "47/58 completed",
+      "schema:agent": "@id:person:kaiser-soze"
+    },
+    {
+      "@type": "custom:Goal",
+      "@id": "goal:finish-historical-database",
+      "schema:name": "Finish Leadville Historical Database Project",
+      "custom:timeframe": "Short-term (1-2 years)",
+      "schema:agent": "@id:person:kaiser-soze"
+    },
+    {
+      "@type": "custom:Goal",
+      "@id": "goal:launch-ai-assistant",
+      "schema:name": "Launch Personal AI Assistant",
+      "custom:timeframe": "Short-term (1-2 years)",
+      "schema:agent": "@id:person:kaiser-soze"
+    },
+    {
+      "@type": "custom:Goal",
+      "@id": "goal:expand-business-ai-conservation",
+      "schema:name": "Expand Alpine Code Solutions to AI for Environmental Conservation",
+      "custom:timeframe": "Medium-term (3-5 years)",
+      "schema:agent": "@id:person:kaiser-soze"
+    },
+    {
+      "@type": "schema:WriteAction",
+      "@id": "goal:write-sustainable-living-book",
+      "schema:name": "Write Book on Sustainable Mountain Living",
+      "custom:timeframe": "Medium-term (3-5 years)",
+      "schema:agent": "@id:person:kaiser-soze"
+    },
+    {
+      "@type": "custom:Goal",
+      "@id": "goal:appalachian-trail",
+      "schema:name": "Complete Appalachian Trail with Nancy",
+      "custom:timeframe": "Medium-term (3-5 years)",
+      "schema:agent": ["@id:person:kaiser-soze", "@id:person:nancy-soze"]
+    },
+    {
+      "@type": "custom:Goal",
+      "@id": "goal:climate-adaptation-tools",
+      "schema:name": "Develop AI Tools for Small Mountain Communities Climate Adaptation",
+      "custom:timeframe": "Long-term (5+ years)",
+      "schema:agent": "@id:person:kaiser-soze"
+    }
+  ],
+  "ideas": [
+    {
+      "@type": "schema:CreativeWork",
+      "@id": "idea:digital-homestead",
+      "schema:name": "Digital Homestead Concept",
+      "schema:description": "Using modern technology to enhance traditional homesteading practices",
+      "schema:creator": "@id:person:kaiser-soze",
+      "custom:components": [
+        "IoT sensors for soil, weather, and energy monitoring",
+        "AI-powered resource optimization systems",
+        "Digital tools for preserving traditional knowledge",
+        "Networks of rural tech workers living sustainably"
+      ]
+    },
+    {
+      "@type": "schema:CreativeWork", 
+      "@id": "idea:community-resilience-tech",
+      "schema:name": "Community Resilience Through Technology",
+      "schema:description": "Technology solutions for small mountain town resilience",
+      "schema:creator": "@id:person:kaiser-soze",
+      "custom:components": [
+        "Mesh networks for emergency communication",
+        "Shared resource management systems",
+        "Digital platforms for local skill sharing",
+        "AI-assisted disaster preparedness"
+      ]
+    }
+  ]
+}

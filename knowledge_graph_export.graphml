@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns">
+  <key id="name" for="node" attr.name="name" attr.type="string"/>
+  <key id="class" for="node" attr.name="class" attr.type="string"/>
+  <key id="connections" for="node" attr.name="connections" attr.type="int"/>
+  <key id="type" for="edge" attr.name="type" attr.type="string"/>
+  <graph id="G" edgedefault="directed">
+    <node id="Person_019271a3-789f-4c66-adcf-07bfcdce47bb">
+      <data key="name">Kaiser Soze</data>
+      <data key="class">Person</data>
+      <data key="connections">13</data>
+    </node>
+    <node id="Person_4779a427-d83f-4bb2-afab-1779adb87ba9">
+      <data key="name">John Soze</data>
+      <data key="class">Person</data>
+      <data key="connections">1</data>
+    </node>
+    <node id="Person_67d434a6-d6bf-4526-a779-e979bd598217">
+      <data key="name">Heinrich Soze</data>
+      <data key="class">Person</data>
+      <data key="connections">1</data>
+    </node>
+    <node id="Person_c32da0f7-9017-4cdc-9ee5-7451188222c2">
+      <data key="name">Greta Soze</data>
+      <data key="class">Person</data>
+      <data key="connections">1</data>
+    </node>
+    <node id="Person_f55e422c-157d-4cd3-9c4d-0cedd94de454">
+      <data key="name">Sarah Soze</data>
+      <data key="class">Person</data>
+      <data key="connections">1</data>
+    </node>
+    <node id="Person_fdca03ce-b416-44fe-b18c-797a72a90892">
+      <data key="name">Nancy Soze</data>
+      <data key="class">Person</data>
+      <data key="connections">1</data>
+    </node>
+    <node id="Pet_0de43b21-4fd2-44f5-9d1a-e4c6ccc8c939">
+      <data key="name">Whiskers</data>
+      <data key="class">Pet</data>
+      <data key="connections">1</data>
+    </node>
+    <node id="Pet_a662fdca-d55d-44b3-afdb-b6f9bfb599d9">
+      <data key="name">Max</data>
+      <data key="class">Pet</data>
+      <data key="connections">1</data>
+    </node>
+    <node id="Place_1ee5fe6b-95a3-402b-86ca-75a275a49663">
+      <data key="name">Soze Family Cabin</data>
+      <data key="class">Place</data>
+      <data key="connections">1</data>
+    </node>
+    <node id="Project_0b5d63f2-20e7-4da8-9b58-ecdc3accbac0">
+      <data key="name">Leadville Historical Database</data>
+      <data key="class">Project</data>
+      <data key="connections">1</data>
+    </node>
+    <node id="Project_81695974-5a43-4813-95a1-45186713cd9f">
+      <data key="name">Sustainable Cabin Upgrades</data>
+      <data key="class">Project</data>
+      <data key="connections">1</data>
+    </node>
+    <node id="Project_b5345a99-1350-4d66-9436-40914eba3518">
+      <data key="name">Wildlife Monitoring System</data>
+      <data key="class">Project</data>
+      <data key="connections">1</data>
+    </node>
+    <node id="Project_e9c680c4-5d39-49b1-b28d-585c65f4f191">
+      <data key="name">Personal AI Assistant "Summit"</data>
+      <data key="class">Project</data>
+      <data key="connections">1</data>
+    </node>
+    <edge id="e0" source="Person_019271a3-789f-4c66-adcf-07bfcdce47bb" target="Person_fdca03ce-b416-44fe-b18c-797a72a90892">
+      <data key="type">spouse</data>
+    </edge>
+    <edge id="e1" source="Person_019271a3-789f-4c66-adcf-07bfcdce47bb" target="Person_f55e422c-157d-4cd3-9c4d-0cedd94de454">
+      <data key="type">children</data>
+    </edge>
+    <edge id="e2" source="Person_019271a3-789f-4c66-adcf-07bfcdce47bb" target="Person_4779a427-d83f-4bb2-afab-1779adb87ba9">
+      <data key="type">children</data>
+    </edge>
+    <edge id="e3" source="Person_019271a3-789f-4c66-adcf-07bfcdce47bb" target="Person_67d434a6-d6bf-4526-a779-e979bd598217">
+      <data key="type">parents</data>
+    </edge>
+    <edge id="e4" source="Person_019271a3-789f-4c66-adcf-07bfcdce47bb" target="Person_c32da0f7-9017-4cdc-9ee5-7451188222c2">
+      <data key="type">parents</data>
+    </edge>
+    <edge id="e5" source="Person_019271a3-789f-4c66-adcf-07bfcdce47bb" target="Pet_a662fdca-d55d-44b3-afdb-b6f9bfb599d9">
+      <data key="type">pets</data>
+    </edge>
+    <edge id="e6" source="Person_019271a3-789f-4c66-adcf-07bfcdce47bb" target="Pet_0de43b21-4fd2-44f5-9d1a-e4c6ccc8c939">
+      <data key="type">pets</data>
+    </edge>
+    <edge id="e7" source="Person_019271a3-789f-4c66-adcf-07bfcdce47bb" target="Place_1ee5fe6b-95a3-402b-86ca-75a275a49663">
+      <data key="type">home</data>
+    </edge>
+    <edge id="e8" source="Person_019271a3-789f-4c66-adcf-07bfcdce47bb" target="Project_0b5d63f2-20e7-4da8-9b58-ecdc3accbac0">
+      <data key="type">projects</data>
+    </edge>
+    <edge id="e9" source="Person_019271a3-789f-4c66-adcf-07bfcdce47bb" target="Project_b5345a99-1350-4d66-9436-40914eba3518">
+      <data key="type">projects</data>
+    </edge>
+    <edge id="e10" source="Person_019271a3-789f-4c66-adcf-07bfcdce47bb" target="Project_e9c680c4-5d39-49b1-b28d-585c65f4f191">
+      <data key="type">projects</data>
+    </edge>
+    <edge id="e11" source="Person_019271a3-789f-4c66-adcf-07bfcdce47bb" target="Project_81695974-5a43-4813-95a1-45186713cd9f">
+      <data key="type">projects</data>
+    </edge>
+  </graph>
+</graphml>

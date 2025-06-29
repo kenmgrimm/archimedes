@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Knowledge Graph Visualization</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    #graph {
+      width: 100vw;
+      height: 100vh;
+    }
+    .node {
+      cursor: pointer;
+    }
+    .node circle {
+      stroke-width: 2px;
+      stroke: #fff;
+    }
+    .link {
+      fill: none;
+      stroke: #999;
+      stroke-opacity: 0.6;
+      stroke-width: 1.5px;
+    }
+    .node text {
+      font-weight: bold;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+      pointer-events: none;
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+    .node-details {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 300px;
+      background: white;
+      padding: 15px;
+      border-radius: 5px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      max-height: 90vh;
+      overflow-y: auto;
+      display: none;
+      z-index: 1000;
+    }
+    .close-btn {
+      float: right;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 1.2em;
+    }
+    .properties {
+      margin-top: 10px;
+    }
+    .properties p {
+      margin: 5px 0;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+  <div id="graph"></div>
+  <div id="node-details" class="node-details">
+    <span class="close-btn" onclick="document.getElementById('node-details').style.display='none'">×</span>
+    <h3 id="node-title"></h3>
+    <div id="node-content"></div>
+  </div>
+
+  <script>
+    // Parse the graph data
+    const graphData = {"nodes":[{"id":"Person_019271a3-789f-4c66-adcf-07bfcdce47bb","name":"Kaiser Soze","class":"Person","properties":{"birthDate":"1965-11-01","children":[{"beacon":"weaviate://localhost/Person/f55e422c-157d-4cd3-9c4d-0cedd94de454","href":"/v1/objects/Person/f55e422c-157d-4cd3-9c4d-0cedd94de454"},{"beacon":"weaviate://localhost/Person/4779a427-d83f-4bb2-afab-1779adb87ba9","href":"/v1/objects/Person/4779a427-d83f-4bb2-afab-1779adb87ba9"}],"description":"Legendary strategist and polymath. Enjoys mountaineering, AI/ML, woodworking, blacksmithing.","home":[{"beacon":"weaviate://localhost/Place/1ee5fe6b-95a3-402b-86ca-75a275a49663","href":"/v1/objects/Place/1ee5fe6b-95a3-402b-86ca-75a275a49663"}],"name":"Kaiser Soze","occupation":"Entrepreneur, AI Enthusiast","parents":[{"beacon":"weaviate://localhost/Person/67d434a6-d6bf-4526-a779-e979bd598217","href":"/v1/objects/Person/67d434a6-d6bf-4526-a779-e979bd598217"},{"beacon":"weaviate://localhost/Person/c32da0f7-9017-4cdc-9ee5-7451188222c2","href":"/v1/objects/Person/c32da0f7-9017-4cdc-9ee5-7451188222c2"}],"pets":[{"beacon":"weaviate://localhost/Pet/a662fdca-d55d-44b3-afdb-b6f9bfb599d9","href":"/v1/objects/Pet/a662fdca-d55d-44b3-afdb-b6f9bfb599d9"},{"beacon":"weaviate://localhost/Pet/0de43b21-4fd2-44f5-9d1a-e4c6ccc8c939","href":"/v1/objects/Pet/0de43b21-4fd2-44f5-9d1a-e4c6ccc8c939"}],"projects":[{"beacon":"weaviate://localhost/Project/0b5d63f2-20e7-4da8-9b58-ecdc3accbac0","href":"/v1/objects/Project/0b5d63f2-20e7-4da8-9b58-ecdc3accbac0"},{"beacon":"weaviate://localhost/Project/b5345a99-1350-4d66-9436-40914eba3518","href":"/v1/objects/Project/b5345a99-1350-4d66-9436-40914eba3518"},{"beacon":"weaviate://localhost/Project/e9c680c4-5d39-49b1-b28d-585c65f4f191","href":"/v1/objects/Project/e9c680c4-5d39-49b1-b28d-585c65f4f191"},{"beacon":"weaviate://localhost/Project/81695974-5a43-4813-95a1-45186713cd9f","href":"/v1/objects/Project/81695974-5a43-4813-95a1-45186713cd9f"}],"spouse":[{"beacon":"weaviate://localhost/Person/fdca03ce-b416-44fe-b18c-797a72a90892","href":"/v1/objects/Person/fdca03ce-b416-44fe-b18c-797a72a90892"}]},"connections":13},{"id":"Person_4779a427-d83f-4bb2-afab-1779adb87ba9","name":"John Soze","class":"Person","properties":{"name":"John Soze"},"connections":1},{"id":"Person_67d434a6-d6bf-4526-a779-e979bd598217","name":"Heinrich Soze","class":"Person","properties":{"name":"Heinrich Soze"},"connections":1},{"id":"Person_c32da0f7-9017-4cdc-9ee5-7451188222c2","name":"Greta Soze","class":"Person","properties":{"name":"Greta Soze"},"connections":1},{"id":"Person_f55e422c-157d-4cd3-9c4d-0cedd94de454","name":"Sarah Soze","class":"Person","properties":{"name":"Sarah Soze"},"connections":1},{"id":"Person_fdca03ce-b416-44fe-b18c-797a72a90892","name":"Nancy Soze","class":"Person","properties":{"name":"Nancy Soze"},"connections":1},{"id":"Pet_0de43b21-4fd2-44f5-9d1a-e4c6ccc8c939","name":"Whiskers","class":"Pet","properties":{"name":"Whiskers","species":"Cat"},"connections":1},{"id":"Pet_a662fdca-d55d-44b3-afdb-b6f9bfb599d9","name":"Max","class":"Pet","properties":{"name":"Max","species":"Dog"},"connections":1},{"id":"Place_1ee5fe6b-95a3-402b-86ca-75a275a49663","name":"Soze Family Cabin","class":"Place","properties":{"description":"Custom log cabin at 10,200ft elevation, Leadville, CO.","elevation":10200,"name":"Soze Family Cabin","type":"Log Cabin"},"connections":1},{"id":"Project_0b5d63f2-20e7-4da8-9b58-ecdc3accbac0","name":"Leadville Historical Database","class":"Project","properties":{"description":"Digitizing and connecting Leadville's rich historical records.","name":"Leadville Historical Database"},"connections":1},{"id":"Project_81695974-5a43-4813-95a1-45186713cd9f","name":"Sustainable Cabin Upgrades","class":"Project","properties":{"description":"Solar, insulation, and eco-friendly improvements.","name":"Sustainable Cabin Upgrades"},"connections":1},{"id":"Project_b5345a99-1350-4d66-9436-40914eba3518","name":"Wildlife Monitoring System","class":"Project","properties":{"description":"IoT and AI-powered wildlife tracking for the Rockies.","name":"Wildlife Monitoring System"},"connections":1},{"id":"Project_e9c680c4-5d39-49b1-b28d-585c65f4f191","name":"Personal AI Assistant \"Summit\"","class":"Project","properties":{"description":"Personal knowledge graph and AI assistant.","name":"Personal AI Assistant \"Summit\""},"connections":1}],"links":[{"source":"Person_019271a3-789f-4c66-adcf-07bfcdce47bb","target":"Person_fdca03ce-b416-44fe-b18c-797a72a90892","type":"spouse"},{"source":"Person_019271a3-789f-4c66-adcf-07bfcdce47bb","target":"Person_f55e422c-157d-4cd3-9c4d-0cedd94de454","type":"children"},{"source":"Person_019271a3-789f-4c66-adcf-07bfcdce47bb","target":"Person_4779a427-d83f-4bb2-afab-1779adb87ba9","type":"children"},{"source":"Person_019271a3-789f-4c66-adcf-07bfcdce47bb","target":"Person_67d434a6-d6bf-4526-a779-e979bd598217","type":"parents"},{"source":"Person_019271a3-789f-4c66-adcf-07bfcdce47bb","target":"Person_c32da0f7-9017-4cdc-9ee5-7451188222c2","type":"parents"},{"source":"Person_019271a3-789f-4c66-adcf-07bfcdce47bb","target":"Pet_a662fdca-d55d-44b3-afdb-b6f9bfb599d9","type":"pets"},{"source":"Person_019271a3-789f-4c66-adcf-07bfcdce47bb","target":"Pet_0de43b21-4fd2-44f5-9d1a-e4c6ccc8c939","type":"pets"},{"source":"Person_019271a3-789f-4c66-adcf-07bfcdce47bb","target":"Place_1ee5fe6b-95a3-402b-86ca-75a275a49663","type":"home"},{"source":"Person_019271a3-789f-4c66-adcf-07bfcdce47bb","target":"Project_0b5d63f2-20e7-4da8-9b58-ecdc3accbac0","type":"projects"},{"source":"Person_019271a3-789f-4c66-adcf-07bfcdce47bb","target":"Project_b5345a99-1350-4d66-9436-40914eba3518","type":"projects"},{"source":"Person_019271a3-789f-4c66-adcf-07bfcdce47bb","target":"Project_e9c680c4-5d39-49b1-b28d-585c65f4f191","type":"projects"},{"source":"Person_019271a3-789f-4c66-adcf-07bfcdce47bb","target":"Project_81695974-5a43-4813-95a1-45186713cd9f","type":"projects"}]};
+    
+    // Log connection counts for debugging
+    console.log("Connection counts from backend:");
+    graphData.nodes.forEach(node => {
+      console.log(`Node ${node.name}: ${node.connections} connections`);
+    });
+    
+    // Calculate node sizes based on connection count
+    const maxConnections = Math.max(1, Math.max(...graphData.nodes.map(n => n.connections)));
+    console.log("Max connections:", maxConnections);
+    
+    // Set node sizes with more dramatic scaling
+    const minSize = 15;
+    const maxSize = 60;
+    
+    graphData.nodes.forEach(node => {
+      // Use a more dramatic scaling with a minimum size
+      const connectionRatio = node.connections / maxConnections;
+      // Use a non-linear scale to make differences more apparent
+      node.radius = minSize + (maxSize - minSize) * Math.sqrt(connectionRatio);
+      
+      // Special handling for Kaiser Soze
+      if (node.name === "Kaiser Soze") {
+        node.radius = Math.max(node.radius, maxSize * 0.9); // Ensure Kaiser is prominent
+        console.log("Kaiser Soze node found and sized larger");
+      }
+      
+      console.log(`Node ${node.name} radius: ${node.radius}px with ${node.connections} connections`);
+    });
+    
+    // Convert link source/target from ID to object references
+    // This is critical for D3.js force layout to work properly
+    const nodeById = {};
+    graphData.nodes.forEach(node => {
+      nodeById[node.id] = node;
+    });
+    
+    graphData.links.forEach(link => {
+      // Convert string IDs to actual node objects
+      if (typeof link.source === 'string') {
+        link.source = nodeById[link.source];
+      }
+      if (typeof link.target === 'string') {
+        link.target = nodeById[link.target];
+      }
+    });
+    
+    // Set up the SVG
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    
+    const svg = d3.select("#graph")
+      .append("svg")
+      .attr("width", "100%")
+      .attr("height", "100%")
+      .attr("viewBox", `0 0 ${width} ${height}`)
+      .attr("preserveAspectRatio", "xMidYMid meet");
+    
+    // Add zoom and pan
+    const g = svg.append("g");
+    
+    const zoom = d3.zoom()
+      .scaleExtent([0.1, 4])
+      .on("zoom", (event) => {
+        g.attr("transform", event.transform);
+      });
+      
+    svg.call(zoom);
+    
+    // Set up the simulation with stronger forces for better layout
+    const simulation = d3.forceSimulation(graphData.nodes)
+      .force("link", d3.forceLink()
+        .links(graphData.links)
+        .id(d => d.id)
+        .distance(200)
+        .strength(1))
+      .force("charge", d3.forceManyBody()
+        .strength(-2000))
+      .force("center", d3.forceCenter(width / 2, height / 2))
+      .force("collision", d3.forceCollide()
+        .radius(d => d.radius * 1.2)
+        .strength(1));
+    
+    // Create links (lines between nodes) with arrows
+    const link = g.append("g")
+      .attr("class", "links")
+      .selectAll("line")
+      .data(graphData.links)
+      .enter()
+      .append("line")
+      .attr("class", "link")
+      .attr("stroke", "#333")
+      .attr("stroke-opacity", 0.8)
+      .attr("stroke-width", 3)
+      .attr("marker-end", d => `url(#arrow-${d.type || 'default'})`);  // Add arrow markers
+      
+    // Add arrow markers for links
+    const markers = svg.append("defs").selectAll("marker")
+      .data(["default", "spouse", "children", "parents", "pets", "home", "projects"])
+      .enter().append("marker")
+        .attr("id", d => `arrow-${d}`)
+        .attr("viewBox", "0 -5 10 10")
+        .attr("refX", 20)
+        .attr("refY", 0)
+        .attr("markerWidth", 6)
+        .attr("markerHeight", 6)
+        .attr("orient", "auto")
+      .append("path")
+        .attr("fill", "#333")
+        .attr("d", "M0,-5L10,0L0,5");
+    
+    // Create node groups
+    const node = g.append("g")
+      .selectAll("g")
+      .data(graphData.nodes)
+      .enter()
+      .append("g")
+      .attr("class", "node")
+      .call(d3.drag()
+        .on("start", dragstarted)
+        .on("drag", dragged)
+        .on("end", dragended));
+    
+    // Add circles to nodes with size based on connections
+    node.append("circle")
+      .attr("r", d => d.radius)
+      .attr("fill", d => {
+        const colors = {
+          "Person": "#4e79a7",
+          "Pet": "#f28e2b",
+          "Place": "#e15759",
+          "Project": "#76b7b2",
+          "Document": "#59a14f",
+          "List": "#edc948",
+          "ListItem": "#b07aa1"
+        };
+        return colors[d.class] || "#999";
+      })
+      .attr("stroke", "#fff")
+      .attr("stroke-width", 2);
+      
+    // Add text labels with dynamic sizing and wrapping
+    node.append("text")
+      .attr("text-anchor", "middle")
+      .attr("fill", "white")
+      .attr("style", "pointer-events: none;")
+      .each(function(d) {
+        const text = d3.select(this);
+        const words = d.name.split(/ +/).slice(0, 3); // Get up to 3 words
+        const maxLength = Math.max(...words.map(w => w.length));
+        const wordCount = words.length;
+        
+        // Adjust font size based on node size and text length
+        let size = Math.max(8, Math.min(16, d.radius * 0.4));
+        if (maxLength > 10 || wordCount > 2) size *= 0.9;
+        if (maxLength > 15) size *= 0.8;
+        
+        text.attr("font-size", `${size}px`);
+        
+        // Add text content with line breaks
+        let dy = -((wordCount - 1) * size * 0.6) / 2; // Center text vertically
+        
+        words.forEach((word, i) => {
+          text.append("tspan")
+            .attr("x", 0)
+            .attr("dy", i === 0 ? dy + "em" : "1.2em")
+            .text(word);
+        });
+      });
+      
+    // Add click handler to show node details
+    node.on("click", (event, d) => {
+      const details = d3.select("#node-details");
+      const title = d3.select("#node-title");
+      const content = d3.select("#node-content");
+      
+      // Set title
+      title.text(d.name);
+      
+      // Build properties HTML
+      let html = `<div class="properties">`;
+      html += `<p><strong>Type:</strong> ${d.class}</p>`;
+      html += `<p><strong>Connections:</strong> ${d.connections}</p>`;
+      
+      // Add other properties
+      if (d.properties) {
+        Object.entries(d.properties).forEach(([key, value]) => {
+          if (key !== 'name' && key !== 'title') {
+            if (Array.isArray(value) && value.length > 0) {
+              const items = value.map(item => {
+                if (typeof item === 'object' && item !== null) {
+                  return item.name || item.title || JSON.stringify(item);
+                }
+                return item;
+              }).join(', ');
+              html += `<p><strong>${key}:</strong> ${items}</p>`;
+            } else if (value && typeof value === 'object') {
+              // Handle beacon objects specially
+              if (value.beacon) {
+                const beaconParts = value.beacon.split('/');
+                const className = beaconParts[beaconParts.length - 2] || 'Unknown';
+                const refName = value.name || value.title || className;
+                html += `<p><strong>${key}:</strong> ${refName} (${className})</p>`;
+              } else {
+                html += `<p><strong>${key}:</strong> ${value.name || value.title || JSON.stringify(value)}</p>`;
+              }
+            } else if (value) {
+              html += `<p><strong>${key}:</strong> ${value}</p>`;
+            }
+          }
+        });
+      }
+      
+      html += `</div>`;
+      content.html(html);
+      
+      // Show the details panel
+      details.style("display", "block");
+      
+      // Stop propagation to prevent simulation restart
+      event.stopPropagation();
+    });
+    
+    // Click on background to hide details
+    svg.on("click", () => {
+      d3.select("#node-details").style("display", "none");
+    });
+    
+    // Update positions on each tick
+    simulation.on("tick", () => {
+      link
+        .attr("x1", d => d.source.x)
+        .attr("y1", d => d.source.y)
+        .attr("x2", d => d.target.x)
+        .attr("y2", d => d.target.y);
+        
+      node
+        .attr("transform", d => `translate(${d.x},${d.y})`);
+    });
+    
+    // Drag functions
+    function dragstarted(event, d) {
+      if (!event.active) simulation.alphaTarget(0.3).restart();
+      d.fx = d.x;
+      d.fy = d.y;
+    }
+    
+    function dragged(event, d) {
+      d.fx = event.x;
+      d.fy = event.y;
+    }
+    
+    function dragended(event, d) {
+      if (!event.active) simulation.alphaTarget(0);
+      d.fx = null;
+      d.fy = null;
+    }
+    
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      
+      svg
+        .attr("width", width)
+        .attr("height", height)
+        .attr("viewBox", `0 0 ${width} ${height}`);
+      
+      simulation.force("center", d3.forceCenter(width / 2, height / 2));
+      simulation.alpha(0.3).restart();
+    });
+  </script>
+</body>
+</html>

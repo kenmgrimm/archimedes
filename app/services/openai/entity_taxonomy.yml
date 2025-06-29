@@ -5,12 +5,14 @@ entity_types:
     description: Companies, institutions, or groups
   - name: Location
     description: Cities, countries, landmarks, addresses (e.g., home, work, gym, Home Depot, parent's house, Montrose)
+  - name: Business
+    description: Businesses, stores, or organizations
   - name: Date
     description: Specific dates or date ranges
   - name: Topic
     description: Key concepts, subjects, or themes
-  - name: Contact
-    description: Contact information for a person or organization
+  - name: Person
+    description: A person
   - name: CalendarEvent
     description: Calendar event such as a meeting, appointment, or occasion
   - name: Reminder

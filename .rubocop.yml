@@ -35,13 +35,13 @@ Metrics/BlockLength:
     - 'lib/tasks/**/*'
 
 Metrics/ClassLength:
-  Max: 500
+  Max: 400
 
 Metrics/CyclomaticComplexity:
   Max: 10
 
 Metrics/ModuleLength:
-  Max: 500
+  Max: 400
 
 RSpec/MultipleExpectations:
   Max: 3

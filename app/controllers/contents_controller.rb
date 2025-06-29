@@ -103,37 +103,29 @@ class ContentsController < ApplicationController
       # Prepare files for analysis
       files = prepare_files_for_analysis(@content)
 
-      # Get the notes
-      notes = [@content.note]
-
       # Perform analysis
       Rails.logger.debug { "[ContentsController] Starting analysis for content ##{@content.id}" }
-      results = service.analyze(notes: notes, files: files)
+      result = service.analyze(@content.note, files: files)
 
       # Process results and extract entities
       Rails.logger.debug { "[ContentsController] Processing analysis results" }
-      processing_result = service.process_analysis_results(@content, results)
+      processing_result = service.process_analysis_result(@content, result)
 
-      if processing_result[:success]
-        # Store results for rendering
-        @analysis_results = processing_result[:results]
+      # Store results for rendering
+      @analysis_results = processing_result
 
-        # Set flash messages based on processing results
-        set_analysis_flash_messages(processing_result)
+      # Set flash messages based on processing results
+      set_analysis_flash_messages(processing_result)
 
-        # Add debug logging
-        Rails.logger.debug { "[ContentsController] Analysis completed with #{processing_result[:entity_count]} entities extracted" }
+      # Add debug logging
+      entity_count = processing_result[:created_entities]&.count || 0
+      Rails.logger.debug { "[ContentsController] Analysis completed with #{entity_count} entities extracted" }
 
-        # Render appropriate response
-        respond_to do |format|
-          format.html { render :show }
-          format.json { render json: { content: @content, analysis: @analysis_results } }
-          format.turbo_stream { render_turbo_stream_response }
-        end
-      else
-        # Handle processing failure
-        flash[:alert] = processing_result[:message]
-        redirect_to @content
+      # Render appropriate response
+      respond_to do |format|
+        format.html { render :show }
+        format.json { render json: { content: @content, analysis: @analysis_results } }
+        format.turbo_stream { render_turbo_stream_response }
       end
     rescue StandardError => e
       Rails.logger.error { "[ContentsController] Analysis failed: #{e.message}\n#{e.backtrace.join("\n")}" }
@@ -161,16 +153,16 @@ class ContentsController < ApplicationController
   end
 
   # Set flash messages based on analysis results
-  # @param processing_result [Hash] The result from process_analysis_results
+  # @param processing_result [Hash] The result from process_analysis_result
   def set_analysis_flash_messages(processing_result)
-    # Check if any files were skipped
-    if processing_result[:skipped_files].any?
-      flash.now[:warning] = "Some files were skipped during analysis: #{processing_result[:skipped_files].join(', ')}"
-    end
+    # Check if any errors occurred during processing
+    errors = processing_result[:errors] || []
+    flash.now[:warning] = "Some issues occurred during analysis: #{errors.join(', ')}" if errors.any?
 
     # Set success or info message based on entity count
-    if processing_result[:entity_count].positive?
-      flash.now[:notice] = "Content was successfully analyzed. Found #{processing_result[:entity_count]} entities."
+    created_entities = processing_result[:created_entities] || []
+    if created_entities.any?
+      flash.now[:notice] = "Content was successfully analyzed. Found #{created_entities.count} entities."
     else
       flash.now[:info] = "Analysis completed, but no entities were found."
     end

@@ -1,0 +1,370 @@
+# Kaiser Soze Knowledge Graph - YAML Format
+# Schema.org + FOAF + Custom Ontologies
+
+context:
+  schema: "https://schema.org/"
+  foaf: "http://xmlns.com/foaf/0.1/"
+  dc: "http://purl.org/dc/terms/"
+  custom: "https://archimedes.local/ontology/"
+
+entities:
+  - type: "schema:Person"
+    id: "person:kaiser-soze"
+    name: "Kaiser Soze"
+    givenName: "Kaiser"
+    familyName: "Soze"
+    gender: "Male"
+    birthDate: "1969"
+    age: 55
+    nationality: "American"
+    ethnicity: "German"
+    
+    birthPlace:
+      type: "schema:Place"
+      id: "place:denver-co"
+      name: "Denver, Colorado"
+      addressRegion: "Colorado"
+      addressCountry: "United States"
+    
+    homeLocation:
+      type: "schema:Place"
+      id: "place:leadville-cabin"
+      name: "Custom Log Cabin"
+      address:
+        type: "schema:PostalAddress"
+        addressLocality: "Leadville"
+        addressRegion: "Colorado"
+        addressCountry: "United States"
+      geo:
+        type: "schema:GeoCoordinates"
+        elevation: "10200 feet"
+      floorSize: "2400 square feet"
+      numberOfRooms: "Multiple"
+      landSize: "5 acres"  # custom
+      constructionPeriod: "2005-2008"  # custom
+      features:  # custom
+        - "Vaulted ceilings"
+        - "Stone fireplace"
+        - "Floor-to-ceiling windows"
+        - "Wraparound deck"
+        - "Solar panels"
+        - "Greenhouse"
+    
+    spouse:
+      type: "schema:Person"
+      id: "person:nancy-soze"
+      name: "Nancy Soze"
+      jobTitle: "Freelance Graphic Designer"
+      interests:  # foaf:interest
+        - "Outdoor adventures"
+        - "Rock climbing"
+        - "Gardening"
+    
+    children:
+      - type: "schema:Person"
+        id: "person:sarah-soze"
+        name: "Sarah Soze"
+        age: 22
+        gender: "Female"
+        alumniOf:
+          type: "schema:CollegeOrUniversity"
+          name: "Colorado College"
+        hasCredential:
+          type: "schema:EducationalOccupationalCredential"
+          credentialCategory: "Bachelor's Degree"
+          educationalCredentialAwarded: "Environmental Science"
+        worksFor:
+          type: "schema:Organization"
+          name: "Colorado Parks and Wildlife"
+      
+      - type: "schema:Person"
+        id: "person:john-soze"
+        name: "John Soze"
+        age: 19
+        gender: "Male"
+        memberOf:
+          type: "schema:CollegeOrUniversity"
+          name: "Colorado School of Mines"
+        studyField: "Mechanical Engineering"  # custom
+        academicYear: "Sophomore"  # custom
+    
+    parents:
+      - type: "schema:Person"
+        id: "person:heinrich-soze"
+        name: "Heinrich Soze"
+        jobTitle: "Mechanical Engineer"
+        worksFor:
+          type: "schema:Organization"
+          name: "Lockheed Martin"
+        nationality: "German"
+        birthPlace: "Bavaria, Germany"
+      
+      - type: "schema:Person"
+        id: "person:greta-soze"
+        name: "Greta Soze"
+        jobTitle: "High School German Teacher"
+        nationality: "German"
+        birthPlace: "Bavaria, Germany"
+    
+    sibling:
+      type: "schema:Person"
+      id: "person:ingrid-soze"
+      name: "Ingrid Soze"
+      jobTitle: "Translator"
+      worksFor:
+        type: "schema:Organization"
+        name: "European Union"
+      homeLocation:
+        type: "schema:Place"
+        name: "Munich, Germany"
+    
+    knows:  # foaf:knows
+      - "person:nancy-soze"
+      - "person:sarah-soze"
+      - "person:john-soze"
+      - "person:heinrich-soze"
+      - "person:greta-soze"
+      - "person:ingrid-soze"
+    
+    owns:
+      - type: "schema:Pet"
+        id: "pet:max"
+        name: "Max"
+        species: "Dog"
+        breed: "Golden Retriever"
+        age: 7
+        role: "Hiking companion and trail guide"  # custom
+      
+      - type: "schema:Pet"
+        id: "pet:whiskers"
+        name: "Whiskers"
+        species: "Cat"
+        breed: "Maine Coon"
+        age: 4
+        origin: "Denver animal shelter rescue"  # custom
+    
+    hasCredential:
+      - type: "schema:EducationalOccupationalCredential"
+        credentialCategory: "Bachelor's Degree"
+        educationalCredentialAwarded: "Computer Science"
+        recognizedBy:
+          type: "schema:CollegeOrUniversity"
+          name: "Colorado State University"
+        dateCreated: "1991"
+      
+      - type: "schema:EducationalOccupationalCredential"
+        credentialCategory: "Master's Degree"
+        educationalCredentialAwarded: "Software Engineering"
+        recognizedBy:
+          type: "schema:CollegeOrUniversity"
+          name: "University of Colorado Boulder"
+        dateCreated: "1994"
+    
+    worksFor:
+      type: "schema:Organization"
+      id: "org:alpine-code-solutions"
+      name: "Alpine Code Solutions"
+      foundingDate: "2001"
+      founder: "person:kaiser-soze"
+      description: "Software consulting company specializing in custom database systems for small businesses throughout Colorado"
+    
+    interests:  # foaf:interest
+      - "Artificial Intelligence"
+      - "Machine Learning"
+      - "Python Programming"
+      - "Neural Networks"
+      - "Environmental Conservation"
+      - "Mountaineering"
+      - "Backcountry Skiing"
+      - "Fly Fishing"
+      - "Wildlife Photography"
+      - "Woodworking"
+      - "Blacksmithing"
+      - "Sustainable Living"
+    
+    mountaineeringAchievements:  # custom
+      fourteenersClimbed: 47
+      totalFourteeners: 58
+      completionPercentage: "81%"
+
+events:
+  - type: "schema:Event"
+    id: "event:marriage-kaiser-nancy"
+    name: "Kaiser and Nancy Wedding"
+    startDate: "2000"
+    location:
+      type: "schema:Place"
+      name: "Rocky Mountain National Park"
+    attendee:
+      - "person:kaiser-soze"
+      - "person:nancy-soze"
+  
+  - type: "schema:Event"
+    id: "event:first-meeting-kaiser-nancy"
+    name: "Kaiser and Nancy First Meeting"
+    startDate: "1998"
+    location:
+      type: "schema:Place"
+      name: "Rock Climbing Gym"
+      address:
+        type: "schema:PostalAddress"
+        addressLocality: "Boulder"
+        addressRegion: "Colorado"
+  
+  - type: "schema:Event"
+    id: "event:backpacking-collegiate-peaks-2024"
+    name: "Solo Backpacking Trip - Collegiate Peaks Wilderness"
+    startDate: "2024-07"
+    duration: "8 days"
+    location:
+      type: "schema:Place"
+      name: "Collegiate Peaks Wilderness"
+    distance: "85 miles"  # custom
+    participant: "person:kaiser-soze"
+  
+  - type: "schema:Event"
+    id: "event:anniversary-climb-2024"
+    name: "24th Anniversary Mount Princeton Climb"
+    startDate: "2024-09"
+    location:
+      type: "schema:Place"
+      name: "Mount Princeton"
+    attendee:
+      - "person:kaiser-soze"
+      - "person:nancy-soze"
+    significance: "Nancy's first fourteener"  # custom
+  
+  - type: "schema:EducationEvent"
+    id: "event:blacksmithing-learning-2024"
+    name: "Blacksmithing Learning Experience"
+    startDate: "2024-12"
+    duration: "3 months"
+    location:
+      type: "schema:Place"
+      name: "Salida, Colorado"
+    participant: "person:kaiser-soze"
+    outcome: "Created custom door handles for cabin"  # custom
+
+projects:
+  - type: "schema:Project"
+    id: "project:leadville-historical-database"
+    name: "Leadville Historical Database Project"
+    description: "Digitizing and organizing over 10,000 historical photographs and documents from the 1880s mining boom"
+    participant: "person:kaiser-soze"
+    organizer:
+      type: "schema:Organization"
+      name: "Leadville Historical Society"
+    scope:  # custom
+      - "Scanning and cataloging historical documents"
+      - "Building searchable database with metadata"
+      - "Creating web interface for researchers and tourists"
+      - "Training volunteers on digital archiving"
+    status: "In Progress"  # custom
+  
+  - type: "schema:Project"
+    id: "project:alpine-wildlife-monitoring"
+    name: "Alpine Wildlife Monitoring System"
+    description: "Network of trail cameras and sensors monitoring wildlife movement patterns around Leadville"
+    participant: "person:kaiser-soze"
+    sponsor:
+      type: "schema:Organization"
+      name: "Colorado Parks and Wildlife"
+    technicalComponents:  # custom
+      - "Solar-powered camera systems at 15 locations"
+      - "AI algorithms for species identification and counting"
+      - "Real-time dashboard for wildlife biologists"
+      - "Migration pattern and habitat usage analysis"
+  
+  - type: "schema:SoftwareApplication"
+    id: "project:summit-ai-assistant"
+    name: "Summit - Personal AI Assistant"
+    description: "AI system for managing personal interests, projects, and knowledge"
+    creator: "person:kaiser-soze"
+    applicationCategory: "Personal Productivity"
+    featureList:
+      - "Natural language interface for knowledge base queries"
+      - "Integration with project management systems"
+      - "Automated hiking and photography data analysis"
+      - "Recommendations for trails, projects, and learning"
+    status: "In Development"  # custom
+  
+  - type: "schema:Project"
+    id: "project:sustainable-cabin-upgrades"
+    name: "Sustainable Cabin Upgrades"
+    description: "Continuous improvements to home sustainability"
+    participant: "person:kaiser-soze"
+    components:  # custom
+      - "Greywater recycling system for greenhouse"
+      - "Root cellar for food storage"
+      - "Efficient wood-burning stove upgrade"
+      - "Battery storage for solar panel system"
+
+goals:
+  - type: "custom:Goal"
+    id: "goal:complete-fourteeners"
+    name: "Complete All Colorado Fourteeners"
+    description: "Climb all 58 peaks over 14,000 feet in Colorado"
+    timeframe: "Short-term (1-2 years)"  # custom
+    progress: "47/58 completed"  # custom
+    agent: "person:kaiser-soze"
+  
+  - type: "custom:Goal"
+    id: "goal:finish-historical-database"
+    name: "Finish Leadville Historical Database Project"
+    timeframe: "Short-term (1-2 years)"  # custom
+    agent: "person:kaiser-soze"
+  
+  - type: "custom:Goal"
+    id: "goal:launch-ai-assistant"
+    name: "Launch Personal AI Assistant"
+    timeframe: "Short-term (1-2 years)"  # custom
+    agent: "person:kaiser-soze"
+  
+  - type: "custom:Goal"
+    id: "goal:expand-business-ai-conservation"
+    name: "Expand Alpine Code Solutions to AI for Environmental Conservation"
+    timeframe: "Medium-term (3-5 years)"  # custom
+    agent: "person:kaiser-soze"
+  
+  - type: "schema:WriteAction"
+    id: "goal:write-sustainable-living-book"
+    name: "Write Book on Sustainable Mountain Living"
+    timeframe: "Medium-term (3-5 years)"  # custom
+    agent: "person:kaiser-soze"
+  
+  - type: "custom:Goal"
+    id: "goal:appalachian-trail"
+    name: "Complete Appalachian Trail with Nancy"
+    timeframe: "Medium-term (3-5 years)"  # custom
+    agent:
+      - "person:kaiser-soze"
+      - "person:nancy-soze"
+  
+  - type: "custom:Goal"
+    id: "goal:climate-adaptation-tools"
+    name: "Develop AI Tools for Small Mountain Communities Climate Adaptation"
+    timeframe: "Long-term (5+ years)"  # custom
+    agent: "person:kaiser-soze"
+
+ideas:
+  - type: "schema:CreativeWork"
+    id: "idea:digital-homestead"
+    name: "Digital Homestead Concept"
+    description: "Using modern technology to enhance traditional homesteading practices"
+    creator: "person:kaiser-soze"
+    components:  # custom
+      - "IoT sensors for soil, weather, and energy monitoring"
+      - "AI-powered resource optimization systems"
+      - "Digital tools for preserving traditional knowledge"
+      - "Networks of rural tech workers living sustainably"
+  
+  - type: "schema:CreativeWork"
+    id: "idea:community-resilience-tech"
+    name: "Community Resilience Through Technology"
+    description: "Technology solutions for small mountain town resilience"
+    creator: "person:kaiser-soze"
+    components:  # custom
+      - "Mesh networks for emergency communication"
+      - "Shared resource management systems"
+      - "Digital platforms for local skill sharing"
+      - "AI-assisted disaster preparedness"
