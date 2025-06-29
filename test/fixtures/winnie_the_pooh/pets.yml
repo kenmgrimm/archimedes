@@ -1,0 +1,83 @@
+# Shadow - German Shepherd
+shadow:
+  name: "Shadow"
+  species: "German Shepherd"
+  breed: "Working Line"
+  birthDate: "2018-05-15"
+  description: "Loyal companion and skilled search and rescue dog."
+  color: "Black and Tan"
+  personality: ["Loyal", "Intelligent", "Energetic", "Protective"]
+  training: ["Search and Rescue", "Obedience", "Protection"]
+  medical_history:
+    - date: "2023-11-10"
+      veterinarian: "Dr. Smith"
+      diagnosis: "Annual Checkup"
+      treatment: "Routine examination and vaccinations"
+      medications: ["Rabies", "Distemper", "Parvovirus"]
+      notes: "Healthy and active. Regular checkups every 6 months. No known allergies."
+      follow_up_date: "2024-05-10"
+    - date: "2023-05-10"
+      veterinarian: "Dr. Smith"
+      diagnosis: "Routine Checkup"
+      treatment: "Physical examination and nail trim"
+      medications: []
+      notes: "In excellent health. Maintain current exercise and diet regimen."
+      follow_up_date: "2023-11-10"
+  owner: :winnie_the_pooh_id
+  relationship: "pet"
+
+# Luna - Domestic Shorthair Cat
+luna:
+  name: "Luna"
+  species: "Cat"
+  breed: "Domestic Shorthair"
+  birthDate: "2020-03-15"
+  description: "Mysterious black cat with a penchant for napping in sunbeams."
+  color: "Black"
+  personality: ["Independent", "Playful", "Affectionate"]
+  favorite_spot: "Sunny window sill"
+  medical_history:
+    - date: "2023-09-15"
+      veterinarian: "Dr. Johnson"
+      diagnosis: "Annual Checkup"
+      treatment: "Routine examination and vaccinations"
+      medications: ["Rabies", "FVRCP"]
+      notes: "Indoor cat. Prefers a quiet environment. Allergic to fish-based foods."
+      follow_up_date: "2024-03-15"
+    - date: "2023-03-15"
+      veterinarian: "Dr. Johnson"
+      diagnosis: "Dental Cleaning"
+      treatment: "Routine dental cleaning under anesthesia"
+      medications: ["Antibiotics"]
+      notes: "Teeth in good condition. No extractions needed."
+      follow_up_date: "2023-09-15"
+  owner: :winnie_the_pooh_id
+  relationship: "pet"
+
+# Thunder - Friesian Horse
+thunder:
+  name: "Thunder"
+  species: "Horse"
+  breed: "Friesian"
+  birthDate: "2015-05-10"
+  description: "Majestic black Friesian horse with a gentle temperament."
+  color: "Black"
+  height: 16.2  # hands
+  training: ["Dressage", "Trail Riding", "Driving", "Liberty"]
+  medical_history:
+    - date: "2023-10-15"
+      veterinarian: "Dr. Wilson"
+      diagnosis: "Annual Checkup"
+      treatment: "Routine examination, vaccinations, and dental float"
+      medications: ["Tetanus", "West Nile", "Rabies", "Dewormer"]
+      notes: "Regular farrier visits every 6-8 weeks. Deworming every 3 months."
+      follow_up_date: "2024-04-15"
+    - date: "2023-04-15"
+      veterinarian: "Dr. Wilson"
+      diagnosis: "Lameness Evaluation"
+      treatment: "Joint injection and rest"
+      medications: ["Adequan", "Bute"]
+      notes: "Mild arthritis in hocks. Responding well to treatment."
+      follow_up_date: "2023-10-15"
+  owner: :winnie_the_pooh_id
+  relationship: "pet"

@@ -1,0 +1,384 @@
+# Personal Documents
+resume:
+  title: "Winnie The Pooh - Professional Resume"
+  description: "Comprehensive professional background, skills, and work history"
+  file_name: "winnie_pooh_resume_2023.pdf"
+  file_type: "pdf"
+  file_size: 1024000
+  created_at: "2023-01-15"
+  last_modified: "2023-01-15"
+  author: "Winnie The Pooh"
+  tags: ["professional", "cv", "experience", "education"]
+  content_summary: "Detailed professional history including education, work experience, publications, and skills."
+  security: "confidential"
+  created_by: :winnie_the_pooh_id
+  related_to: []
+
+mountain_guide:
+  title: "Mountain Climbing Guide - Rocky Mountains"
+  description: "Personal notes on climbing routes, conditions, and safety"
+  file_name: "rocky_mountains_climbing_guide_2023.md"
+  file_type: "markdown"
+  file_size: 512000
+  created_at: "2023-03-22"
+  last_modified: "2023-05-10"
+  author: "Winnie The Pooh"
+  tags: ["hobbies", "outdoors", "safety", "guide"]
+  content_summary: "Comprehensive guide to climbing routes in the Rocky Mountains, including difficulty ratings, gear requirements, and personal notes."
+  security: "private"
+  created_by: :winnie_the_pooh_id
+  related_to: []
+
+woodworking_plans:
+  title: "Woodworking Project Plans - 2023"
+  description: "Detailed plans and sketches for woodworking projects"
+  file_name: "woodworking_plans_2023.pdf"
+  file_type: "pdf"
+  file_size: 2048000
+  created_at: "2023-02-10"
+  last_modified: "2023-06-15"
+  author: "Winnie The Pooh"
+  tags: ["woodworking", "projects", "plans", "diy"]
+  content_summary: "Collection of detailed plans for furniture and woodworking projects, including materials lists and cut diagrams."
+  security: "private"
+  created_by: :winnie_the_pooh_id
+  related_to: []
+
+ai_research:
+  title: "AI Research Notes - Neural Networks"
+  description: "Research notes on advanced neural network architectures"
+  file_name: "ai_research_neural_networks_2023.ipynb"
+  file_type: "ipynb"
+  file_size: 3072000
+  created_at: "2023-04-05"
+  last_modified: "2023-07-01"
+  author: "Winnie The Pooh"
+  tags: ["ai", "research", "neural-networks", "machine-learning"]
+  content_summary: "Jupyter notebook containing research on transformer architectures and attention mechanisms."
+  security: "confidential"
+  created_by: :winnie_the_pooh_id
+  related_to: []
+
+# Vehicle Documents - Raptor
+raptor_license_plate:
+  title: "Ford Raptor - Front License Plate"
+  description: "Front view of the Ford Raptor showing license plate COL-2022-RPT"
+  file_name: "ford_raptor_front_license_plate_20220105.jpg"
+  file_type: "jpg"
+  file_size: 3520000
+  width: 4032
+  height: 3024
+  created_at: "2022-01-05"
+  last_modified: "2022-01-05"
+  author: "Winnie The Pooh"
+  tags: ["vehicle", "raptor", "ford", "license_plate", "registration"]
+  content_summary: "Front view of the Ford Raptor showing the license plate and front grille."
+  storage:
+    provider: "s3"
+    bucket: "archimedes-documents-prod"
+    key: "vehicles/ford-raptor-1FTFW1RGXNKE12345/photos/front_license_plate_20220105.jpg"
+  created_by: :winnie_the_pooh_id
+  related_to:
+    - id: :raptor
+      type: "Vehicle"
+
+raptor_vin_sticker:
+  title: "Ford Raptor - VIN and Door Jamb Sticker"
+  description: "Close-up of the door jamb sticker showing VIN and manufacturing details"
+  file_name: "ford_raptor_vin_door_jamb_sticker_20211220.jpg"
+  file_type: "jpg"
+  file_size: 4120000
+  width: 3024
+  height: 4032
+  created_at: "2021-12-20"
+  last_modified: "2021-12-20"
+  author: "Winnie The Pooh"
+  tags: ["vehicle", "raptor", "ford", "vin", "manufacturing", "specs"]
+  content_summary: "Door jamb sticker showing VIN: 1FTFW1RGXNKE12345, manufacturing date, GVWR, and other specifications."
+  storage:
+    provider: "s3"
+    bucket: "archimedes-documents-prod"
+    key: "vehicles/ford-raptor-1FTFW1RGXNKE12345/documents/vin_door_jamb_sticker_20211220.jpg"
+  extracted_text: |
+    VIN: 1FTFW1RGXNKE12345
+    Manufactured: 11/2021
+    GVWR: 7212 lbs
+    GAWR FRT: 4000 lbs
+    GAWR RR: 3875 lbs
+    Tire Size: 315/70R17
+    PSI: 38 Front / 38 Rear
+    Paint Code: UH
+  document_id: "doc_raptor_vin_sticker_001"
+  created_by: :winnie_the_pooh_id
+  related_to:
+    - id: :raptor
+      type: "Vehicle"
+
+raptor_window_sticker:
+  title: "Ford Raptor - Window Sticker"
+  description: "Original window sticker showing MSRP and factory options"
+  file_name: "ford_raptor_window_sticker_20211215.pdf"
+  file_type: "pdf"
+  file_size: 1250000
+  created_at: "2021-12-15"
+  last_modified: "2021-12-15"
+  author: "Ford Motor Company"
+  tags: ["vehicle", "raptor", "ford", "window_sticker", "specs", "msrp"]
+  content_summary: "Original window sticker showing MSRP, standard features, and factory options for the 2022 Ford F-150 Raptor."
+  storage:
+    provider: "s3"
+    bucket: "archimedes-documents-prod"
+    key: "vehicles/ford-raptor-1FTFW1RGXNKE12345/documents/window_sticker_20211215.pdf"
+  created_by: :winnie_the_pooh_id
+  related_to:
+    - id: :raptor
+      type: "Vehicle"
+
+# Registration Documents
+raptor_registration_2024:
+  title: "2024 Vehicle Registration - Ford Raptor"
+  description: "2024 Colorado DMV registration document"
+  file_name: "ford_raptor_registration_2024.jpg"
+  file_type: "jpg"
+  file_size: 1850000
+  width: 2000
+  height: 3000
+  created_at: "2024-01-15"
+  last_modified: "2024-01-15"
+  author: "Colorado Department of Motor Vehicles"
+  tags: ["vehicle", "raptor", "ford", "registration", "dmv", "2024"]
+  content_summary: "2024 Colorado vehicle registration for Ford Raptor (1FTFW1RGXNKE12345)"
+  storage:
+    provider: "s3"
+    bucket: "archimedes-documents-prod"
+    key: "vehicles/ford-raptor-1FTFW1RGXNKE12345/documents/registration/registration_2024.jpg"
+  extracted_text: |
+    COLORADO DEPARTMENT OF REVENUE
+    VEHICLE REGISTRATION
+
+    YEAR: 2022
+    MAKE: FORD
+    MODEL: F-150 RAPTOR
+    VIN: 1FTFW1RGXNKE12345
+    PLATE: COL-2022-RPT
+    EXPIRES: 12/2024
+
+    REGISTERED OWNER:
+    WINNIE THE POOH
+    123 HUNDRED ACRE WOOD
+    DENVER, CO 80202
+
+    VEHICLE USE: PERSONAL
+    WEIGHT: 5,950 LBS
+
+    FEES PAID: $1,256.00
+    REGISTRATION DATE: 01/15/2024
+  created_by: :winnie_the_pooh_id
+  related_to:
+    - id: :raptor
+      type: "Vehicle"
+
+raptor_registration_2023:
+  title: "2023 Vehicle Registration - Ford Raptor"
+  description: "2023 Colorado DMV registration document"
+  file_name: "ford_raptor_registration_2023.jpg"
+  file_type: "jpg"
+  file_size: 1920000
+  width: 2000
+  height: 3000
+  created_at: "2023-01-10"
+  last_modified: "2023-01-10"
+  author: "Colorado Department of Motor Vehicles"
+  tags: ["vehicle", "raptor", "ford", "registration", "dmv", "2023"]
+  content_summary: "2023 Colorado vehicle registration for Ford Raptor (1FTFW1RGXNKE12345)"
+  storage:
+    provider: "s3"
+    bucket: "archimedes-documents-prod"
+    key: "vehicles/ford-raptor-1FTFW1RGXNKE12345/documents/registration/registration_2023.jpg"
+  created_by: :winnie_the_pooh_id
+  related_to:
+    - id: :raptor
+      type: "Vehicle"
+
+# Maintenance Records
+raptor_30000_mile_service:
+  title: "30,000 Mile Service - Ford Raptor"
+  description: "30,000 mile maintenance service invoice"
+  file_name: "ford_raptor_30000_mile_service_20240315.pdf"
+  file_type: "pdf"
+  file_size: 1250000
+  created_at: "2024-03-15"
+  last_modified: "2024-03-15"
+  author: "Denver Auto Care"
+  tags: ["vehicle", "raptor", "ford", "maintenance", "service", "invoice"]
+  content_summary: "30,000 mile service including oil change, tire rotation, and multi-point inspection"
+  storage:
+    provider: "s3"
+    bucket: "archimedes-documents-prod"
+    key: "vehicles/ford-raptor-1FTFW1RGXNKE12345/maintenance/30000_mile_service_20240315.pdf"
+  extracted_text: |
+    DENVER AUTO CARE
+    1234 AUTO LANE, DENVER, CO 80202
+    PHONE: (303) 555-0123
+
+    INVOICE #DAC-2024-0315-001
+
+    CUSTOMER: WINNIE THE POOH
+    VEHICLE: 2022 FORD F-150 RAPTOR
+    VIN: 1FTFW1RGXNKE12345
+    MILEAGE: 30,125
+
+    SERVICES PERFORMED:
+    - SYNTHETIC OIL CHANGE
+    - OIL FILTER REPLACEMENT
+    - TIRE ROTATION
+    - MULTI-POINT INSPECTION
+    - FLUID LEVELS CHECKED
+    - BRAKE INSPECTION
+
+    TOTAL: $189.75
+
+    TECHNICIAN NOTES: Vehicle in good condition. Brake pads at 70% life. Air filter slightly dirty, recommend replacement at next service.
+
+    NEXT SERVICE DUE: 35,000 MILES OR 11/2024
+  created_by: :winnie_the_pooh_id
+  related_to:
+    - id: :raptor
+      type: "Vehicle"
+
+raptor_tire_replacement:
+  title: "Tire Replacement - Ford Raptor"
+  description: "Tire replacement and alignment service"
+  file_name: "ford_raptor_tire_replacement_20231110.jpg"
+  file_type: "jpg"
+  file_size: 2450000
+  width: 3000
+  height: 4000
+  created_at: "2023-11-10"
+  last_modified: "2023-11-10"
+  author: "Mountain View Tire & Auto"
+  tags: ["vehicle", "raptor", "ford", "maintenance", "tires", "alignment"]
+  content_summary: "Replacement of all four tires with BFGoodrich All-Terrain T/A KO2 and 4-wheel alignment"
+  storage:
+    provider: "s3"
+    bucket: "archimedes-documents-prod"
+    key: "vehicles/ford-raptor-1FTFW1RGXNKE12345/maintenance/tire_replacement_20231110.jpg"
+  extracted_text: |
+    MOUNTAIN VIEW TIRE & AUTO
+    5678 PEAK STREET, BOULDER, CO 80301
+    PHONE: (303) 555-9876
+
+    INVOICE #MVT-2023-1110-045
+
+    CUSTOMER: WINNIE THE POOH
+    VEHICLE: 2022 FORD F-150 RAPTOR
+    MILEAGE: 24,875
+
+    SERVICES PERFORMED:
+    - (4) BFGOODRICH ALL-TERRAIN T/A KO2 315/70R17
+    - 4-WHEEL ALIGNMENT
+    - TIRE DISPOSAL FEE
+    - NITROGEN FILL
+
+    TOTAL: $1,845.60
+
+    WARRANTY: 50,000 MILE TREADWEAR
+    NEXT ROTATION DUE: 5,000 MILES
+  created_by: :winnie_the_pooh_id
+  related_to:
+    - id: :raptor
+      type: "Vehicle"
+
+raptor_state_inspection:
+  title: "State Inspection - Ford Raptor"
+  description: "Annual state safety and emissions inspection"
+  file_name: "ford_raptor_state_inspection_20240501.pdf"
+  file_type: "pdf"
+  file_size: 980000
+  created_at: "2024-05-01"
+  last_modified: "2024-05-01"
+  author: "Quick Lube & Inspection"
+  tags: ["vehicle", "raptor", "ford", "inspection", "emissions", "safety"]
+  content_summary: "Annual state safety and emissions inspection for 2022 Ford Raptor"
+  storage:
+    provider: "s3"
+    bucket: "archimedes-documents-prod"
+    key: "vehicles/ford-raptor-1FTFW1RGXNKE12345/maintenance/state_inspection_20240501.pdf"
+  extracted_text: |
+    COLORADO STATE INSPECTION CERTIFICATE
+
+    FACILITY: QUICK LUBE & INSPECTION #42
+    FACILITY #: 42-123456
+    TECHNICIAN: JOHNSON, MIKE
+
+    VEHICLE INFORMATION:
+    YEAR: 2022
+    MAKE: FORD
+    MODEL: F-150 RAPTOR
+    VIN: 1FTFW1RGXNKE12345
+    ODOMETER: 28,745 MILES
+    PLATE: COL-2022-RPT
+
+    INSPECTION RESULTS:
+    - SAFETY INSPECTION: PASS
+    - EMISSIONS INSPECTION: PASS
+
+    CERTIFICATE #: CO987654321
+    EXPIRES: 04/30/2025
+
+    NOTES: No issues found. Vehicle in excellent condition. Next inspection due by 04/30/2025.
+  created_by: :winnie_the_pooh_id
+  related_to:
+    - id: :raptor
+      type: "Vehicle"
+
+raptor_brake_service:
+  title: "Brake Service - Ford Raptor"
+  description: "Brake pad and rotor replacement"
+  file_name: "ford_raptor_brake_service_20230822.pdf"
+  file_type: "pdf"
+  file_size: 1120000
+  created_at: "2023-08-22"
+  last_modified: "2023-08-22"
+  author: "Precision Auto Service"
+  tags: ["vehicle", "raptor", "ford", "maintenance", "brakes", "repair"]
+  content_summary: "Front and rear brake pad and rotor replacement"
+  storage:
+    provider: "s3"
+    bucket: "archimedes-documents-prod"
+    key: "vehicles/ford-raptor-1FTFW1RGXNKE12345/maintenance/brake_service_20230822.pdf"
+  extracted_text: |
+    PRECISION AUTO SERVICE
+    7890 GEAR STREET, DENVER, CO 80210
+    PHONE: (303) 555-4567
+
+    INVOICE #PAS-2023-0822-112
+
+    CUSTOMER: WINNIE THE POOH
+    VEHICLE: 2022 FORD F-150 RAPTOR
+    MILEAGE: 19,845
+
+    SERVICES PERFORMED:
+    - REPLACE FRONT BRAKE PADS
+    - RESURFACE FRONT ROTORS
+    - REPLACE REAR BRAKE PADS
+    - REPLACE REAR ROTORS
+    - BRAKE FLUID EXCHANGE
+    - BRAKE SYSTEM INSPECTION
+
+    PARTS:
+    - (2) FRONT BRAKE PAD SETS
+    - (2) FRONT ROTORS
+    - (2) REAR BRAKE PAD SETS
+    - (2) REAR ROTORS
+    - BRAKE FLUID
+
+    TOTAL: $1,287.45
+
+    WARRANTY: 24 MONTHS / 24,000 MILES
+
+    TECH NOTES: Brake system bled and tested. Rotors resurfaced within specification. Test drive confirmed proper brake operation.
+  created_by: :winnie_the_pooh_id
+  related_to:
+    - id: :raptor
+      type: "Vehicle"
