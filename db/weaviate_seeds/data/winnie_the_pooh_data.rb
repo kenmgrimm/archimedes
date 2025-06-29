@@ -677,6 +677,224 @@ module WeaviateSeeds
             }),
             created_by: winnie_the_pooh_id,
             related_to: []
+          },
+          # Vehicle Documents
+          {
+            id: weaviate.upsert_object("Document", {
+              title: "Ford Raptor - Front License Plate",
+              description: "Front view of the Ford Raptor showing license plate COL-2022-RPT",
+              file_type: "jpg",
+              file_size: 3520000,
+              width: 4032,
+              height: 3024,
+              created_at: "2022-01-05",
+              last_modified: "2022-01-05",
+              author: "Winnie The Pooh",
+              tags: ["vehicle", "raptor", "ford", "license_plate", "registration"],
+              content_summary: "Front view of the Ford Raptor showing the license plate and front grille.",
+              storage: {
+                provider: "s3",
+                bucket: "archimedes-documents-prod",
+                key: "vehicles/ford-raptor-1FTFW1RGXNKE12345/photos/front_license_plate_20220105.jpg",
+              },
+            }),
+            created_by: winnie_the_pooh_id,
+            related_to: [
+              {id: object_ids[:raptor], type: "Vehicle"}
+            ]
+          },
+          {
+            id: weaviate.upsert_object("Document", {
+              title: "Ford Raptor - VIN and Door Jamb Sticker",
+              description: "Close-up of the door jamb sticker showing VIN and manufacturing details",
+              file_type: "jpg",
+              file_size: 4120000,
+              width: 3024,
+              height: 4032,
+              created_at: "2021-12-20",
+              last_modified: "2021-12-20",
+              author: "Winnie The Pooh",
+              tags: ["vehicle", "raptor", "ford", "vin", "manufacturing", "specs"],
+              content_summary: "Door jamb sticker showing VIN: 1FTFW1RGXNKE12345, manufacturing date, GVWR, and other specifications.",
+              storage: {
+                provider: "s3",
+                bucket: "archimedes-documents-prod",
+                key: "vehicles/ford-raptor-1FTFW1RGXNKE12345/documents/vin_door_jamb_sticker_20211220.jpg",
+              },
+              extracted_text: "VIN: 1FTFW1RGXNKE12345\nManufactured: 11/2021\nGVWR: 7212 lbs\nGAWR FRT: 4000 lbs\nGAWR RR: 3875 lbs\nTire Size: 315/70R17\nPSI: 38 Front / 38 Rear\nPaint Code: UH",
+              document_id: "doc_raptor_vin_sticker_001"
+            }),
+            created_by: winnie_the_pooh_id,
+            related_to: [
+              {id: object_ids[:raptor], type: "Vehicle" }
+            ]
+          },
+          {
+            id: weaviate.upsert_object("Document", {
+              title: "Ford Raptor - Window Sticker",
+              description: "Original window sticker showing MSRP and factory options",
+              file_type: "pdf",
+              file_size: 1250000,
+              created_at: "2021-12-15",
+              last_modified: "2021-12-15",
+              author: "Ford Motor Company",
+              tags: ["vehicle", "raptor", "ford", "window_sticker", "specs", "msrp"],
+              content_summary: "Original window sticker showing MSRP, standard features, and factory options for the 2022 Ford F-150 Raptor.",
+              storage: {
+                provider: "s3",
+                bucket: "archimedes-documents-prod",
+                key: "vehicles/ford-raptor-1FTFW1RGXNKE12345/documents/window_sticker_20211215.pdf",
+              },
+            }),
+            created_by: winnie_the_pooh_id,
+            related_to: [
+              {id: object_ids[:raptor], type: "Vehicle" }
+            ]
+          },
+          # Registration Documents
+          {
+            id: weaviate.upsert_object("Document", {
+              title: "2024 Vehicle Registration - Ford Raptor",
+              description: "2024 Colorado DMV registration document",
+              file_type: "jpg",
+              file_size: 1850000,
+              width: 2000,
+              height: 3000,
+              created_at: "2024-01-15",
+              last_modified: "2024-01-15",
+              author: "Colorado Department of Motor Vehicles",
+              tags: ["vehicle", "raptor", "ford", "registration", "dmv", "2024"],
+              content_summary: "2024 Colorado vehicle registration for Ford Raptor (1FTFW1RGXNKE12345)",
+              storage: {
+                provider: "s3",
+                bucket: "archimedes-documents-prod",
+                key: "vehicles/ford-raptor-1FTFW1RGXNKE12345/documents/registration/registration_2024.jpg",
+              },
+              extracted_text: "COLORADO DEPARTMENT OF REVENUE\nVEHICLE REGISTRATION\n\nYEAR: 2022\nMAKE: FORD\nMODEL: F-150 RAPTOR\nVIN: 1FTFW1RGXNKE12345\nPLATE: COL-2022-RPT\nEXPIRES: 12/2024\n\nREGISTERED OWNER:\nWINNIE THE POOH\n123 HUNDRED ACRE WOOD\nDENVER, CO 80202\n\nVEHICLE USE: PERSONAL\nWEIGHT: 5,950 LBS\n\nFEES PAID: $1,256.00\nREGISTRATION DATE: 01/15/2024"
+            }),
+            created_by: winnie_the_pooh_id,
+            related_to: [
+              {id: object_ids[:raptor], type: "Vehicle" }
+            ]
+          },
+          {
+            id: weaviate.upsert_object("Document", {
+              title: "2023 Vehicle Registration - Ford Raptor",
+              description: "2023 Colorado DMV registration document",
+              file_type: "jpg",
+              file_size: 1920000,
+              width: 2000,
+              height: 3000,
+              created_at: "2023-01-10",
+              last_modified: "2023-01-10",
+              author: "Colorado Department of Motor Vehicles",
+              tags: ["vehicle", "raptor", "ford", "registration", "dmv", "2023"],
+              content_summary: "2023 Colorado vehicle registration for Ford Raptor (1FTFW1RGXNKE12345)",
+              storage: {
+                provider: "s3",
+                bucket: "archimedes-documents-prod",
+                key: "vehicles/ford-raptor-1FTFW1RGXNKE12345/documents/registration/registration_2023.jpg",
+              }
+            }),
+            created_by: winnie_the_pooh_id,
+            related_to: [
+              {id: object_ids[:raptor], type: "Vehicle" }
+            ]
+          },
+          # Maintenance Records
+          {
+            id: weaviate.upsert_object("Document", {
+              title: "30,000 Mile Service - Ford Raptor",
+              description: "30,000 mile maintenance service invoice",
+              file_type: "pdf",
+              file_size: 1250000,
+              created_at: "2024-03-15",
+              last_modified: "2024-03-15",
+              author: "Denver Auto Care",
+              tags: ["vehicle", "raptor", "ford", "maintenance", "service", "invoice"],
+              content_summary: "30,000 mile service including oil change, tire rotation, and multi-point inspection",
+              storage: {
+                provider: "s3",
+                bucket: "archimedes-documents-prod",
+                key: "vehicles/ford-raptor-1FTFW1RGXNKE12345/maintenance/30000_mile_service_20240315.pdf",
+              },
+              extracted_text: "DENVER AUTO CARE\n1234 AUTO LANE, DENVER, CO 80202\nPHONE: (303) 555-0123\n\nINVOICE #DAC-2024-0315-001\n\nCUSTOMER: WINNIE THE POOH\nVEHICLE: 2022 FORD F-150 RAPTOR\nVIN: 1FTFW1RGXNKE12345\nMILEAGE: 30,125\n\nSERVICES PERFORMED:\n- SYNTHETIC OIL CHANGE\n- OIL FILTER REPLACEMENT\n- TIRE ROTATION\n- MULTI-POINT INSPECTION\n- FLUID LEVELS CHECKED\n- BRAKE INSPECTION\n\nTOTAL: $189.75\n\nTECHNICIAN NOTES: Vehicle in good condition. Brake pads at 70% life. Air filter slightly dirty, recommend replacement at next service.\n\nNEXT SERVICE DUE: 35,000 MILES OR 11/2024"
+            }),
+            created_by: winnie_the_pooh_id,
+            related_to: [
+              {id: object_ids[:raptor], type: "Vehicle" }
+            ]
+          },
+          {
+            id: weaviate.upsert_object("Document", {
+              title: "Tire Replacement - Ford Raptor",
+              description: "Tire replacement and alignment service",
+              file_type: "jpg",
+              file_size: 2450000,
+              width: 3000,
+              height: 4000,
+              created_at: "2023-11-10",
+              last_modified: "2023-11-10",
+              author: "Mountain View Tire & Auto",
+              tags: ["vehicle", "raptor", "ford", "maintenance", "tires", "alignment"],
+              content_summary: "Replacement of all four tires with BFGoodrich All-Terrain T/A KO2 and 4-wheel alignment",
+              storage: {
+                provider: "s3",
+                bucket: "archimedes-documents-prod",
+                key: "vehicles/ford-raptor-1FTFW1RGXNKE12345/maintenance/tire_replacement_20231110.jpg",
+              },
+              extracted_text: "MOUNTAIN VIEW TIRE & AUTO\n5678 PEAK STREET, BOULDER, CO 80301\nPHONE: (303) 555-9876\n\nINVOICE #MVT-2023-1110-045\n\nCUSTOMER: WINNIE THE POOH\nVEHICLE: 2022 FORD F-150 RAPTOR\nMILEAGE: 24,875\n\nSERVICES PERFORMED:\n- (4) BFGOODRICH ALL-TERRAIN T/A KO2 315/70R17\n- 4-WHEEL ALIGNMENT\n- TIRE DISPOSAL FEE\n- NITROGEN FILL\n\nTOTAL: $1,845.60\n\nWARRANTY: 50,000 MILE TREADWEAR\nNEXT ROTATION DUE: 5,000 MILES"
+            }),
+            created_by: winnie_the_pooh_id,
+            related_to: [
+              {id: object_ids[:raptor], type: "Vehicle" }
+            ]
+          },
+          {
+            id: weaviate.upsert_object("Document", {
+              title: "State Inspection - Ford Raptor",
+              description: "Annual state safety and emissions inspection",
+              file_type: "pdf",
+              file_size: 980000,
+              created_at: "2024-05-01",
+              last_modified: "2024-05-01",
+              author: "Quick Lube & Inspection",
+              tags: ["vehicle", "raptor", "ford", "inspection", "emissions", "safety"],
+              content_summary: "Annual state safety and emissions inspection for 2022 Ford Raptor",
+              storage: {
+                provider: "s3",
+                bucket: "archimedes-documents-prod",
+                key: "vehicles/ford-raptor-1FTFW1RGXNKE12345/maintenance/state_inspection_20240501.pdf",
+              },
+              extracted_text: "COLORADO STATE INSPECTION CERTIFICATE\n\nFACILITY: QUICK LUBE & INSPECTION #42\nFACILITY #: 42-123456\nTECHNICIAN: JOHNSON, MIKE\n\nVEHICLE INFORMATION:\nYEAR: 2022\nMAKE: FORD\nMODEL: F-150 RAPTOR\nVIN: 1FTFW1RGXNKE12345\nODOMETER: 28,745 MILES\nPLATE: COL-2022-RPT\n\nINSPECTION RESULTS:\n- SAFETY INSPECTION: PASS\n- EMISSIONS INSPECTION: PASS\n\nCERTIFICATE #: CO987654321\nEXPIRES: 04/30/2025\n\nNOTES: No issues found. Vehicle in excellent condition. Next inspection due by 04/30/2025."
+            }),
+            created_by: winnie_the_pooh_id,
+            related_to: [
+              {id: object_ids[:raptor], type: "Vehicle" }
+            ]
+          },
+          {
+            id: weaviate.upsert_object("Document", {
+              title: "Brake Service - Ford Raptor",
+              description: "Brake pad and rotor replacement",
+              file_type: "pdf",
+              file_size: 1120000,
+              created_at: "2023-08-22",
+              last_modified: "2023-08-22",
+              author: "Precision Auto Service",
+              tags: ["vehicle", "raptor", "ford", "maintenance", "brakes", "repair"],
+              content_summary: "Front and rear brake pad and rotor replacement",
+              storage: {
+                provider: "s3",
+                bucket: "archimedes-documents-prod",
+                key: "vehicles/ford-raptor-1FTFW1RGXNKE12345/maintenance/brake_service_20230822.pdf",
+              },
+              extracted_text: "PRECISION AUTO SERVICE\n7890 GEAR STREET, DENVER, CO 80210\nPHONE: (303) 555-4567\n\nINVOICE #PAS-2023-0822-112\n\nCUSTOMER: WINNIE THE POOH\nVEHICLE: 2022 FORD F-150 RAPTOR\nMILEAGE: 19,845\n\nSERVICES PERFORMED:\n- REPLACE FRONT BRAKE PADS\n- RESURFACE FRONT ROTORS\n- REPLACE REAR BRAKE PADS\n- REPLACE REAR ROTORS\n- BRAKE FLUID EXCHANGE\n- BRAKE SYSTEM INSPECTION\n\nPARTS:\n- (2) FRONT BRAKE PAD SETS\n- (2) FRONT ROTORS\n- (2) REAR BRAKE PAD SETS\n- (2) REAR ROTORS\n- BRAKE FLUID\n\nTOTAL: $1,287.45\n\nWARRANTY: 24 MONTHS / 24,000 MILES\n\nTECH NOTES: Brake system bled and tested. Rotors resurfaced within specification. Test drive confirmed proper brake operation."
+            }),
+            created_by: winnie_the_pooh_id,
+            related_to: [
+              {id: object_ids[:raptor], type: "Vehicle" }
+            ]
           }
         ]
 
@@ -749,9 +967,15 @@ module WeaviateSeeds
         ]
 
         # Connect documents to projects
-        documents[0][:related_to] = [projects[0][:id]]  # Resume to AI Research
-        documents[1][:related_to] = [projects[2][:id]]  # Climbing Guide to Drone Network
-        documents[3][:related_to] = [projects[0][:id]]  # AI Notes to AI Research
+        documents[0][:related_to] = [
+          {id: projects[0][:id], type: "Project" }
+        ]  # Resume to AI Research
+        documents[1][:related_to] = [
+          {id: projects[2][:id], type: "Project" }
+        ]  # Climbing Guide to Drone Network
+        documents[3][:related_to] = [
+          {id: projects[0][:id], type: "Project" }
+        ]  # AI Notes to AI Research
 
         # Create relationships
         puts "\n🔗 Creating relationships..."
@@ -786,8 +1010,10 @@ module WeaviateSeeds
         # Connect documents to owner and projects
         documents.each do |doc|
           weaviate.add_reference("Document", doc[:id], "created_by", "Person", winnie_the_pooh_id)
-          doc[:related_to].each do |project_id|
-            weaviate.add_reference("Document", doc[:id], "related_to", "Project", project_id)
+          doc[:related_to].each do |related_to|
+            related_to_id = related_to[:id]
+            related_to_type = related_to[:type]
+            weaviate.add_reference("Document", doc[:id], "related_to", related_to_type, related_to_id)
           end
         end
         

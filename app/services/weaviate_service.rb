@@ -92,7 +92,7 @@ class WeaviateService
 
       @logger.debug("Executing GraphQL query: #{query}")
       result = @client.graphql.query(query)
-      
+
       # Try multiple ways to access the response data
       objects = if result.respond_to?(:data) && result.data.respond_to?(:dig)
                   result.data.dig("Get", class_name)
@@ -103,7 +103,7 @@ class WeaviateService
                 end
 
       @logger.debug("GraphQL result for #{class_name} search: #{objects.inspect}")
-      
+
       # Return first object if found, otherwise nil
       objects.is_a?(Array) ? objects.first : nil
     rescue StandardError => e
@@ -147,18 +147,18 @@ class WeaviateService
 
   def reference_exists?(from_class, from_id, prop, to_id)
     query = build_reference_existence_query(from_class, from_id, prop)
-    
+
     # Skip if the query is empty (property doesn't exist in schema)
     if query.empty?
       @logger.debug("Skipping reference existence check for #{from_class}.#{prop} as it's not a valid reference property")
       return false
     end
-    
+
     @logger.debug("Checking if reference exists with query: #{query}")
-    
+
     begin
       result = @client.graphql.query(query)
-      
+
       # Try multiple ways to access the response data
       from_objects = if result.respond_to?(:data) && result.data.respond_to?(:dig)
                        result.data.dig("Get", from_class)
@@ -167,18 +167,18 @@ class WeaviateService
                      else
                        result.instance_variable_get(:@original_hash).dig("data", "Get", from_class)
                      end
-      
+
       @logger.debug("Reference check result for #{from_class}/#{from_id}.#{prop}: #{from_objects.inspect}")
-      
+
       return false if from_objects.nil? || !from_objects.is_a?(Array) || from_objects.empty?
-      
+
       refs = from_objects.first[prop]
       return false if refs.nil? || !refs.is_a?(Array)
-      
-      exists = refs.any? do |ref| 
+
+      exists = refs.any? do |ref|
         ref && ref["_additional"] && ref["_additional"]["id"] == to_id
       end
-      
+
       @logger.debug("Reference #{from_class}/#{from_id}.#{prop} -> #{to_id} exists: #{exists}")
       exists
     rescue StandardError => e
@@ -193,15 +193,18 @@ class WeaviateService
   def build_reference_existence_query(from_class, from_id, prop)
     # Define which types each reference property can point to (only for properties that exist)
     reference_types = {
-      "spouse" => ["Person"],
-      "children" => ["Person"],
-      "parents" => ["Person"],
-      "pets" => ["Pet"],
-      "owner" => ["Person"],  # For Pet -> Person reference
-      "home" => ["Place"],
-      "projects" => ["Project"],
-      "members" => ["Person"],  # For Project -> Person reference
-      "residents" => ["Person"]  # For Place -> Person reference
+      "children" => ["Person"], # For Person -> Person reference
+      "created_by" => ["Person"], # For Document -> Person reference
+      "home" => ["Place"], # For Person -> Place reference
+      "members" => ["Person"], # For Project -> Person reference
+      "owner" => ["Person"], # For Pet -> Person reference
+      "parents" => ["Person"], # For Person -> Person reference
+      "pets" => ["Pet"], # For Person -> Pet reference
+      "projects" => ["Project"], # For Person -> Project reference
+      "related_to" => ["Document", "Person", "Pet", "Place", "Project", "Vehicle"], # For Document -> * references
+      "residents" => ["Person"], # For Place -> Person reference
+      "spouse" => ["Person"], # For Person -> Person reference
+      "vehicles" => ["Vehicle"] # For Person -> Vehicle reference
     }
 
     # Skip if this property isn't in our reference types
@@ -234,32 +237,32 @@ class WeaviateService
   # Add new properties to an existing class
   def update_class_properties(class_name, properties)
     @logger.debug("Updating properties for class #{class_name}")
-    
+
     # Get existing class definition
     class_def = @client.schema.get(class_name: class_name)
     existing_props = class_def["properties"] || []
-    
+
     # Add new properties that don't already exist
     new_properties = properties.reject do |new_prop|
       existing_props.any? { |existing| existing["name"] == new_prop[:name] }
     end
-    
+
     return if new_properties.empty?
-    
+
     # Convert symbols to strings for the API
     new_properties.each do |prop|
       @logger.debug("Adding property #{prop[:name]} to class #{class_name}")
-      
+
       # Use direct HTTP call since weaviate-ruby gem doesn't have a direct method for this
-      require 'net/http'
-      require 'json'
-      
+      require "net/http"
+      require "json"
+
       uri = URI("http://localhost:8080/v1/schema/#{class_name}/properties")
       http = Net::HTTP.new(uri.host, uri.port)
-      
+
       request = Net::HTTP::Post.new(uri)
       request["Content-Type"] = "application/json"
-      
+
       property_config = {
         dataType: prop[:dataType],
         name: prop[:name],
@@ -270,21 +273,19 @@ class WeaviateService
           }
         }
       }
-      
+
       # Add tokenization for text properties
-      if prop[:dataType].include?("text")
-        property_config[:tokenization] = "word"
-      end
-      
+      property_config[:tokenization] = "word" if prop[:dataType].include?("text")
+
       request.body = property_config.to_json
-      
+
       response = http.request(request)
-      
+
       unless response.code == "200"
         @logger.error("Failed to add property: #{response.code} - #{response.body}")
         raise "Failed to add property: #{response.message}"
       end
-      
+
       @logger.debug("Successfully added property #{prop[:name]} to class #{class_name}")
     end
   end

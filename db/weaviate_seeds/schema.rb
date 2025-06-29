@@ -331,7 +331,7 @@ module WeaviateSeeds
         # Update Document class with references
         weaviate.update_class_properties("Document", [
           { name: "created_by", dataType: ["Person"] },
-          { name: "related_to", dataType: ["Place", "Project"] },
+          { name: "related_to", dataType: ["Document", "Place", "Project", "Person", "Pet", "Vehicle"] },
           { name: "in_list", dataType: ["List"] }
         ])
 
