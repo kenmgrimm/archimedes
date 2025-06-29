@@ -145,8 +145,6 @@ module WeaviateVisualization
     filename
   end
 
-  private
-
   def build_knowledge_graph_data
     nodes = []
     links = []
@@ -327,6 +325,8 @@ module WeaviateVisualization
 
     { nodes: nodes, links: links }
   end
+
+  private
 
   def safe_to_hash(obj)
     return obj if obj.nil?

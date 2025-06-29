@@ -113,7 +113,7 @@ class WeaviateService
     end
   end
 
-  def add_reference(from_class, from_id, prop, to_class, to_id)
+  def add_reference(from_class, from_id, prop, to_class, to_id, direct_reference = true)
     @logger.debug("Adding reference from #{from_class}(#{from_id}) #{prop} → #{to_class}(#{to_id})")
 
     # Check if reference already exists
@@ -131,14 +131,17 @@ class WeaviateService
 
     request = Net::HTTP::Post.new(uri)
     request["Content-Type"] = "application/json"
-    request.body = {
-      beacon: "weaviate://localhost/#{to_class}/#{to_id}"
-    }.to_json
+    request.body = {}.tap do |body|
+      if direct_reference
+        body[:uuid] = to_id
+      else
+        body[:beacon] = "weaviate://localhost/#{to_class}/#{to_id}"
+      end
+    end.to_json
 
     response = http.request(request)
 
     if response.code != "200"
-      debugger
       @logger.error("Failed to add reference: #{response.code} - #{response.body}")
       raise "Failed to add reference: #{response.message}"
     end
