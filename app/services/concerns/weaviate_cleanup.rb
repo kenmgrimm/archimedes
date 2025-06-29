@@ -3,7 +3,7 @@ require "httparty"
 module WeaviateCleanup
   def delete_all_objects
     classes = fetch_schema_classes
-    return if classes.nil?  # Error already logged in fetch_schema_classes
+    return if classes.nil? # Error already logged in fetch_schema_classes
 
     if classes.empty?
       @logger.info "ℹ️  No classes found in the schema. Nothing to delete."
@@ -50,7 +50,7 @@ module WeaviateCleanup
     @logger.info "💥 Starting nuclear cleanup: deleting all schema classes..."
 
     classes = fetch_schema_classes
-    return if classes.nil?  # Error already logged in fetch_schema_classes
+    return if classes.nil? # Error already logged in fetch_schema_classes
 
     if classes.empty?
       @logger.info "ℹ️  No classes found in the schema. Nothing to delete."
@@ -68,9 +68,9 @@ module WeaviateCleanup
 
       existing_classes =
         if schema_data.is_a?(Array)
-          schema_data.map { |c| c.is_a?(Hash) ? c["class"] : c.class_name }.compact
+          schema_data.filter_map { |c| c.is_a?(Hash) ? c["class"] : c.class_name }
         elsif schema_data.is_a?(Hash) && schema_data["classes"]
-          schema_data["classes"].map { |c| c.is_a?(Hash) ? c["class"] : c.class_name }.compact
+          schema_data["classes"].filter_map { |c| c.is_a?(Hash) ? c["class"] : c.class_name }
         else
           []
         end
@@ -112,16 +112,16 @@ module WeaviateCleanup
           remaining_schema = verify_response.parsed_response
           remaining_classes =
             if remaining_schema.is_a?(Array)
-              remaining_schema.map { |c| c.is_a?(Hash) ? c["class"] : c.class_name }.compact
+              remaining_schema.filter_map { |c| c.is_a?(Hash) ? c["class"] : c.class_name }
             elsif remaining_schema.is_a?(Hash) && remaining_schema["classes"]
-              remaining_schema["classes"].map { |c| c.is_a?(Hash) ? c["class"] : c.class_name }.compact
+              remaining_schema["classes"].filter_map { |c| c.is_a?(Hash) ? c["class"] : c.class_name }
             else
               []
             end
 
           remaining_count = (remaining_classes & classes_to_delete).count
 
-          if remaining_count == 0
+          if remaining_count.zero?
             @logger.info "✅ All requested schema classes were deleted."
           else
             @logger.warn "⚠️  Some schema classes remain: #{(remaining_classes & classes_to_delete).join(', ')}"
@@ -141,11 +141,11 @@ module WeaviateCleanup
 
   def cleanup_interactive
     # Interactive cleanup method that prompts user for choice
-    puts "\n🧹 Weaviate Database Cleanup"
-    puts "Choose cleanup method:"
-    puts "1. Delete all objects (keeps schema structure)"
-    puts "2. Delete entire schema classes (nuclear option)"
-    print "Enter choice (1 or 2): "
+    Rails.logger.debug "\n🧹 Weaviate Database Cleanup"
+    Rails.logger.debug "Choose cleanup method:"
+    Rails.logger.debug "1. Delete all objects (keeps schema structure)"
+    Rails.logger.debug "2. Delete entire schema classes (nuclear option)"
+    Rails.logger.debug "Enter choice (1 or 2): "
 
     choice = gets.chomp
 
@@ -159,7 +159,7 @@ module WeaviateCleanup
       return false
     end
 
-    puts "\n🎉 Weaviate cleanup complete!"
+    Rails.logger.debug "\n🎉 Weaviate cleanup complete!"
     true
   end
 
@@ -171,12 +171,12 @@ module WeaviateCleanup
       @logger.error "❌ Failed to fetch schema: #{response.code} - #{response.body}"
       return nil
     end
-    
+
     schema_data = response.parsed_response
     if schema_data.is_a?(Array)
-      schema_data.map { |c| c.is_a?(Hash) ? c['class'] : c.class_name }.compact
-    elsif schema_data.is_a?(Hash) && schema_data['classes']
-      schema_data['classes'].map { |c| c.is_a?(Hash) ? c['class'] : c.class_name }.compact
+      schema_data.filter_map { |c| c.is_a?(Hash) ? c["class"] : c.class_name }
+    elsif schema_data.is_a?(Hash) && schema_data["classes"]
+      schema_data["classes"].filter_map { |c| c.is_a?(Hash) ? c["class"] : c.class_name }
     else
       []
     end

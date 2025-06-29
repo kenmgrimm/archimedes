@@ -4,8 +4,8 @@ module FixtureLoader
     fixture_path = Rails.root.join("test/fixtures/#{namespace}/#{fixture_name}.yml")
     YAML.load_file(fixture_path, aliases: true)[fixture_name]
   end
-  
+
   def self.load_winnie_the_pooh_fixture(fixture_name)
-    load_fixture('winnie_the_pooh', fixture_name)
+    load_fixture("winnie_the_pooh", fixture_name)
   end
 end

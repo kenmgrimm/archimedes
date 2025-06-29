@@ -88,57 +88,54 @@ class VisualizationsController < ApplicationController
 
   def connection_stats
     weaviate_service = WeaviateService.new
-    
+
     respond_to do |format|
       format.json do
-        begin
-          # Get the graph data
-          graph_data = weaviate_service.send(:build_knowledge_graph_data)
-          
-          # Initialize data structures
-          connection_counts = Hash.new { |h, k| h[k] = Hash.new(0) }
-          node_names = {}
-          
-          # First pass: collect node names
-          graph_data[:nodes].each do |node|
-            node_id = node[:id].to_s
-            node_names[node_id] = node[:name] || "Unnamed #{node[:class] || 'Node'}"
-          end
-          
-          # Second pass: count connections
-          graph_data[:links].each do |link|
-            source_id = link[:source].to_s
-            target_id = link[:target].to_s
-            
-            if node_names.key?(source_id) && node_names.key?(target_id)
-              source_name = node_names[source_id]
-              target_name = node_names[target_id]
-              
-              # Count the connection in both directions
-              connection_counts[source_name][target_name] += 1
-              # Only count the reverse if it's a different pair
-              connection_counts[target_name][source_name] += 1 unless source_name == target_name
-            end
-          end
-          
-          # Convert to a sorted array of results
-          results = connection_counts.map do |source, targets|
-            total_connections = targets.values.sum
-            {
-              entity: source,
-              total_connections: total_connections,
-              connections: targets.sort_by { |_, count| -count }.map do |target, count|
-                { connected_to: target, count: count }
-              end
-            }
-          end.sort_by { |r| -r[:total_connections] }
-          
-          render json: { connection_stats: results }
-          
-        rescue StandardError => e
-          Rails.logger.error "Error generating connection stats: #{e.message}"
-          render json: { error: "Failed to generate connection stats: #{e.message}" }, status: :internal_server_error
+        # Get the graph data
+        graph_data = weaviate_service.build_knowledge_graph_data
+
+        # Initialize data structures
+        connection_counts = Hash.new { |h, k| h[k] = Hash.new(0) }
+        node_names = {}
+
+        # First pass: collect node names
+        graph_data[:nodes].each do |node|
+          node_id = node[:id].to_s
+          node_names[node_id] = node[:name] || "Unnamed #{node[:class] || 'Node'}"
         end
+
+        # Second pass: count connections
+        graph_data[:links].each do |link|
+          source_id = link[:source].to_s
+          target_id = link[:target].to_s
+
+          next unless node_names.key?(source_id) && node_names.key?(target_id)
+
+          source_name = node_names[source_id]
+          target_name = node_names[target_id]
+
+          # Count the connection in both directions
+          connection_counts[source_name][target_name] += 1
+          # Only count the reverse if it's a different pair
+          connection_counts[target_name][source_name] += 1 unless source_name == target_name
+        end
+
+        # Convert to a sorted array of results
+        results = connection_counts.map do |source, targets|
+          total_connections = targets.values.sum
+          {
+            entity: source,
+            total_connections: total_connections,
+            connections: targets.sort_by { |_, count| -count }.map do |target, count|
+              { connected_to: target, count: count }
+            end
+          }
+        end.sort_by { |r| -r[:total_connections] }
+
+        render json: { connection_stats: results }
+      rescue StandardError => e
+        Rails.logger.error "Error generating connection stats: #{e.message}"
+        render json: { error: "Failed to generate connection stats: #{e.message}" }, status: :internal_server_error
       end
     end
   end

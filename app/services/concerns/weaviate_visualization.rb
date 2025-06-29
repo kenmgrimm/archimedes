@@ -2,7 +2,7 @@ module WeaviateVisualization
   # Returns the URL to view the knowledge graph visualization
   def display_knowledge_graph
     url = Rails.application.routes.url_helpers.visualization_knowledge_graph_url(host: "localhost:3000")
-    puts "\n🌐 Knowledge graph is available at: #{url}"
+    Rails.logger.debug { "\n🌐 Knowledge graph is available at: #{url}" }
     url
   end
 
@@ -29,8 +29,8 @@ module WeaviateVisualization
   def export_json(graph_data)
     filename = "knowledge_graph_export.json"
     File.write(filename, JSON.pretty_generate(graph_data))
-    puts "\n📊 Knowledge graph data exported to: #{filename}"
-    puts "This file can be imported into visualization tools like D3.js or Sigma.js"
+    Rails.logger.debug { "\n📊 Knowledge graph data exported to: #{filename}" }
+    Rails.logger.debug "This file can be imported into visualization tools like D3.js or Sigma.js"
     filename
   end
 
@@ -67,8 +67,8 @@ module WeaviateVisualization
     end
 
     File.write(filename, builder.to_xml)
-    puts "\n📊 Knowledge graph data exported to: #{filename}"
-    puts "This file can be imported into tools like Gephi, yEd, or other GraphML-compatible viewers"
+    Rails.logger.debug { "\n📊 Knowledge graph data exported to: #{filename}" }
+    Rails.logger.debug "This file can be imported into tools like Gephi, yEd, or other GraphML-compatible viewers"
     filename
   end
 
@@ -104,8 +104,8 @@ module WeaviateVisualization
     end
 
     File.write(filename, builder.to_xml)
-    puts "\n📊 Knowledge graph data exported to: #{filename}"
-    puts "This file can be imported into Gephi for advanced graph visualization and analysis"
+    Rails.logger.debug { "\n📊 Knowledge graph data exported to: #{filename}" }
+    Rails.logger.debug "This file can be imported into Gephi for advanced graph visualization and analysis"
     filename
   end
 
@@ -140,8 +140,8 @@ module WeaviateVisualization
     }
 
     File.write(filename, JSON.pretty_generate(cytoscape_data))
-    puts "\n📊 Knowledge graph data exported to: #{filename}"
-    puts "This file can be directly used with Cytoscape.js for interactive visualization"
+    Rails.logger.debug { "\n📊 Knowledge graph data exported to: #{filename}" }
+    Rails.logger.debug "This file can be directly used with Cytoscape.js for interactive visualization"
     filename
   end
 
@@ -162,7 +162,7 @@ module WeaviateVisualization
       response = safe_to_hash(response)
       objects = response.is_a?(Hash) ? (response["objects"] || []) : []
 
-      puts "\n🔍 Found #{objects.size} objects for class #{class_name}"
+      Rails.logger.debug { "\n🔍 Found #{objects.size} objects for class #{class_name}" }
 
       objects.each do |obj|
         # Convert to hash if it's a GraphQL response object
@@ -173,10 +173,10 @@ module WeaviateVisualization
         props = obj["properties"].is_a?(Hash) ? obj["properties"] : {}
         node_name = props["name"] || props["title"] || props["content"] || "Unnamed #{class_name}"
 
-        puts "   - #{node_name} (ID: #{obj['id']})"
+        Rails.logger.debug { "   - #{node_name} (ID: #{obj['id']})" }
         if class_name == "ListItem"
-          puts "     Properties: #{props.keys.join(', ')}"
-          puts "     list_id: #{props['list_id']}" if props["list_id"]
+          Rails.logger.debug { "     Properties: #{props.keys.join(', ')}" }
+          Rails.logger.debug { "     list_id: #{props['list_id']}" } if props["list_id"]
         end
 
         node_map[node_id] = {
@@ -192,10 +192,8 @@ module WeaviateVisualization
       @logger.error("Error fetching objects for class #{class_name}: #{e.message}")
       @logger.error(e.backtrace.join("\n")) if @logger.debug?
       next
-    end
 
-    # Second pass: collect all links
-    classes.each do |class_name|
+      # Second pass: collect all links
       response = @client.objects.list(class_name: class_name)
       response = safe_to_hash(response)
       objects = response.is_a?(Hash) ? (response["objects"] || []) : []
@@ -237,52 +235,56 @@ module WeaviateVisualization
                 # This is a list item referencing its parent list
                 target_class = "List"
                 target_id = ref["id"]
-                puts "\n🔍 Found list item reference: #{source_id} -> List/#{target_id}" if class_name == "ListItem"
+                Rails.logger.debug { "\n🔍 Found list item reference: #{source_id} -> List/#{target_id}" } if class_name == "ListItem"
 
                 # Debug: Print the source and target node details
                 source_node = node_map[source_id]
                 target_node = node_map["#{target_class}_#{target_id}"]
 
                 if source_node && target_node
-                  puts "   ✅ Valid reference: #{source_node[:name]} (#{source_node[:class]}) -> #{target_node[:name]} (#{target_node[:class]})"
+                  Rails.logger.debug do
+                    "   ✅ Valid reference: #{source_node[:name]} (#{source_node[:class]}) -> #{target_node[:name]} (#{target_node[:class]})"
+                  end
                 else
-                  puts "   ❌ Invalid reference: "
-                  puts "      Source node: #{source_node ? 'Found' : 'Missing'}"
-                  puts "      Target node: #{target_node ? 'Found' : 'Missing'}"
+                  Rails.logger.debug "   ❌ Invalid reference: "
+                  Rails.logger.debug { "      Source node: #{source_node ? 'Found' : 'Missing'}" }
+                  Rails.logger.debug { "      Target node: #{target_node ? 'Found' : 'Missing'}" }
                 end
               elsif class_name == "List" && prop_name == "items"
                 # This is a list referencing its items
                 target_class = "ListItem"
                 target_id = ref["id"]
-                puts "\n🔍 Found list reference: #{source_id} -> ListItem/#{target_id}"
+                Rails.logger.debug { "\n🔍 Found list reference: #{source_id} -> ListItem/#{target_id}" }
 
                 # Debug: Print the source and target node details
                 source_node = node_map[source_id]
                 target_node = node_map["#{target_class}_#{target_id}"]
 
                 if source_node && target_node
-                  puts "   ✅ Valid reference: #{source_node[:name]} (#{source_node[:class]}) -> #{target_node[:name]} (#{target_node[:class]})"
+                  Rails.logger.debug do
+                    "   ✅ Valid reference: #{source_node[:name]} (#{source_node[:class]}) -> #{target_node[:name]} (#{target_node[:class]})"
+                  end
 
                   # Debug: Print the list_id of the target list item
                   if target_node[:properties] && target_node[:properties]["list_id"]
-                    puts "   ℹ️  ListItem's list_id: #{target_node[:properties]['list_id']}"
+                    Rails.logger.debug { "   ℹ️  ListItem's list_id: #{target_node[:properties]['list_id']}" }
 
                     # Check if the list_id matches the source list's ID
                     source_id_parts = source_id.split("_")
-                    source_list_id = source_id_parts[1..-1].join("_")
+                    source_list_id = source_id_parts[1..].join("_")
 
                     if target_node[:properties]["list_id"].to_s.include?(source_list_id)
-                      puts "   ✅ ListItem's list_id matches the source List ID"
+                      Rails.logger.debug "   ✅ ListItem's list_id matches the source List ID"
                     else
-                      puts "   ❌ ListItem's list_id does NOT match the source List ID"
-                      puts "      List ID in reference: #{source_list_id}"
-                      puts "      List ID in list_item: #{target_node[:properties]['list_id']}"
+                      Rails.logger.debug "   ❌ ListItem's list_id does NOT match the source List ID"
+                      Rails.logger.debug { "      List ID in reference: #{source_list_id}" }
+                      Rails.logger.debug { "      List ID in list_item: #{target_node[:properties]['list_id']}" }
                     end
                   end
                 else
-                  puts "   ❌ Invalid reference: "
-                  puts "      Source node: #{source_node ? 'Found' : 'Missing'}"
-                  puts "      Target node: #{target_node ? 'Found' : 'Missing'}"
+                  Rails.logger.debug "   ❌ Invalid reference: "
+                  Rails.logger.debug { "      Source node: #{source_node ? 'Found' : 'Missing'}" }
+                  Rails.logger.debug { "      Target node: #{target_node ? 'Found' : 'Missing'}" }
                 end
               else
                 # Skip other types of direct ID references we don't handle
@@ -319,7 +321,7 @@ module WeaviateVisualization
     # Ensure Kaiser Soze has the most connections if he exists
     kaiser_node = nodes.find { |n| n[:name] == "Kaiser Soze" }
     if kaiser_node
-      max_connections = nodes.map { |n| n[:connections] }.max || 0
+      max_connections = nodes.pluck(:connections).max || 0
       kaiser_node[:connections] = [kaiser_node[:connections], max_connections + 1].max
     end
 
@@ -333,12 +335,12 @@ module WeaviateVisualization
     obj = obj.data if obj.respond_to?(:data)
 
     if obj.is_a?(Hash)
-      obj.each_with_object({}) do |(key, value), result|
-        result[key] = convert_value(value)
+      obj.transform_values do |value|
+        convert_value(value)
       end
     elsif obj.respond_to?(:to_h)
-      obj.to_h.each_with_object({}) do |(key, value), result|
-        result[key] = convert_value(value)
+      obj.to_h.transform_values do |value|
+        convert_value(value)
       end
     else
       obj
@@ -360,9 +362,9 @@ module WeaviateVisualization
       if value.size == 1 && value.first.is_a?(Hash)
         first_item = value.first
         # If the hash has array values, we'll process them specially
-        if first_item.values.any? { |v| v.is_a?(Array) }
-          return first_item.each_with_object({}) do |(k, v), result|
-            result[k] = v.is_a?(Array) ? v.map { |item| convert_value(item) } : convert_value(v)
+        if first_item.values.any?(Array)
+          return first_item.transform_values do |v|
+            v.is_a?(Array) ? v.map { |item| convert_value(item) } : convert_value(v)
           end
         end
 
@@ -378,8 +380,8 @@ module WeaviateVisualization
         {}
       else
         # Process hash values recursively
-        value.each_with_object({}) do |(k, v), result|
-          result[k] = convert_value(v)
+        value.transform_values do |v|
+          convert_value(v)
         end
       end
     when ->(v) { v.respond_to?(:to_h) }

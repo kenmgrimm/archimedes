@@ -44,5 +44,3 @@ echo -e "\nDocuments related to $VEHICLE_MAKE $VEHICLE_MODEL:"
 curl -s -X POST http://localhost:8080/v1/graphql \
   -H "Content-Type: application/json" \
   -d "$DOCUMENTS_QUERY" | jq
-
-
