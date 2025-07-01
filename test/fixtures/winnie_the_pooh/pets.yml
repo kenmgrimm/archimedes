@@ -23,8 +23,8 @@ shadow:
       medications: []
       notes: "In excellent health. Maintain current exercise and diet regimen."
       follow_up_date: "2023-11-10"
-  owner: :winnie_the_pooh_id
-  relationship: "pet"
+  references:
+    owner: :winnie_the_pooh
 
 # Luna - Domestic Shorthair Cat
 luna:
@@ -51,8 +51,8 @@ luna:
       medications: ["Antibiotics"]
       notes: "Teeth in good condition. No extractions needed."
       follow_up_date: "2023-09-15"
-  owner: :winnie_the_pooh_id
-  relationship: "pet"
+  references:
+    owner: :winnie_the_pooh
 
 # Thunder - Friesian Horse
 thunder:
@@ -79,5 +79,5 @@ thunder:
       medications: ["Adequan", "Bute"]
       notes: "Mild arthritis in hocks. Responding well to treatment."
       follow_up_date: "2023-10-15"
-  owner: :winnie_the_pooh_id
-  relationship: "pet"
+  references:
+    owner: :winnie_the_pooh

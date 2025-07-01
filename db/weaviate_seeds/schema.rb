@@ -188,7 +188,7 @@ module WeaviateSeeds
 
         # Define List class with enhanced attributes
         weaviate.ensure_class("List", [
-          { name: "title", dataType: ["text"] },
+          { name: "name", dataType: ["text"] },
           { name: "description", dataType: ["text"] },
           { name: "category", dataType: ["text"] },
           { name: "created_at", dataType: ["text"] },
@@ -203,38 +203,6 @@ module WeaviateSeeds
           { name: "color_code", dataType: ["text"] },
           { name: "is_pinned", dataType: ["boolean"] }
         ], "A list entity with enhanced organization and sharing features")
-
-        # Define ListItem class with enhanced attributes
-        weaviate.ensure_class("ListItem", [
-          { name: "content", dataType: ["text"] },
-          { name: "description", dataType: ["text"] },
-          { name: "completed", dataType: ["boolean"] },
-          { name: "due_date", dataType: ["text"] },
-          { name: "created_at", dataType: ["text"] },
-          { name: "updated_at", dataType: ["text"] },
-          { name: "priority", dataType: ["text"] },
-          { name: "status", dataType: ["text"] },
-          { name: "tags", dataType: ["text[]"] },
-          { name: "assignee", dataType: ["text"] },
-          { name: "estimated_time", dataType: ["number"] },
-          { name: "time_spent", dataType: ["number"] },
-          { name: "start_date", dataType: ["text"] },
-          { name: "completed_at", dataType: ["text"] },
-          { name: "reminder_date", dataType: ["text"] },
-          { name: "recurring", dataType: ["boolean"] },
-          { name: "recurrence_pattern", dataType: ["text"] },
-          { name: "notes", dataType: ["text"] },
-          { name: "attachments", dataType: ["text[]"] },
-          { 
-            name: "custom_fields", 
-            dataType: ["object"],
-            nestedProperties: [
-              { name: "field_name", dataType: ["text"] },
-              { name: "field_type", dataType: ["text"] },
-              { name: "value", dataType: ["text"] }
-            ]
-          }
-        ], "A list item entity with detailed task management capabilities")
 
         # Define Vehicle class with enhanced attributes
         weaviate.ensure_class("Vehicle", [
@@ -299,8 +267,7 @@ module WeaviateSeeds
           { name: "projects", dataType: ["Project"] },
           { name: "home", dataType: ["Place"] },
           { name: "homes", dataType: ["Place"] },
-          { name: "family", dataType: ["Person"] },
-          { name: "friends", dataType: ["Person"] }
+          { name: "relationships", dataType: ["Person"] },
         ])
 
         # Update Pet class with references
@@ -338,16 +305,8 @@ module WeaviateSeeds
         # Update List class with references
         weaviate.update_class_properties("List", [
           { name: "created_by", dataType: ["Person"] },
-          { name: "items", dataType: ["ListItem"] },
           { name: "related_to", dataType: ["Place", "Project"] },
           { name: "documents", dataType: ["Document"] }
-        ])
-
-        # Update ListItem class with references
-        weaviate.update_class_properties("ListItem", [
-          { name: "list", dataType: ["List"] },
-          { name: "assigned_to", dataType: ["Person"] },
-          { name: "related_to", dataType: ["Document", "Project", "Place"] }
         ])
 
         # Update Vehicle class with references

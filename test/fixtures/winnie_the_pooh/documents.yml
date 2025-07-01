@@ -11,8 +11,9 @@ resume:
   tags: ["professional", "cv", "experience", "education"]
   content_summary: "Detailed professional history including education, work experience, publications, and skills."
   security: "confidential"
-  created_by: :winnie_the_pooh_id
-  related_to: []
+  references: 
+    created_by: :winnie_the_pooh
+    related_to: []
 
 mountain_guide:
   title: "Mountain Climbing Guide - Rocky Mountains"
@@ -26,8 +27,9 @@ mountain_guide:
   tags: ["hobbies", "outdoors", "safety", "guide"]
   content_summary: "Comprehensive guide to climbing routes in the Rocky Mountains, including difficulty ratings, gear requirements, and personal notes."
   security: "private"
-  created_by: :winnie_the_pooh_id
-  related_to: []
+  references: 
+    created_by: :winnie_the_pooh
+    related_to: []
 
 woodworking_plans:
   title: "Woodworking Project Plans - 2023"
@@ -41,8 +43,9 @@ woodworking_plans:
   tags: ["woodworking", "projects", "plans", "diy"]
   content_summary: "Collection of detailed plans for furniture and woodworking projects, including materials lists and cut diagrams."
   security: "private"
-  created_by: :winnie_the_pooh_id
-  related_to: []
+  references: 
+    created_by: :winnie_the_pooh
+    related_to: []
 
 ai_research:
   title: "AI Research Notes - Neural Networks"
@@ -56,8 +59,9 @@ ai_research:
   tags: ["ai", "research", "neural-networks", "machine-learning"]
   content_summary: "Jupyter notebook containing research on transformer architectures and attention mechanisms."
   security: "confidential"
-  created_by: :winnie_the_pooh_id
-  related_to: []
+  references: 
+    created_by: :winnie_the_pooh
+    related_to: []
 
 # Vehicle Documents - Raptor
 raptor_license_plate:
@@ -77,10 +81,11 @@ raptor_license_plate:
     provider: "s3"
     bucket: "archimedes-documents-prod"
     key: "vehicles/ford-raptor-1FTFW1RGXNKE12345/photos/front_license_plate_20220105.jpg"
-  created_by: :winnie_the_pooh_id
-  related_to:
-    - id: :raptor
-      type: "Vehicle"
+  references: 
+    created_by: :winnie_the_pooh
+    related_to:
+      - key: :raptor
+        type: "Vehicle"
 
 raptor_vin_sticker:
   title: "Ford Raptor - VIN and Door Jamb Sticker"
@@ -109,10 +114,11 @@ raptor_vin_sticker:
     PSI: 38 Front / 38 Rear
     Paint Code: UH
   document_id: "doc_raptor_vin_sticker_001"
-  created_by: :winnie_the_pooh_id
-  related_to:
-    - id: :raptor
-      type: "Vehicle"
+  references: 
+    created_by: :winnie_the_pooh
+    related_to:
+      - key: :raptor
+        type: "Vehicle"
 
 raptor_window_sticker:
   title: "Ford Raptor - Window Sticker"
@@ -129,10 +135,11 @@ raptor_window_sticker:
     provider: "s3"
     bucket: "archimedes-documents-prod"
     key: "vehicles/ford-raptor-1FTFW1RGXNKE12345/documents/window_sticker_20211215.pdf"
-  created_by: :winnie_the_pooh_id
-  related_to:
-    - id: :raptor
-      type: "Vehicle"
+  references: 
+    created_by: :winnie_the_pooh
+    related_to:
+      - key: :raptor
+        type: "Vehicle"
 
 # Registration Documents
 raptor_registration_2024:
@@ -173,10 +180,11 @@ raptor_registration_2024:
 
     FEES PAID: $1,256.00
     REGISTRATION DATE: 01/15/2024
-  created_by: :winnie_the_pooh_id
-  related_to:
-    - id: :raptor
-      type: "Vehicle"
+  references: 
+    created_by: winnie_the_pooh
+    related_to:
+      - key: raptor
+        type: "Vehicle"
 
 raptor_registration_2023:
   title: "2023 Vehicle Registration - Ford Raptor"
@@ -195,10 +203,11 @@ raptor_registration_2023:
     provider: "s3"
     bucket: "archimedes-documents-prod"
     key: "vehicles/ford-raptor-1FTFW1RGXNKE12345/documents/registration/registration_2023.jpg"
-  created_by: :winnie_the_pooh_id
-  related_to:
-    - id: :raptor
-      type: "Vehicle"
+  references: 
+    created_by: winnie_the_pooh
+    related_to:
+      - key: raptor
+        type: "Vehicle"
 
 # Maintenance Records
 raptor_30000_mile_service:
@@ -241,10 +250,11 @@ raptor_30000_mile_service:
     TECHNICIAN NOTES: Vehicle in good condition. Brake pads at 70% life. Air filter slightly dirty, recommend replacement at next service.
 
     NEXT SERVICE DUE: 35,000 MILES OR 11/2024
-  created_by: :winnie_the_pooh_id
-  related_to:
-    - id: :raptor
-      type: "Vehicle"
+  references: 
+    created_by: winnie_the_pooh
+    related_to:
+      - key: raptor
+        type: "Vehicle"
 
 raptor_tire_replacement:
   title: "Tire Replacement - Ford Raptor"
@@ -284,10 +294,11 @@ raptor_tire_replacement:
 
     WARRANTY: 50,000 MILE TREADWEAR
     NEXT ROTATION DUE: 5,000 MILES
-  created_by: :winnie_the_pooh_id
-  related_to:
-    - id: :raptor
-      type: "Vehicle"
+  references: 
+    created_by: winnie_the_pooh
+    related_to:
+      - key: raptor
+        type: "Vehicle"
 
 raptor_state_inspection:
   title: "State Inspection - Ford Raptor"
@@ -327,10 +338,11 @@ raptor_state_inspection:
     EXPIRES: 04/30/2025
 
     NOTES: No issues found. Vehicle in excellent condition. Next inspection due by 04/30/2025.
-  created_by: :winnie_the_pooh_id
-  related_to:
-    - id: :raptor
-      type: "Vehicle"
+  references: 
+    created_by: winnie_the_pooh
+    related_to:
+      - key: raptor
+        type: "Vehicle"
 
 raptor_brake_service:
   title: "Brake Service - Ford Raptor"
@@ -378,7 +390,8 @@ raptor_brake_service:
     WARRANTY: 24 MONTHS / 24,000 MILES
 
     TECH NOTES: Brake system bled and tested. Rotors resurfaced within specification. Test drive confirmed proper brake operation.
-  created_by: :winnie_the_pooh_id
-  related_to:
-    - id: :raptor
-      type: "Vehicle"
+  references: 
+    created_by: winnie_the_pooh
+    related_to:
+      - key: raptor
+        type: "Vehicle"

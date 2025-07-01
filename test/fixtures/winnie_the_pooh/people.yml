@@ -33,6 +33,35 @@ winnie_the_pooh:
       start_date: "1988-09-01"
       end_date: "1990-07-15"
       description: "Master's degree with focus on autonomous systems"
+  references:
+    relationships:
+      - to: heinrich_pooh
+        type: father
+        inverse: son
+      - to: greta_pooh
+        type: mother
+        inverse: son
+      - to: nancy_pooh
+        type: sister
+        inverse: brother
+      - to: thomas_pooh
+        type: brother
+        inverse: brother
+      - to: emma_pooh
+        type: sister
+        inverse: sister
+      - to: tigger
+        type: best_friend
+        inverse: best_friend
+      - to: piglet
+        type: close_friend
+        inverse: close_friend
+      - to: rabbit
+        type: mentor
+        inverse: mentee
+      - to: owl
+        type: mentor
+        inverse: mentee
 
 heinrich_pooh:
   name: "Heinrich Pooh"
@@ -104,24 +133,6 @@ emma_pooh:
       end_date: "2001-05-15"
       description: "Specialization in environmental and natural resources law"
 
-# Relationships between entities
-relationships:
-  - from: winnie_the_pooh
-    to: heinrich_pooh
-    type: father
-  - from: winnie_the_pooh
-    to: greta_pooh
-    type: mother
-  - from: winnie_the_pooh
-    to: nancy_pooh
-    type: sister
-  - from: winnie_the_pooh
-    to: thomas_pooh
-    type: brother
-  - from: winnie_the_pooh
-    to: emma_pooh
-    type: sister
-
 # Friends and colleagues
 tigger:
   name: "Tigger"
@@ -182,18 +193,3 @@ owl:
       start_date: "1970-10-01"
       end_date: "1975-06-30"
       description: "Doctoral research on ethical decision-making"
-
-# Add friend relationships
-relationships:
-  - from: winnie_the_pooh
-    to: tigger
-    type: best_friend
-  - from: winnie_the_pooh
-    to: piglet
-    type: close_friend
-  - from: winnie_the_pooh
-    to: rabbit
-    type: mentor
-  - from: winnie_the_pooh
-    to: owl
-    type: mentor

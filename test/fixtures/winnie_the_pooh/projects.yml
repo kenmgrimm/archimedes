@@ -20,14 +20,12 @@ ai_research_initiative:
       description: "Initial prototype developed"
     - date: "2023-06-30"
       description: "First paper submitted to NeurIPS"
-  members:
-    - :winnie_the_pooh_id
-    - :friend_1_id
-    - :friend_3_id
-  related_documents:
-    - :resume
-    - :ai_research
-
+  references:
+    members:
+      - winnie_the_pooh
+      - tigger
+      - rabbit
+      
 # Sustainable Cabin Project
 sustainable_cabin:
   name: "Sustainable Cabin Project"
@@ -49,12 +47,11 @@ sustainable_cabin:
     - "Aquaponics System"
     - "Passive Solar Design"
     - "Natural Building Materials"
-  members:
-    - :winnie_the_pooh_id
-    - :family_member_1_id
-    - :family_member_2_id
-  related_places:
-    - :pooh_family_estate
+  references:
+    members:
+      - winnie_the_pooh
+      - thomas_pooh
+      - emma_pooh
 
 # Mountain Rescue Drone Network
 drone_rescue_network:
@@ -70,9 +67,8 @@ drone_rescue_network:
     - "Create reliable communication network"
     - "Implement AI-based person detection"
     - "Achieve 90% success rate in test scenarios"
-  members:
-    - :winnie_the_pooh_id
-    - :friend_1_id
-    - :friend_3_id
-  related_documents:
-    - :mountain_guide
+  references:
+    members:
+      - winnie_the_pooh
+      - tigger
+      - rabbit

@@ -10,6 +10,10 @@ module WeaviateSeeds
         
         # Seed the data
         WeaviateSeeds::WinnieThePoohData.seed_data(weaviate)
+
+        puts "\n✅ Successfully seeded Weaviate with initial data."
+      rescue => e
+        puts "Error seeding data: #{e.message}\n#{e.backtrace[0..5].join("\n")}"
       end
     end
   end

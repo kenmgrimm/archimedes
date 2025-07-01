@@ -1,0 +1,35 @@
+grocery_list:
+  name: "Grocery List"
+  items:
+    - name: "Milk"
+    - name: "Eggs"
+    - name: "Bread"
+    - name: "Cheese"
+    - name: "Butter"
+    - name: "Bacon"
+  references:
+    owner: :winnie_the_pooh
+
+hardware_store_list:
+  name: "Hardware Store List"
+  items:
+    - name: "Hammer"
+    - name: "Screwdriver"
+    - name: "Wrench"
+    - name: "Saw"
+    - name: "Drill"
+    - name: "Pliers"
+  references:
+    owner: :winnie_the_pooh
+
+garage_repair_list:
+  name: "Garage Repair List"
+  items:
+    - name: "Hammer"
+    - name: "Screwdriver"
+    - name: "Wrench"
+    - name: "Saw"
+    - name: "Drill"
+    - name: "Pliers"
+  references:
+    owner: :winnie_the_pooh

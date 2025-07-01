@@ -38,6 +38,8 @@ raptor:
   last_service_date: "2023-07-22"
   next_service_due: "2024-01-22"
   status: "Active"
+  references:
+    owner: :winnie_the_pooh
 
 4runner:
   name: "Toyota 4Runner TRD Pro"
@@ -75,6 +77,8 @@ raptor:
   last_service_date: "2023-05-20"
   next_service_due: "2023-11-20"
   status: "Active"
+  references:
+    owner: :winnie_the_pooh
 
 crf450l:
   name: "Honda CRF450L"
@@ -111,6 +115,8 @@ crf450l:
   last_service_date: "2023-04-01"
   next_service_due: "2023-10-01"
   status: "Active"
+  references:
+    owner: :winnie_the_pooh
 
 tourneo:
   name: "Ford Tourneo"
@@ -159,3 +165,5 @@ tourneo:
       next_due_date: "2023-10-10"
       cost: 89.99
       notes: "Ensure regular highway driving to prevent DPF clogging"
+  references:
+    owner: :winnie_the_pooh
