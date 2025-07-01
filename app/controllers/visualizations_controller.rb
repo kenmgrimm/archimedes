@@ -8,7 +8,7 @@ class VisualizationsController < ApplicationController
       format.html # Renders knowledge_graph.html.erb
       format.json do
         # Get the graph data directly without writing to a file
-        graph_data = weaviate_service.send(:build_knowledge_graph_data)
+        graph_data = weaviate_service.build_knowledge_graph_data
 
         # Initialize data structures
         nodes = []
