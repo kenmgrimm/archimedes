@@ -49,7 +49,6 @@ namespace :weaviate do
       # Run the seed
       puts "\n🏗️  Running seed script..."
       WeaviateSeeds::WinnieThePoohSeed.run(weaviate)
-      puts "\n✅ Successfully seeded Weaviate with initial data."
     rescue StandardError => e
       handle_error(e)
     end
