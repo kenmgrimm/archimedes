@@ -64,6 +64,10 @@ class WeaviateService
     end
   end
 
+  def find_by_id(class_name, id)
+    @client.objects.get(class_name: class_name, id: id)
+  end
+
   def find(class_name, properties)
     unique_field = case class_name
                    when "Document" then "file_name"
@@ -113,8 +117,109 @@ class WeaviateService
     end
   end
 
-  def add_reference(from_class, from_id, prop, to_class, to_id, direct_reference = true)
-    @logger.debug("Adding reference from #{from_class}(#{from_id}) #{prop} → #{to_class}(#{to_id})")
+  # Creates a relationship between two objects with a more intuitive API
+  # @param source [Hash] The source object with :class and :id keys
+  # @param target [Hash] The target object with :class and :id keys
+  # @param relationship_name [String,Symbol] The name of the relationship
+  # @param bidirectional [Boolean] Whether to create the reverse relationship
+  # @param inverse_relationship [String,Symbol] The name of the inverse relationship (used when bidirectional is true)
+  def add_relationship(source, target, relationship_name, bidirectional: false, inverse_relationship: nil)
+    # Convert relationship name to string
+    relationship_name = relationship_name.to_s
+
+    @logger.debug(
+      "Adding relationship: " \
+      "#{source['class']}/#{source['id']} (#{source.dig('properties', 'name')}) -> " \
+      "#{relationship_name} -> " \
+      "#{target['class']}/#{target['id']} (#{target.dig('properties', 'name')})"
+    )
+
+    # Add forward reference
+    add_reference(
+      source["class"],
+      source["id"],
+      relationship_name,
+      target["class"],
+      target["id"]
+    )
+
+    # # Add reverse reference if bidirectional
+    # return unless bidirectional
+
+    # inverse_name = inverse_relationship || infer_inverse_relationship(relationship_name, source, target)
+    # add_reference(
+    #   target["class"],
+    #   target["id"],
+    #   inverse_name,
+    #   source["class"],
+    #   source["id"]
+    # )
+  end
+
+  # Updates the properties of an existing Weaviate class
+  # @param class_name [String] The name of the class to update
+  # @param properties [Array<Hash>] Array of property definitions to add
+  # @return [void]
+  def update_class_properties(class_name, properties)
+    @logger.debug("Updating properties for class #{class_name}")
+
+    # Get existing class definition
+    class_def = @client.schema.get(class_name: class_name)
+    existing_props = class_def["properties"] || []
+
+    # Add new properties that don't already exist
+    new_properties = properties.reject do |new_prop|
+      existing_props.any? { |ep| ep["name"] == new_prop[:name].to_s }
+    end
+
+    return if new_properties.empty?
+
+    @logger.debug("Adding #{new_properties.size} new properties to class #{class_name}")
+
+    # Add each new property
+    new_properties.each do |prop|
+      @logger.debug("Adding property #{prop[:name]} to class #{class_name}")
+
+      # Convert to the format expected by Weaviate
+      property_definition = {
+        name: prop[:name].to_s,
+        dataType: prop[:dataType].is_a?(Array) ? prop[:dataType] : [prop[:dataType]],
+        description: prop[:description],
+        indexInverted: prop[:indexInverted].nil? || prop[:indexInverted]
+      }
+
+      # Add module config if present (e.g., for text2vec-openai)
+      if prop[:moduleConfig]&.dig("text2vec-openai")
+        property_definition[:moduleConfig] = {
+          "text2vec-openai" => prop[:moduleConfig]["text2vec-openai"]
+        }
+      end
+
+      begin
+        # Use the schema API to add the property
+        @client.schema.add_property(
+          class_name: class_name,
+          property: property_definition
+        )
+        @logger.debug("Successfully added property #{prop[:name]} to class #{class_name}")
+      rescue StandardError => e
+        @logger.error("Failed to add property #{prop[:name]} to class #{class_name}: #{e.message}")
+        next
+      end
+    end
+  end
+
+  private
+
+  # Adds a reference between two objects
+  # @param from_class [String] The source class name
+  # @param from_id [String] The source object ID
+  # @param prop [String] The reference property name
+  # @param to_class [String] The target class name
+  # @param to_id [String] The target object ID
+  # @param direct_reference [Boolean] Whether to use direct UUID reference (true) or beacon reference (false)
+  def add_reference(from_class, from_id, prop, to_class, to_id)
+    @logger.debug("Adding reference from #{from_class}(#{from_id}) #{prop} → #{to_class}(#{to_id}")
 
     # Check if reference already exists
     if reference_exists?(from_class, from_id, prop, to_id)
@@ -131,13 +236,9 @@ class WeaviateService
 
     request = Net::HTTP::Post.new(uri)
     request["Content-Type"] = "application/json"
-    request.body = {}.tap do |body|
-      if direct_reference
-        body[:uuid] = to_id
-      else
-        body[:beacon] = "weaviate://localhost/#{to_class}/#{to_id}"
-      end
-    end.to_json
+    request.body = {
+      beacon: "weaviate://localhost/#{to_class}/#{to_id}"
+    }.to_json
 
     response = http.request(request)
 
@@ -147,6 +248,21 @@ class WeaviateService
     end
 
     @logger.debug("Successfully added reference: #{from_class}/#{from_id} -> #{prop} -> #{to_class}/#{to_id}")
+  end
+
+  # Infers the inverse relationship name based on common patterns
+  # @param relationship_name [String] The name of the relationship
+  # @param source [Hash] The source object with :class and :id keys
+  # @param _target [Hash] The target object (unused in current implementation)
+  def infer_inverse_relationship(relationship_name, source, _target)
+    case relationship_name
+    when /s$/ # Plural to singular (e.g., 'pets' -> 'owner')
+      relationship_name.chomp("s")
+    when /_by$/ # Reverse 'owned_by' to 'owns'
+      relationship_name.sub(/_by$/, "")
+    else        # Default to class-based naming
+      source[:class].downcase
+    end.to_s
   end
 
   def reference_exists?(from_class, from_id, prop, to_id)
@@ -236,61 +352,5 @@ class WeaviateService
         }
       }
     GRAPHQL
-  end
-
-  # Add new properties to an existing class
-  def update_class_properties(class_name, properties)
-    @logger.debug("Updating properties for class #{class_name}")
-
-    # Get existing class definition
-    class_def = @client.schema.get(class_name: class_name)
-    existing_props = class_def["properties"] || []
-
-    # Add new properties that don't already exist
-    new_properties = properties.reject do |new_prop|
-      existing_props.any? { |existing| existing["name"] == new_prop[:name] }
-    end
-
-    return if new_properties.empty?
-
-    # Convert symbols to strings for the API
-    new_properties.each do |prop|
-      @logger.debug("Adding property #{prop[:name]} to class #{class_name}")
-
-      # Use direct HTTP call since weaviate-ruby gem doesn't have a direct method for this
-      require "net/http"
-      require "json"
-
-      uri = URI("http://localhost:8080/v1/schema/#{class_name}/properties")
-      http = Net::HTTP.new(uri.host, uri.port)
-
-      request = Net::HTTP::Post.new(uri)
-      request["Content-Type"] = "application/json"
-
-      property_config = {
-        dataType: prop[:dataType],
-        name: prop[:name],
-        moduleConfig: {
-          "text2vec-openai" => {
-            skip: false,
-            vectorizePropertyName: false
-          }
-        }
-      }
-
-      # Add tokenization for text properties
-      property_config[:tokenization] = "word" if prop[:dataType].include?("text")
-
-      request.body = property_config.to_json
-
-      response = http.request(request)
-
-      unless response.code == "200"
-        @logger.error("Failed to add property: #{response.code} - #{response.body}")
-        raise "Failed to add property: #{response.message}"
-      end
-
-      @logger.debug("Successfully added property #{prop[:name]} to class #{class_name}")
-    end
   end
 end

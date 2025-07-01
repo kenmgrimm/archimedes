@@ -149,21 +149,19 @@ module WeaviateVisualization
     nodes = []
     links = []
     node_map = {}
+    processed_links = Set.new # To avoid duplicate links
 
     # Get all objects by class
-    classes = ["Person", "Pet", "Place", "Project", "Document", "List", "ListItem", "Vehicle"]
+    classes = ["Person", "Pet", "Place", "Project", "Document", "List", "Vehicle"]
 
     # First pass: collect all nodes
     classes.each do |class_name|
+      # Get objects without the include parameter first
       response = @client.objects.list(class_name: class_name)
-      # Convert response to hash if it's a GraphQL response object
       response = safe_to_hash(response)
       objects = response.is_a?(Hash) ? (response["objects"] || []) : []
 
-      Rails.logger.debug { "\n🔍 Found #{objects.size} objects for class #{class_name}" }
-
       objects.each do |obj|
-        # Convert to hash if it's a GraphQL response object
         obj = safe_to_hash(obj)
         next unless obj.is_a?(Hash) && obj["id"]
 
@@ -171,147 +169,31 @@ module WeaviateVisualization
         props = obj["properties"].is_a?(Hash) ? obj["properties"] : {}
         node_name = props["name"] || props["title"] || props["content"] || "Unnamed #{class_name}"
 
-        Rails.logger.debug { "   - #{node_name} (ID: #{obj['id']})" }
-        if class_name == "ListItem"
-          Rails.logger.debug { "     Properties: #{props.keys.join(', ')}" }
-          Rails.logger.debug { "     list_id: #{props['list_id']}" } if props["list_id"]
-        end
-
         node_map[node_id] = {
           id: node_id,
           name: node_name,
           class: class_name,
           properties: props,
-          connections: 0 # Initialize connection count
+          connections: 0
         }
         nodes << node_map[node_id]
-      end
-    rescue StandardError => e
-      @logger.error("Error fetching objects for class #{class_name}: #{e.message}")
-      @logger.error(e.backtrace.join("\n")) if @logger.debug?
-      next
 
-      # Second pass: collect all links
-      response = @client.objects.list(class_name: class_name)
-      response = safe_to_hash(response)
-      objects = response.is_a?(Hash) ? (response["objects"] || []) : []
-
-      objects.each do |obj|
-        obj = safe_to_hash(obj)
-        next unless obj.is_a?(Hash) && obj["id"]
-
-        source_id = "#{class_name}_#{obj['id']}"
-        source_node = node_map[source_id]
-        next unless source_node
-
-        # Check for reference properties in the properties hash
-        ref_props = get_reference_properties(class_name)
-        props = obj["properties"].is_a?(Hash) ? obj["properties"] : {}
-
-        ref_props.each do |prop_name|
-          # Look for references in both the root and properties
-          prop_value = props[prop_name] || obj[prop_name]
-          next if prop_value.nil? || (prop_value.respond_to?(:empty?) && prop_value.empty?)
-
-          # Handle both single reference and array of references
-          refs = prop_value.is_a?(Array) ? prop_value : [prop_value]
-          refs.each do |ref|
-            ref = safe_to_hash(ref)
-            next unless ref.is_a?(Hash)
-
-            # Handle both beacon format and direct ID references
-            if ref["beacon"]
-              # Extract target class and ID from beacon
-              beacon_parts = ref["beacon"].to_s.split("/")
-              next unless beacon_parts.size >= 2
-
-              target_class = beacon_parts[-2]
-              target_id = beacon_parts[-1]
-            elsif ref["id"]
-              # Handle direct ID references (like in list items)
-              if prop_name == "list"
-                # This is a list item referencing its parent list
-                target_class = "List"
-                target_id = ref["id"]
-                Rails.logger.debug { "\n🔍 Found list item reference: #{source_id} -> List/#{target_id}" } if class_name == "ListItem"
-
-                # Debug: Print the source and target node details
-                source_node = node_map[source_id]
-                target_node = node_map["#{target_class}_#{target_id}"]
-
-                if source_node && target_node
-                  Rails.logger.debug do
-                    "   ✅ Valid reference: #{source_node[:name]} (#{source_node[:class]}) -> #{target_node[:name]} (#{target_node[:class]})"
-                  end
-                else
-                  Rails.logger.debug "   ❌ Invalid reference: "
-                  Rails.logger.debug { "      Source node: #{source_node ? 'Found' : 'Missing'}" }
-                  Rails.logger.debug { "      Target node: #{target_node ? 'Found' : 'Missing'}" }
-                end
-              elsif class_name == "List" && prop_name == "items"
-                # This is a list referencing its items
-                target_class = "ListItem"
-                target_id = ref["id"]
-                Rails.logger.debug { "\n🔍 Found list reference: #{source_id} -> ListItem/#{target_id}" }
-
-                # Debug: Print the source and target node details
-                source_node = node_map[source_id]
-                target_node = node_map["#{target_class}_#{target_id}"]
-
-                if source_node && target_node
-                  Rails.logger.debug do
-                    "   ✅ Valid reference: #{source_node[:name]} (#{source_node[:class]}) -> #{target_node[:name]} (#{target_node[:class]})"
-                  end
-
-                  # Debug: Print the list_id of the target list item
-                  if target_node[:properties] && target_node[:properties]["list_id"]
-                    Rails.logger.debug { "   ℹ️  ListItem's list_id: #{target_node[:properties]['list_id']}" }
-
-                    # Check if the list_id matches the source list's ID
-                    source_id_parts = source_id.split("_")
-                    source_list_id = source_id_parts[1..].join("_")
-
-                    if target_node[:properties]["list_id"].to_s.include?(source_list_id)
-                      Rails.logger.debug "   ✅ ListItem's list_id matches the source List ID"
-                    else
-                      Rails.logger.debug "   ❌ ListItem's list_id does NOT match the source List ID"
-                      Rails.logger.debug { "      List ID in reference: #{source_list_id}" }
-                      Rails.logger.debug { "      List ID in list_item: #{target_node[:properties]['list_id']}" }
-                    end
-                  end
-                else
-                  Rails.logger.debug "   ❌ Invalid reference: "
-                  Rails.logger.debug { "      Source node: #{source_node ? 'Found' : 'Missing'}" }
-                  Rails.logger.debug { "      Target node: #{target_node ? 'Found' : 'Missing'}" }
-                end
-              else
-                # Skip other types of direct ID references we don't handle
-                next
-              end
-            else
-              next
-            end
-
-            target_node_id = "#{target_class}_#{target_id}"
-            target_node = node_map[target_node_id]
-
-            # Only create link if target node exists
-            next unless target_node
-
-            # Increment connection counts for both nodes
-            source_node[:connections] += 1
-            target_node[:connections] += 1
-
-            links << {
-              source: source_id,
-              target: target_node_id,
-              type: prop_name
-            }
-          end
+        # Get the full object with references
+        begin
+          full_obj = @client.objects.get(
+            id: obj["id"],
+            class_name: class_name,
+            include: ["all"]  # Use array format ["all"] for the include parameter
+          )
+          full_obj = safe_to_hash(full_obj)
+          process_references(full_obj, node_id, node_map, links, processed_links) if full_obj.is_a?(Hash)
+        rescue => e
+          @logger.error("Error fetching full object #{node_id}: #{e.message}")
+          @logger.error(e.backtrace.join("\n")) if @logger.debug?
         end
       end
     rescue StandardError => e
-      @logger.error("Error processing references for class #{class_name}: #{e.message}")
+      @logger.error("Error processing class #{class_name}: #{e.message}")
       @logger.error(e.backtrace.join("\n")) if @logger.debug?
       next
     end
@@ -324,6 +206,86 @@ module WeaviateVisualization
     end
 
     { nodes: nodes, links: links }
+  end
+
+  private
+
+  def process_references(obj, source_id, node_map, links, processed_links)
+    return unless obj.is_a?(Hash)
+
+    # Get the class name from the source_id
+    source_class = source_id.split("_").first
+
+    # Get all reference properties for this class
+    ref_props = get_reference_properties(source_class)
+
+    # Process each reference property
+    ref_props.each do |prop_name|
+      # Look for references in the object's properties
+      refs = obj.dig("properties", prop_name) || obj[prop_name]
+      next if refs.nil? || (refs.respond_to?(:empty?) && refs.empty?)
+
+      # Handle both single reference and array of references
+      refs = [refs] unless refs.is_a?(Array)
+
+      refs.each do |ref|
+        ref = safe_to_hash(ref)
+        next unless ref.is_a?(Hash)
+
+        # Handle both beacon format and direct ID references
+        if ref["beacon"]
+          # Extract target class and ID from beacon
+          beacon_parts = ref["beacon"].to_s.split("/")
+          next unless beacon_parts.size >= 2
+
+          target_class = beacon_parts[-2]
+          target_id = beacon_parts[-1]
+        elsif ref["id"]
+          # For direct ID references, we need to know the target class
+          # This is a simplification - you might need to adjust based on your schema
+          target_class = ref["type"] || ref["class"] || prop_name.singularize.camelize
+          target_id = ref["id"]
+        else
+          next
+        end
+
+        target_node_id = "#{target_class}_#{target_id}"
+        target_node = node_map[target_node_id]
+
+        # Only create link if target node exists
+        next unless target_node
+
+        # Create a unique key for this link to avoid duplicates
+        link_key = [source_id, target_node_id, prop_name].join("|")
+        next if processed_links.include?(link_key)
+
+        # Increment connection counts for both nodes
+        next unless source_node = node_map[source_id]
+
+        source_node[:connections] += 1
+        target_node[:connections] += 1
+
+        links << {
+          source: source_id,
+          target: target_node_id,
+          type: prop_name
+        }
+
+        processed_links << link_key
+      end
+    end
+  end
+
+  def get_reference_properties(class_name)
+    # Define reference properties for each class
+    {
+      "Document" => ["created_by", "related_to"],
+      "Vehicle" => ["owner"],
+      "Person" => ["relationships"],
+      "Project" => ["members"],
+      "List" => ["documents"],
+      "Pet" => ["owner"]
+    }[class_name] || []
   end
 
   private
