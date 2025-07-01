@@ -94,6 +94,9 @@ bundle exec rake weaviate:seed_pooh
 
 The application includes an interactive knowledge graph visualization built with D3.js.
 
+![Weaviate Knowledge Graph Visualization](docs/images/weaviate/knowledge-graph-viz.png)
+*Figure 1: Interactive knowledge graph visualization showing entities and their relationships*
+
 ### Accessing Visualizations
 - **Interactive Graph**: http://localhost:3000/visualizations/knowledge_graph
 - **Connection Statistics**: http://localhost:3000/visualizations/connection_stats.json
