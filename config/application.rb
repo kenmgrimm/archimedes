@@ -22,7 +22,7 @@ module Archimedes
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 7.1
-    
+
     # Use SQL format for schema dumps to support PostgreSQL vector type
     config.active_record.schema_format = :sql
 

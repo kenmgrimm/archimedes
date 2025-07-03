@@ -1,0 +1,429 @@
+# Initial Seed Data for Personal AI Assistant
+# This file contains example data for testing the schema
+
+# ====================
+# Users
+# ====================
+users:
+  - id: "user_1"
+    labels: ["User"]
+    properties:
+      name: "Ken Grimm"
+      email: "ken@example.com"
+      username: "ken"
+      preferences:
+        timezone: "America/Denver"
+        theme: "dark"
+      created_at: "2025-01-01T00:00:00Z"
+      updated_at: "2025-07-01T10:00:00Z"
+
+# ====================
+# Contacts
+# ====================
+contacts:
+  - id: "contact_1"
+    labels: ["Contact"]
+    properties:
+      name: "Sarah Johnson"
+      email: "sarah@example.com"
+      phone: "+15551234567"
+      type: "friend"
+      birthdate: "1985-03-15"
+      notes: "Met at the 2020 tech conference"
+      created_at: "2025-01-15T14:30:00Z"
+      updated_at: "2025-06-15T09:45:00Z"
+
+  - id: "contact_2"
+    labels: ["Contact"]
+    properties:
+      name: "Denver Auto Service"
+      email: "service@denverauto.example.com"
+      phone: "+15557654321"
+      type: "service"
+      notes: "Car maintenance and repair"
+      created_at: "2025-02-01T11:20:00Z"
+
+# ====================
+# Tasks
+# ====================
+tasks:
+  - id: "task_1"
+    labels: ["Task"]
+    properties:
+      title: "Schedule annual car maintenance"
+      description: "Oil change and general checkup for the Tesla"
+      status: "pending"
+      priority: "high"
+      due_date: "2025-08-15T09:00:00Z"
+      created_at: "2025-06-01T10:00:00Z"
+      updated_at: "2025-06-01T10:00:00Z"
+
+  - id: "task_2"
+    labels: ["Task"]
+    properties:
+      title: "Buy groceries"
+      description: "Milk, eggs, bread, and fruits"
+      status: "pending"
+      priority: "medium"
+      due_date: "2025-07-05T18:00:00Z"
+      created_at: "2025-07-01T18:30:00Z"
+      updated_at: "2025-07-01T18:30:00Z"
+
+  - id: "task_3"
+    labels: ["Task"]
+    properties:
+      title: "Change air filters"
+      description: "Replace HVAC air filters in the house"
+      status: "pending"
+      priority: "medium"
+      created_at: "2025-06-15T09:15:00Z"
+      updated_at: "2025-06-15T09:15:00Z"
+
+# ====================
+# Projects
+# ====================
+projects:
+  - id: "project_1"
+    labels: ["Project"]
+    properties:
+      name: "Home Renovation"
+      description: "Bathroom and kitchen renovation"
+      status: "active"
+      start_date: "2025-05-01"
+      target_date: "2025-11-30"
+      created_at: "2025-04-15T14:30:00Z"
+      updated_at: "2025-06-20T16:45:00Z"
+
+# ====================
+# Possessions
+# ====================
+possessions:
+  - id: "car_1"
+    labels: ["Possession", "Vehicle"]
+    properties:
+      name: "Tesla Model 3"
+      type: "vehicle"
+      purchase_date: "2021-06-15"
+      purchase_price: 49990.00
+      serial_number: "5YJ3E1EA1MF123456"
+      location: "Home garage"
+      notes: "Midnight Silver Metallic, Long Range AWD"
+      created_at: "2021-06-20T10:00:00Z"
+      updated_at: "2025-06-15T14:30:00Z"
+
+  - id: "laptop_1"
+    labels: ["Possession", "Electronic"]
+    properties:
+      name: "MacBook Pro 16"
+      type: "electronic"
+      purchase_date: "2023-01-10"
+      purchase_price: 2499.00
+      serial_number: "C02XYZ123ABC"
+      notes: "M2 Max, 32GB RAM, 1TB SSD"
+      created_at: "2023-01-15T09:15:00Z"
+      updated_at: "2025-05-10T11:20:00Z"
+
+  - id: "home_1"
+    labels: ["Possession", "Property"]
+    properties:
+      name: "Primary Residence"
+      type: "real_estate"
+      purchase_date: "2018-05-15"
+      purchase_price: 525000.00
+      address: "123 Main St, Denver, CO 80202"
+      notes: "3 bed, 2.5 bath, 2,200 sq ft"
+      created_at: "2018-05-20T08:00:00Z"
+      updated_at: "2025-01-10T15:30:00Z"
+
+# ====================
+# Events
+# ====================
+events:
+  - id: "event_1"
+    labels: ["Event"]
+    properties:
+      title: "Doctor's Appointment"
+      description: "Annual physical checkup"
+      start_time: "2025-07-15T14:00:00-06:00"
+      end_time: "2025-07-15T15:00:00-06:00"
+      location: "Denver Health Medical Center"
+      is_recurring: false
+      created_at: "2025-06-10T09:30:00Z"
+      updated_at: "2025-06-10T09:30:00Z"
+
+  - id: "event_2"
+    labels: ["Event"]
+    properties:
+      title: "Car Service Appointment"
+      description: "Regular maintenance and oil change"
+      start_time: "2025-08-20T09:00:00-06:00"
+      end_time: "2025-08-20T11:00:00-06:00"
+      location: "Denver Auto Service, 456 Auto St, Denver, CO"
+      is_recurring: false
+      created_at: "2025-07-01T16:20:00Z"
+      updated_at: "2025-07-01T16:20:00Z"
+
+# ====================
+# Documents
+# ====================
+documents:
+  - id: "doc_1"
+    labels: ["Document"]
+    properties:
+      title: "Home Insurance Policy"
+      file_name: "home_insurance_2025.pdf"
+      file_path: "/documents/insurance/home_2025.pdf"
+      file_type: "pdf"
+      file_size: 2456789
+      mime_type: "application/pdf"
+      sha256_hash: "a1b2c3d4e5f6..."
+      extracted_text: "HOMEOWNERS INSURANCE POLICY..."
+      ocr_processed: true
+      created_at: "2025-01-10T09:15:00Z"
+      updated_at: "2025-01-10T09:15:00Z"
+
+  - id: "doc_2"
+    labels: ["Document"]
+    properties:
+      title: "Tesla Model 3 Owner's Manual"
+      file_name: "tesla_model3_manual.pdf"
+      file_path: "/documents/vehicles/tesla_service_manual.pdf"
+      file_type: "pdf"
+      file_size: 1567890
+      mime_type: "application/pdf"
+      sha256_hash: "b2c3d4e5f6g7..."
+      extracted_text: "MODEL 3 OWNER'S MANUAL..."
+      ocr_processed: true
+      created_at: "2023-02-15T11:30:00Z"
+      updated_at: "2023-02-15T11:30:00Z"
+
+  - id: "doc_3"
+    labels: ["Document"]
+    properties:
+      title: "Home Renovation Contract"
+      file_name: "home_renovation_contract.pdf"
+      file_path: "/documents/home/renovation_contract_2025.pdf"
+      file_type: "pdf"
+      file_size: 3456789
+      mime_type: "application/pdf"
+      sha256_hash: "c3d4e5f6g7h8..."
+      extracted_text: "CONTRACT FOR HOME RENOVATION..."
+      ocr_processed: true
+      created_at: "2025-03-20T14:15:00Z"
+      updated_at: "2025-03-20T14:15:00Z"
+
+# ====================
+# Media Assets
+# ====================
+media_assets:
+  - id: "media_1"
+    labels: ["MediaAsset", "Photo"]
+    properties:
+      title: "Tesla VIN and Tire Info"
+      description: "Photo of the vehicle door jamb sticker"
+      file_name: "tesla_vin_sticker.jpg"
+      file_path: "/media/vehicles/tesla_vin_sticker.jpg"
+      file_type: "jpg"
+      file_size: 2456789
+      mime_type: "image/jpeg"
+      sha256_hash: "d4e5f6g7h8i9..."
+      width: 4032
+      height: 3024
+      extracted_text: "VIN: 5YJ3E1EA1MF123456\nTire Pressure: 42 PSI\n..."
+      ocr_processed: true
+      captured_at: "2025-06-15T14:30:00-06:00"
+      created_at: "2025-06-15T15:00:00Z"
+      updated_at: "2025-06-15T15:00:00Z"
+
+  - id: "media_2"
+    labels: ["MediaAsset", "Photo"]
+    properties:
+      title: "Tesla Dashboard"
+      description: "Dashboard showing current mileage and alerts"
+      file_name: "tesla_dashboard.jpg"
+      file_path: "/media/vehicles/tesla_dashboard_20250615.jpg"
+      file_type: "jpg"
+      file_size: 3123456
+      mime_type: "image/jpeg"
+      sha256_hash: "e5f6g7h8i9j0..."
+      width: 4032
+      height: 3024
+      extracted_text: "ODOMETER: 24,567 mi\nTire Pressure Warning\n..."
+      ocr_processed: true
+      captured_at: "2025-06-15T14:35:00-06:00"
+      created_at: "2025-06-15T15:05:00Z"
+      updated_at: "2025-06-15T15:05:00Z"
+
+# ====================
+# Relationships
+# ====================
+relationships:
+  # User owns all top-level entities
+  - type: "OWNS"
+    from: "user_1"
+    to: ["task_1", "task_2", "task_3", "project_1", "car_1", "laptop_1", "home_1", "event_1", "event_2", "doc_1", "doc_2", "doc_3", "contact_1", "contact_2"]
+    properties:
+      access_level: "owner"
+      created_at: "2025-01-01T00:00:00Z"
+
+  # User's relationships with contacts
+  - type: "KNOWS"
+    from: "user_1"
+    to: "contact_1"
+    properties:
+      relationship: "friend"
+      since: "2020-09-15"
+      notes: "Met at tech conference"
+
+  - type: "KNOWS"
+    from: "user_1"
+    to: "contact_2"
+    properties:
+      relationship: "service"
+      since: "2025-02-01"
+      notes: "Trusted auto service provider"
+
+  # Task assignments
+  - type: "ASSIGNED_TO"
+    from: "task_1"
+    to: "user_1"
+    properties:
+      status: "pending"
+      assigned_at: "2025-06-01T10:00:00Z"
+
+  - type: "ASSIGNED_TO"
+    from: "task_2"
+    to: "user_1"
+    properties:
+      status: "pending"
+      assigned_at: "2025-07-01T18:30:00Z"
+
+  - type: "ASSIGNED_TO"
+    from: "task_3"
+    to: "user_1"
+    properties:
+      status: "pending"
+      assigned_at: "2025-06-15T09:15:00Z"
+
+  # Task relationships
+  - type: "PART_OF"
+    from: "task_1"
+    to: "project_1"
+    properties:
+      created_at: "2025-06-01T10:00:00Z"
+
+  # Maintenance relationships
+  - type: "REQUIRES_MAINTENANCE"
+    from: "car_1"
+    to: "task_1"
+    properties:
+      interval_days: 365
+      last_performed: "2024-08-10T00:00:00Z"
+      next_due: "2025-08-15T00:00:00Z"
+      instructions: "Schedule service at Tesla or authorized service center"
+
+  - type: "REQUIRES_MAINTENANCE"
+    from: "home_1"
+    to: "task_3"
+    properties:
+      interval_days: 90
+      last_performed: "2025-03-20T00:00:00Z"
+      next_due: "2025-06-20T00:00:00Z"
+      instructions: "Replace all HVAC air filters (3 total)"
+
+  # Event participation
+  - type: "PARTICIPATES_IN"
+    from: "user_1"
+    to: "event_1"
+    properties:
+      role: "attendee"
+      status: "accepted"
+
+  - type: "PARTICIPATES_IN"
+    from: "user_1"
+    to: "event_2"
+    properties:
+      role: "organizer"
+      status: "tentative"
+
+  # Document relationships
+  - type: "RELATES_TO"
+    from: "doc_1"
+    to: "home_1"
+    properties:
+      relationship_type: "insurance"
+      created_at: "2025-01-10T09:15:00Z"
+
+  - type: "RELATES_TO"
+    from: "doc_2"
+    to: "car_1"
+    properties:
+      relationship_type: "manual"
+      created_at: "2023-02-15T11:30:00Z"
+
+  - type: "RELATES_TO"
+    from: "doc_3"
+    to: "project_1"
+    properties:
+      relationship_type: "contract"
+      created_at: "2025-03-20T14:15:00Z"
+
+  # Media asset relationships
+  - type: "DEPICTS"
+    from: "media_1"
+    to: "car_1"
+    properties:
+      relationship_type: "photo"
+      description: "VIN and tire pressure information"
+      created_at: "2025-06-15T15:00:00Z"
+
+  - type: "DEPICTS"
+    from: "media_2"
+    to: "car_1"
+    properties:
+      relationship_type: "photo"
+      description: "Dashboard showing current mileage and alerts"
+      created_at: "2025-06-15T15:05:00Z"
+
+  # Extracted data from media
+  - type: "EXTRACTS"
+    from: "media_1"
+    to: "car_1"
+    properties:
+      extraction_type: "ocr"
+      confidence: 0.98
+      extracted_data:
+        vin: "5YJ3E1EA1MF123456"
+        tire_pressure: "42 PSI"
+        max_load: "908 kg (2001 lbs)"
+        manufacturing_date: "03/2021"
+      created_at: "2025-06-15T15:02:00Z"
+
+  - type: "EXTRACTS"
+    from: "media_2"
+    to: "car_1"
+    properties:
+      extraction_type: "ocr"
+      confidence: 0.95
+      extracted_data:
+        odometer_miles: 24567
+        alert: "Low tire pressure detected"
+        battery_level: 87
+        range_miles: 287
+      created_at: "2025-06-15T15:07:00Z"
+
+  # Service contact for car maintenance
+  - type: "RELATES_TO"
+    from: "contact_2"
+    to: "car_1"
+    properties:
+      relationship_type: "service_provider"
+      created_at: "2025-02-01T11:20:00Z"
+
+  # Task assignment to service
+  - type: "ASSIGNED_TO"
+    from: "task_1"
+    to: "contact_2"
+    properties:
+      status: "pending"
+      assigned_at: "2025-06-01T10:00:00Z"

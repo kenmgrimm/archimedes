@@ -183,11 +183,11 @@ module WeaviateVisualization
           full_obj = @client.objects.get(
             id: obj["id"],
             class_name: class_name,
-            include: ["all"]  # Use array format ["all"] for the include parameter
+            include: ["all"] # Use array format ["all"] for the include parameter
           )
           full_obj = safe_to_hash(full_obj)
           process_references(full_obj, node_id, node_map, links, processed_links) if full_obj.is_a?(Hash)
-        rescue => e
+        rescue StandardError => e
           @logger.error("Error fetching full object #{node_id}: #{e.message}")
           @logger.error(e.backtrace.join("\n")) if @logger.debug?
         end
@@ -287,8 +287,6 @@ module WeaviateVisualization
       "Pet" => ["owner"]
     }[class_name] || []
   end
-
-  private
 
   def safe_to_hash(obj)
     return obj if obj.nil?

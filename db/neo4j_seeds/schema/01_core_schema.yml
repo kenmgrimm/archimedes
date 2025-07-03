@@ -1,0 +1,413 @@
+# Core Schema Definition for Personal AI Assistant
+# This file defines the main entities and their relationships
+
+# ====================
+# Node Types
+# ====================
+
+User:
+  description: "Represents the system user (you)"
+  properties:
+    - name: "name"
+      type: "string"
+      required: true
+    - name: "email"
+      type: "string"
+      required: true
+      indexed: true
+    - name: "username"
+      type: "string"
+      indexed: true
+    - name: "preferences"
+      type: "map"
+      default: {}
+    - name: "created_at"
+      type: "datetime"
+      default: "timestamp()"
+    - name: "updated_at"
+      type: "datetime"
+      default: "timestamp()"
+
+Contact:
+  description: "Represents a person in the user's network"
+  properties:
+    - name: "name"
+      type: "string"
+      required: true
+    - name: "email"
+      type: "string"
+      indexed: true
+    - name: "phone"
+      type: "string"
+    - name: "birthdate"
+      type: "date"
+    - name: "type"
+      type: "string"
+      enum: ["contact", "family", "friend", "colleague", "service"]
+    - name: "notes"
+      type: "string"
+    - name: "created_at"
+      type: "datetime"
+      default: "timestamp()"
+    - name: "updated_at"
+      type: "datetime"
+      default: "timestamp()"
+
+Task:
+  description: "A task or to-do item"
+  properties:
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "description"
+      type: "string"
+    - name: "status"
+      type: "string"
+      enum: ["pending", "in_progress", "completed", "deferred"]
+      default: "pending"
+    - name: "priority"
+      type: "string"
+      enum: ["low", "medium", "high", "urgent"]
+    - name: "due_date"
+      type: "datetime"
+    - name: "completed_at"
+      type: "datetime"
+    - name: "created_at"
+      type: "datetime"
+      default: "timestamp()"
+
+Project:
+  description: "A collection of related tasks"
+  properties:
+    - name: "name"
+      type: "string"
+      required: true
+    - name: "description"
+      type: "string"
+    - name: "status"
+      type: "string"
+      enum: ["planning", "active", "on_hold", "completed", "cancelled"]
+    - name: "start_date"
+      type: "date"
+    - name: "target_date"
+      type: "date"
+    - name: "created_at"
+      type: "datetime"
+      default: "timestamp()"
+
+Possession:
+  description: "A physical or digital item owned by the user"
+  properties:
+    - name: "name"
+      type: "string"
+      required: true
+    - name: "type"
+      type: "string"
+      enum: ["electronic", "furniture", "vehicle", "document", "appliance", "other"]
+    - name: "purchase_date"
+      type: "date"
+    - name: "purchase_price"
+      type: "float"
+    - name: "serial_number"
+      type: "string"
+    - name: "location"
+      type: "string"
+    - name: "notes"
+      type: "string"
+
+Event:
+  description: "A calendar event or appointment"
+  properties:
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "description"
+      type: "string"
+    - name: "start_time"
+      type: "datetime"
+      required: true
+    - name: "end_time"
+      type: "datetime"
+    - name: "location"
+      type: "string"
+    - name: "is_recurring"
+      type: "boolean"
+      default: false
+    - name: "recurrence_rule"
+      type: "string"
+
+Document:
+  description: "A digital document or note with extracted content and metadata"
+  properties:
+    - name: "title"
+      type: "string"
+      required: true
+    - name: "description"
+      type: "string"
+    - name: "file_name"
+      type: "string"
+    - name: "file_path"
+      type: "string"
+    - name: "file_type"
+      type: "string"
+    - name: "file_size"
+      type: "integer"
+    - name: "mime_type"
+      type: "string"
+    - name: "sha256_hash"
+      type: "string"
+      indexed: true
+    - name: "extracted_text"
+      type: "string"
+      description: "Full text extracted from the document"
+    - name: "text_embedding"
+      type: "float[]"
+      description: "Vector embedding of the document text"
+    - name: "metadata"
+      type: "map"
+      description: "Structured metadata extracted from the document"
+    - name: "ocr_processed"
+      type: "boolean"
+      default: false
+    - name: "created_at"
+      type: "datetime"
+      default: "timestamp()"
+    - name: "updated_at"
+      type: "datetime"
+      default: "timestamp()"
+
+MediaAsset:
+  description: "A media file (photo, video, audio, etc.) with extracted metadata"
+  properties:
+    - name: "title"
+      type: "string"
+    - name: "description"
+      type: "string"
+    - name: "file_name"
+      type: "string"
+    - name: "file_path"
+      type: "string"
+    - name: "file_type"
+      type: "string"
+    - name: "file_size"
+      type: "integer"
+    - name: "mime_type"
+      type: "string"
+    - name: "sha256_hash"
+      type: "string"
+      indexed: true
+    - name: "width"
+      type: "integer"
+    - name: "height"
+      type: "integer"
+    - name: "duration_seconds"
+      type: "float"
+    - name: "extracted_text"
+      type: "string"
+      description: "Text extracted via OCR or speech-to-text"
+    - name: "text_embedding"
+      type: "float[]"
+      description: "Vector embedding of the extracted text"
+    - name: "image_embedding"
+      type: "float[]"
+      description: "Vector embedding of the image (for visual search)"
+    - name: "metadata"
+      type: "map"
+      description: "EXIF/IPTC/XMP metadata and other extracted data"
+    - name: "ocr_processed"
+      type: "boolean"
+      default: false
+    - name: "captured_at"
+      type: "datetime"
+      description: "When the media was captured/recorded"
+    - name: "created_at"
+      type: "datetime"
+      default: "timestamp()"
+    - name: "updated_at"
+      type: "datetime"
+      default: "timestamp()"
+
+# ====================
+# Relationship Types
+# ====================
+
+relationships:
+  # User owns/controls all data
+  - type: "OWNS"
+    from: "User"
+    to: ["Task", "Project", "Possession", "Event", "Document", "Contact", "MediaAsset"]
+    properties:
+      - name: "created_at"
+        type: "datetime"
+        default: "timestamp()"
+      - name: "access_level"
+        type: "string"
+        enum: ["owner", "editor", "viewer"]
+        default: "owner"
+
+  # User's relationships with contacts
+  - type: "KNOWS"
+    from: "User"
+    to: "Contact"
+    properties:
+      - name: "relationship"
+        type: "string"
+        enum: ["family", "friend", "colleague", "service", "other"]
+      - name: "since"
+        type: "date"
+      - name: "notes"
+        type: "string"
+
+  # Task assignments and relationships
+  - type: "ASSIGNED_TO"
+    from: "Task"
+    to: ["User", "Contact"]
+    properties:
+      - name: "assigned_at"
+        type: "datetime"
+        default: "timestamp()"
+      - name: "status"
+        type: "string"
+        enum: ["pending", "accepted", "rejected"]
+        default: "pending"
+
+  # Task hierarchy and relationships
+  - type: "PART_OF"
+    from: "Task"
+    to: ["Project", "Task"]
+    properties:
+      - name: "created_at"
+        type: "datetime"
+        default: "timestamp()"
+
+  # Event participation
+  - type: "PARTICIPATES_IN"
+    from: ["User", "Contact"]
+    to: "Event"
+    properties:
+      - name: "role"
+        type: "string"
+        enum: ["organizer", "attendee", "optional"]
+        default: "attendee"
+      - name: "status"
+        type: "string"
+        enum: ["accepted", "tentative", "declined", "needs_action"]
+        default: "needs_action"
+
+  # Document relationships
+  - type: "RELATES_TO"
+    from: "Document"
+    to: ["Task", "Project", "Possession", "Event", "Contact"]
+    properties:
+      - name: "relationship_type"
+        type: "string"
+        enum: ["invoice", "receipt", "manual", "contract", "warranty", "insurance", "other"]
+      - name: "created_at"
+        type: "datetime"
+        default: "timestamp()"
+
+  # Media asset relationships
+  - type: "DEPICTS"
+    from: "MediaAsset"
+    to: ["Possession", "Document", "Event", "Contact"]
+    properties:
+      - name: "relationship_type"
+        type: "string"
+        enum: ["photo", "scan", "screenshot", "diagram", "other"]
+      - name: "description"
+        type: "string"
+      - name: "created_at"
+        type: "datetime"
+        default: "timestamp()"
+
+  # Extracted data relationships
+  - type: "EXTRACTS"
+    from: ["Document", "MediaAsset"]
+    to: ["Possession", "Task", "Event"]
+    properties:
+      - name: "extraction_type"
+        type: "string"
+        enum: ["ocr", "structured_data", "metadata", "ai_analysis"]
+      - name: "confidence"
+        type: "float"
+      - name: "extracted_data"
+        type: "map"
+      - name: "created_at"
+        type: "datetime"
+        default: "timestamp()"
+
+  # Maintenance relationships
+  - type: "REQUIRES_MAINTENANCE"
+    from: "Possession"
+    to: "Task"
+    properties:
+      - name: "interval_days"
+        type: "integer"
+      - name: "last_performed"
+        type: "datetime"
+      - name: "next_due"
+        type: "datetime"
+      - name: "instructions"
+        type: "string"
+
+# ====================
+# Indexes
+# ====================
+indexes:
+  # User indexes
+  - type: "BTREE"
+    label: "User"
+    properties: ["email", "username"]
+    
+  # Contact indexes
+  - type: "BTREE"
+    label: "Contact"
+    properties: ["name", "email", "type"]
+    
+  # Task indexes
+  - type: "BTREE"
+    label: "Task"
+    properties: ["status", "due_date", "priority"]
+    
+  # Event indexes
+  - type: "BTREE"
+    label: "Event"
+    properties: ["start_time", "end_time"]
+    
+  # Possession indexes
+  - type: "BTREE"
+    label: "Possession"
+    properties: ["name", "type"]
+
+# ====================
+# Constraints
+# ====================
+constraints:
+  # User constraints
+  - type: "UNIQUE"
+    label: "User"
+    property: "email"
+    
+  - type: "UNIQUE"
+    label: "User"
+    property: "username"
+    
+  # Task constraints
+  - type: "NODE_KEY"
+    label: "Task"
+    properties: ["title", "created_at"]
+    
+  # Contact constraints
+  - type: "NODE_KEY"
+    label: "Contact"
+    properties: ["email", "name"]
+
+  # Document constraints
+  - type: "UNIQUE"
+    label: "Document"
+    property: "sha256_hash"
+
+  # MediaAsset constraints
+  - type: "UNIQUE"
+    label: "MediaAsset"
+    property: "sha256_hash"
