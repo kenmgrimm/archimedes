@@ -1,5 +1,6 @@
 require "yaml"
 require "neo4j-ruby-driver"
+require "neo4j_seeder"
 
 namespace :neo4j do
   desc "Set up Neo4j schema from YAML definition"
@@ -112,7 +113,7 @@ namespace :neo4j do
         end
 
         # Process relationship types if defined in the schema
-        if schema_definition["relationships"] && schema_definition["relationships"].is_a?(Array)
+        if schema_definition["relationships"].is_a?(Array)
           puts "\n🔗 Processing relationship types..."
           schema_definition["relationships"].each_with_index do |rel_config, idx|
             rel_type = rel_config["type"]
@@ -125,7 +126,7 @@ namespace :neo4j do
             # We'll just log the relationship for documentation purposes
 
             # If there are properties, we could create a constraint on them
-            puts "    - Has #{rel_config['properties'].size} properties" if rel_config["properties"] && rel_config["properties"].any?
+            puts "    - Has #{rel_config['properties'].size} properties" if rel_config["properties"]&.any?
           rescue StandardError => e
             puts "  ❌ Error processing relationship: #{e.message}"
             puts e.backtrace.join("\n") if ENV["DEBUG"]
@@ -168,7 +169,7 @@ namespace :neo4j do
       raise
     ensure
       begin
-        driver&.close if driver
+        driver&.close
       rescue StandardError => e
         puts "\n⚠️ Error closing Neo4j driver: #{e.message}"
       end
@@ -177,118 +178,108 @@ namespace :neo4j do
     puts "\n✅ Neo4j schema setup complete!"
   end
 
-  desc "Seed Neo4j with initial data from YAML files"
+  # Neo4jSeeder class is now in lib/neo4j_seeder.rb
+
+  desc "Seed Neo4j with initial data from YAML files in db/neo4j_seeds/"
   task seed_data: :environment do
-    # Helper method to create a node in Neo4j from seed data
-    def create_node(session, node_data, index)
-      labels = node_data["labels"] || []
-      properties = node_data["properties"] || {}
-
-      # Convert Ruby hashes to Neo4j maps
-      properties = convert_properties(properties)
-
-      # Prepare the query with parameters
-      label_str = labels.map { |l| ":#{l}" }.join
-
-      # Build the properties part of the query
-      set_statements = properties.keys.map { |k| "n.#{k} = $#{k}" }.join(", ")
-
-      # Create a single-line query to avoid newline issues
-      query = "MERGE (n#{label_str} {id: $id}) " \
-              "ON CREATE SET #{set_statements} " \
-              "ON MATCH SET #{set_statements} " \
-              "RETURN n".squish
-
-      # Prepare parameters with the ID included
-      params = properties.merge(id: node_data["id"])
-
-      begin
-        session.write_transaction do |tx|
-          # Execute the query with parameters properly formatted
-          tx.run(query, **params)
-        end
-        puts "    ✓ Created/Updated #{labels.join(':')} #{index}: #{properties['name'] || properties['title'] || node_data['id']}"
-      rescue StandardError => e
-        puts "    ❌ Error creating/updating node: #{e.message}"
-        puts "      Query: #{query}"
-        puts "      Params: #{params.inspect}"
-        puts e.backtrace.join("\n") if ENV["DEBUG"]
-      end
-    end
-
-    # Helper method to convert Ruby objects to Neo4j-compatible types
-    def convert_properties(properties)
-      properties.each_with_object({}) do |(key, value), hash|
-        hash[key] = case value
-                    when Time, DateTime
-                      value.iso8601
-                    when Date
-                      value.to_s
-                    when Hash, Array
-                      value.to_json
-                    else
-                      value
-                    end
-      end
-    end
-
     puts "Seeding Neo4j with initial data..."
+
+    # Load environment variables
+    require "dotenv/load"
+
+    # Manually set Neo4j configuration
+    neo4j_config = {
+      url: ENV.fetch("NEO4J_URL", "bolt://127.0.0.1:7687").gsub("localhost", "127.0.0.1"),
+      username: ENV.fetch("NEO4J_USERNAME", "neo4j"),
+      password: ENV.fetch("NEO4J_PASSWORD", "password"),
+      encryption: false
+    }
 
     # Initialize Neo4j driver
     driver = Neo4j::Driver::GraphDatabase.driver(
-      NEO4J_CONFIG[:url],
-      Neo4j::Driver::AuthTokens.basic(NEO4J_CONFIG[:username], NEO4J_CONFIG[:password]),
-      encryption: NEO4J_CONFIG[:encryption]
+      neo4j_config[:url],
+      Neo4j::Driver::AuthTokens.basic(neo4j_config[:username], neo4j_config[:password]),
+      encryption: neo4j_config[:encryption]
     )
 
     begin
       driver.session do |session|
-        # Load and process each seed file in order (alphabetically)
-        seed_files = Dir[Rails.root.join("db", "neo4j_seeds", "*.yml")]
+        # Load seed data from YAML files
+        seed_data = {}
+        seed_files = Rails.root.glob("db/neo4j_seeds/*.yml")
+        puts "Found #{seed_files.size} seed files"
 
-        seed_files.each do |file_path|
-          puts "\n📝 Processing seed file: #{File.basename(file_path)}"
-          seed_data = YAML.load_file(file_path)
+        seed_files.each do |file|
+          file_name = File.basename(file, ".yml")
+          puts "Loading seed file: #{file}"
 
-          # Process users
-          if seed_data["users"]
-            puts "  👥 Seeding #{seed_data['users'].size} users..."
-            seed_data["users"].each_with_index do |user_data, index|
-              create_node(session, user_data, index + 1)
-            end
-          end
+          # Load YAML with aliases support
+          yaml_content = File.read(file)
+          seed_data[file_name] = YAML.safe_load(yaml_content, aliases: true, permitted_classes: [Date, Time, Symbol])
 
-          # Process contacts
-          if seed_data["contacts"]
-            puts "  👥 Seeding #{seed_data['contacts'].size} contacts..."
-            seed_data["contacts"].each_with_index do |contact_data, index|
-              create_node(session, contact_data, index + 1)
-            end
-          end
+          puts "  - Loaded #{seed_data[file_name].keys.size} top-level keys"
 
-          # Process possessions
-          if seed_data["possessions"]
-            puts "  🏠 Seeding #{seed_data['possessions'].size} possessions..."
-            seed_data["possessions"].each_with_index do |possession_data, index|
-              create_node(session, possession_data, index + 1)
-            end
-          end
+          # Debug: Show the structure of the loaded data
+          next unless ENV["DEBUG"]
 
-          # Process events
-          next unless seed_data["events"]
+          puts "  - Data structure:"
+          pp seed_data[file_name].keys
 
-          puts "  🗓️  Seeding #{seed_data['events'].size} events..."
-          seed_data["events"].each_with_index do |event_data, index|
-            create_node(session, event_data, index + 1)
+          # Check if relationships exist and show a sample
+          next unless seed_data[file_name]["relationships"]
+
+          puts "  - Found #{seed_data[file_name]['relationships'].size} relationships"
+          if seed_data[file_name]["relationships"].any?
+            puts "  - Sample relationship: #{seed_data[file_name]['relationships'].first.inspect}"
           end
         end
 
-        puts "\n✅ Neo4j data seeding complete!"
+        # Process each entity type
+        entity_types = {
+          "users" => "👥",
+          "contacts" => "👥",
+          "possessions" => "🏠",
+          "events" => "🗓️",
+          "documents" => "📄",
+          "projects" => "📂",
+          "tasks" => "✅",
+          "media_assets" => "🖼️"
+        }
+
+        # First, process all nodes from each seed file
+        seed_data.each do |file_name, file_data|
+          puts "\n📂 Processing seed file: #{file_name}"
+
+          # Process nodes for each entity type
+          entity_types.each do |type, icon|
+            next unless file_data[type].is_a?(Array)
+
+            puts "  #{icon} Seeding #{file_data[type].size} #{type}..."
+            file_data[type].each_with_index do |entity_data, index|
+              if ENV["DEBUG"]
+                puts "    - Processing #{type.singularize} #{index + 1}: #{entity_data['id']}"
+                puts "      Labels: #{entity_data['labels']}" if entity_data["labels"]
+              end
+              Neo4jSeeder.create_node(session, entity_data, index + 1)
+            end
+          end
+
+          # Process relationships for this file
+          if file_data["relationships"].is_a?(Array)
+            puts "  🔗 Creating #{file_data['relationships'].size} relationships..."
+            file_data["relationships"].each_with_index do |rel_data, index|
+              if ENV["DEBUG"]
+                to_nodes = Array(rel_data["to"]).join(", ")
+                puts "    - Relationship #{index + 1}: #{rel_data['type']} from #{rel_data['from']} to #{to_nodes}"
+                puts "      Properties: #{rel_data['properties'].inspect}" if rel_data["properties"]
+              end
+              Neo4jSeeder.create_relationships(session, rel_data)
+            end
+          else
+            puts "  ℹ️ No relationships found in this file"
+          end
+        end
       end
-    rescue StandardError => e
-      puts "\n❌ Error seeding Neo4j data: #{e.message}"
-      puts e.backtrace.join("\n") if ENV["DEBUG"]
-      raise
     ensure
       begin
         driver&.close
@@ -298,24 +289,71 @@ namespace :neo4j do
     end
   end
 
-  # Maps YAML property types to Neo4j property types
-  # @param type [String] the property type from YAML
-  # @return [String] the corresponding Neo4j type
-  def self.map_property_type(type)
-    case type.downcase
-    when "string", "text" then "STRING"
-    when "integer", "int" then "INTEGER"
-    when "float", "double" then "FLOAT"
-    when "boolean", "bool" then "BOOLEAN"
-    when "date" then "DATE"
-    when "datetime", "timestamp" then "DATETIME"
-    when "point" then "POINT"
-    when "node" then "NODE"
-    when "relationship" then "RELATIONSHIP"
-    when "path" then "PATH"
-    when "map", "object" then "MAP"
-    when "list", "array" then "LIST"
-    else "STRING" # Default to string if type is unknown
+  desc "List all nodes and relationships in Neo4j database"
+  task list_nodes: :environment do
+    puts "Connecting to Neo4j at #{NEO4J_CONFIG[:url]}..."
+
+    driver = Neo4j::Driver::GraphDatabase.driver(
+      NEO4J_CONFIG[:url],
+      Neo4j::Driver::AuthTokens.basic(NEO4J_CONFIG[:username], NEO4J_CONFIG[:password]),
+      encryption: NEO4J_CONFIG[:encryption]
+    )
+
+    begin
+      driver.session do |session|
+        puts "\n📊 Current nodes in the database:"
+
+        # Get all node labels
+        result = session.run("MATCH (n) RETURN DISTINCT labels(n) as labels, count(*) as count")
+        puts "\n📋 Node counts by label:"
+        result.each do |record|
+          puts "  - #{record['labels']}: #{record['count']} nodes"
+        end
+
+        # Get sample nodes
+        puts "\n🔍 Sample nodes (up to 10):"
+        result = session.run("MATCH (n) RETURN labels(n) as labels, n.id as id, n.name as name LIMIT 10")
+        result.each_with_index do |record, index|
+          puts "  #{index + 1}. #{record['labels']} - ID: #{record['id']}, Name: #{record['name'] || 'N/A'}"
+        end
+
+        # Get relationship types
+        puts "\n🤝 Relationship types:"
+        result = session.run("MATCH ()-[r]->() RETURN DISTINCT type(r) as type, count(*) as count")
+        if result.any?
+          result.each do |record|
+            puts "  - #{record['type']}: #{record['count']} relationships"
+          end
+        else
+          puts "  No relationships found in the database."
+        end
+
+        # Get sample relationships
+        puts "\n🔗 Sample relationships (up to 10):"
+        result = session.run("
+          MATCH (a)-[r]->(b)
+          RETURN
+            type(r) as type,
+            labels(a) as from_labels,
+            a.id as from_id,
+            labels(b) as to_labels,
+            b.id as to_id,
+            properties(r) as props
+          LIMIT 10
+        ")
+
+        if result.any?
+          result.each_with_index do |record, index|
+            puts "  #{index + 1}. (#{record['from_labels']}:#{record['from_id']})-" \
+                 "[#{record['type']} #{record['props'].to_s.gsub(/[{}]/, '')}]->" \
+                 "(#{record['to_labels']}:#{record['to_id']})"
+          end
+        else
+          puts "  No relationships found in the database."
+        end
+      end
+    ensure
+      driver&.close
     end
   end
 end
