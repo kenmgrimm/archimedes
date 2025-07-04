@@ -341,7 +341,13 @@ CREATE TABLE public.users (
     reset_password_sent_at timestamp(6) without time zone,
     remember_created_at timestamp(6) without time zone,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    full_name character varying NOT NULL,
+    given_name character varying NOT NULL,
+    family_name character varying NOT NULL,
+    phone character varying,
+    birth_date date,
+    aliases jsonb DEFAULT '[]'::jsonb NOT NULL
 );
 
 
@@ -671,10 +677,31 @@ CREATE INDEX index_statements_on_predicate ON public.statements USING btree (pre
 
 
 --
+-- Name: index_users_on_aliases; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_users_on_aliases ON public.users USING gin (aliases);
+
+
+--
 -- Name: index_users_on_email; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX index_users_on_email ON public.users USING btree (email);
+
+
+--
+-- Name: index_users_on_family_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_users_on_family_name ON public.users USING btree (family_name);
+
+
+--
+-- Name: index_users_on_given_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_users_on_given_name ON public.users USING btree (given_name);
 
 
 --
@@ -767,6 +794,7 @@ ALTER TABLE ONLY public.active_storage_attachments
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20250704224601'),
 ('20250625000000'),
 ('20250624233500'),
 ('20250624211254'),

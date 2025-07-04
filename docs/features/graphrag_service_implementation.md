@@ -14,13 +14,15 @@ As Archimedes grows, users need more than just simple data retrieval—they need
 ### Phase 1: Foundation (Week 1)
 
 #### 1. GraphRAG Service Skeleton
-- Create `GraphRagService` with Neo4j client integration
-- Set up configuration for model providers (OpenAI, local LLMs)
+- Create `GraphRagService` able to use our existing openai services(app/services/openai) and neo4j services(app/services/neo4j)
 - Implement basic health checks and error handling
-- Add logging and monitoring infrastructure
+- Add logging
 
 #### 2. Entity Recognition & Mapping
-- Add NLP pipeline for entity extraction using spaCy
+- Add NLP pipeline for entity extraction using spaCy (or the existing openai services(app/services/openai))
+- `GraphRagService` should be able to process a text document + 1+ document files or images and extract entities and relationships from the documents
+- Create a Neo4jService able to create a knowledge graph from the extracted entities and relationships
+- `GraphRagService` should be able to query the knowledge graph and generate a response using our existing openai services(app/services/openai)
 - Map extracted entities to Neo4j node types
 - Implement relationship inference between entities
 - Create entity resolution to handle duplicates and aliases
