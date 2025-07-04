@@ -101,3 +101,5 @@ group :development do
 end
 
 gem "active_storage_validations", "~> 3.0"
+
+gem "mimemagic", "~> 0.4.3"
