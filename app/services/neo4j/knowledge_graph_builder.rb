@@ -1,89 +1,209 @@
+# frozen_string_literal: true
+
+require_relative "importers/base_importer"
+require_relative "importers/base_entity_importer"
+require_relative "importers/base_relationship_importer"
+
 module Neo4j
+  # Service class for building and maintaining the knowledge graph
   class KnowledgeGraphBuilder
-    def initialize(openai_service:, neo4j_service:, taxonomy_service: nil, logger: nil, fixture_service: nil)
-      @openai = openai_service
+    attr_reader :import_results, :logger
+
+    def initialize(neo4j_service:, openai_service: nil, taxonomy_service: nil, logger: nil, validate_schema: true)
       @neo4j = neo4j_service
+      @openai = openai_service
       @logger = logger || Rails.logger
       @taxonomy_service = taxonomy_service || Neo4j::TaxonomyService.new(logger: logger)
-      @extractor = Neo4j::EntityExtractionService.new(
-        openai_service,
-        taxonomy_service: @taxonomy_service,
-        logger: logger
-      )
-      @fixture_service = fixture_service || Neo4j::FixtureService.new(logger: logger)
+      @validate_schema = validate_schema
+      @importers = {}
+      @import_results = {}
       @last_processed_at = nil
+
+      register_default_importers
     end
 
-    def process_documents(documents, metadata = {})
-      validate_documents(documents)
-      results = { processed: 0, errors: [] }
+    # Import data from extraction results
+    # @param extraction_results [Hash] The extraction results to import
+    # @param options [Hash] Additional options for the import
+    # @return [Hash] Results of the import
+    def import(extraction_results, options = {})
+      @import_results = {
+        entities: { imported: 0, updated: 0, skipped: 0, errors: [] },
+        relationships: { created: 0, errors: [] },
+        start_time: Time.current
+      }
 
-      documents.each do |doc|
-        extract_and_store_entities(doc, metadata)
-        results[:processed] += 1
-        @last_processed_at = Time.current
-      rescue StandardError => e
-        error_msg = "Failed to process #{doc}: #{e.message}"
-        @logger.error(error_msg)
-        results[:errors] << error_msg
+      # Skip validation for Bolt importer as it handles its own validation
+      if @importers[:extraction].is_a?(Neo4j::Importers::BoltExtractionImporter)
+        @logger.debug("Using Bolt importer, skipping validation")
+        return @importers[:extraction].import(extraction_results, options.merge(neo4j_service: @neo4j))
       end
 
-      results
+      # For other importers, use the standard validation flow
+      unless validate_extraction_results(extraction_results)
+        @import_results[:skipped] = true
+        @import_results[:end_time] = Time.current
+        @import_results[:duration] = 0
+        return @import_results
+      end
+
+      begin
+        # Use the neo4j-ruby-driver session for transactions
+        @neo4j.session do |session|
+          session.write_transaction do |tx|
+            @tx = tx # Make transaction available to import methods
+            import_entities(extraction_results[:entities] || [], options)
+            import_relationships(extraction_results[:relationships] || [], options)
+          end
+        end
+
+        @import_results[:success] = true
+      rescue StandardError => e
+        @logger.error("Import failed: #{e.message}")
+        @logger.error(e.backtrace.join("\n"))
+        @import_results[:error] = e.message
+        @import_results[:success] = false
+      ensure
+        @import_results[:end_time] = Time.current
+        @import_results[:duration] = @import_results[:end_time] - @import_results[:start_time]
+      end
+
+      @import_results
+    rescue StandardError => e
+      @logger.error("Import failed: #{e.message}")
+      @logger.error(e.backtrace.join("\n"))
+      raise
     end
 
-    def health_check
-      {
-        status: :ok,
-        last_processed: @last_processed_at,
-        dependencies: {
-          neo4j: @neo4j.respond_to?(:health_check) ? @neo4j.health_check : :unknown
-        }
-      }
+    # Register a custom importer for an entity or relationship type
+    # @param type [String] The entity or relationship type
+    # @param importer_class [Class] The importer class
+    def register_importer(type, importer_class)
+      @importers[type] = importer_class
+    end
+
+    # Get an importer for the given type
+    # @param type [String] The entity or relationship type
+    # @return [BaseImporter] The importer instance
+    def importer_for(type)
+      @importers[type] ||= default_importer_for(type)
     end
 
     private
 
-    # No default taxonomy - using TaxonomyService instead
+    def register_default_importers
+      # Register the BoltExtractionImporter as the default importer
+      @importers[:extraction] = Neo4j::Importers::BoltExtractionImporter.new
 
-    def validate_documents(documents)
-      raise ArgumentError, "No documents provided" if documents.blank?
+      # Auto-discover and register entity importers
+      Dir[Rails.root.join("app", "services", "neo4j", "importers", "entities", "*.rb", "services", "neo4j", "importers",
+                          "entities", "*.rb")].each do |f|
+        require_dependency f
+      end
+      Dir[Rails.root.join("app", "services", "neo4j", "importers", "relationships", "*.rb", "services",
+                          "neo4j", "importers", "relationships", "*.rb")].each do |f|
+        require_dependency f
+      end
 
-      documents.each do |doc|
-        next if doc.respond_to?(:read) || File.exist?(doc.to_s)
+      # Register entity importers
+      Neo4j::Importers::Entities.constants.each do |const|
+        klass = Neo4j::Importers::Entities.const_get(const)
+        next unless klass.respond_to?(:handles)
 
-        raise ArgumentError, "Document not found or unreadable: #{doc}"
+        @importers[klass.handles] = klass.new
+      end
+
+      # Register relationship importers
+      Neo4j::Importers::Relationships.constants.each do |const|
+        klass = Neo4j::Importers::Relationships.const_get(const)
+        next unless klass.respond_to?(:handles)
+
+        @importers[klass.handles] = klass.new
       end
     end
 
-    def extract_and_store_entities(document, metadata)
-      # Extract entities and relationships
-      result = @extractor.process_document(document)
+    def default_importer_for(type)
+      # Try to find a specific importer first
+      importer_class = "Neo4j::Importers::#{type}Importer".safe_constantize
+      return importer_class.new if importer_class
 
-      # Save to fixtures for debugging/observability
-      source = document.respond_to?(:path) ? document.path : document.to_s
-      fixture_path = @fixture_service.save_extraction(
-        result,
-        source: source,
-        metadata: metadata
-      )
-
-      @logger.info("Extracted #{result[:entities]&.size || 0} entities and " +
-                 "#{result[:relationships]&.size || 0} relationships. " +
-                 "Saved to #{fixture_path}")
-
-      # TODO: Store in Neo4j (next step)
-      # load_fixture_and_import(fixture_path, metadata) if @neo4j
-
-      result
+      # Fall back to generic importer
+      if type.constantize < Neo4j::ActiveNode
+        Neo4j::Importers::BaseEntityImporter.new
+      elsif type.constantize < Neo4j::ActiveRel
+        Neo4j::Importers::BaseRelationshipImporter.new
+      else
+        raise "No importer found for type: #{type}"
+      end
+    rescue NameError
+      raise "Unknown type: #{type}"
     end
 
-    # def load_fixture_and_import(fixture_path, metadata)
-    #   # Will be implemented to load from fixture and import to Neo4j
-    #   # This allows us to replay extractions if needed
-    # end
+    def import_entities(entities, options)
+      entities.each do |entity_data|
+        importer = importer_for(entity_data[:type])
 
-    # def store_in_neo4j(entities, relationships, metadata)
-    #   # Implementation will go here
-    # end
+        # Pass the transaction to the importer
+        result = if importer.respond_to?(:import_with_tx)
+                   importer.import_with_tx(@tx, entity_data, options)
+                 else
+                   importer.import(entity_data, options)
+                 end
+
+        if result
+          if result.is_a?(Hash) && result[:action] == :created
+            @import_results[:entities][:imported] += 1
+          else
+            @import_results[:entities][:updated] += 1
+          end
+        else
+          @import_results[:entities][:errors] << {
+            type: entity_data[:type],
+            data: entity_data,
+            errors: importer.errors
+          }
+        end
+      end
+    end
+
+    def import_relationships(relationships, options)
+      relationships.each do |rel_data|
+        importer = importer_for(rel_data[:type])
+
+        # Pass the transaction to the importer
+        result = if importer.respond_to?(:import_with_tx)
+                   importer.import_with_tx(@tx, rel_data, options)
+                 else
+                   importer.import(rel_data, options)
+                 end
+
+        if result
+          @import_results[:relationships][:created] += 1
+        else
+          @import_results[:relationships][:errors] << {
+            type: rel_data[:type],
+            data: rel_data,
+            errors: importer.errors
+          }
+        end
+      end
+    end
+
+    def validate_extraction_results(extraction_results)
+      raise ArgumentError, "Extraction results must be a Hash" unless extraction_results.is_a?(Hash)
+
+      # Check if we have any data to import
+      if extraction_results.values_at(:entities, :relationships).all?(&:blank?)
+        @logger.warn("No entities or relationships to import")
+        return false
+      end
+
+      Neo4j::ExtractionValidator.validate!(extraction_results) if @validate_schema
+
+      true
+    rescue Neo4j::ExtractionValidator::ValidationError => e
+      @logger.error("Extraction validation failed: #{e.message}")
+      raise
+    end
   end
 end

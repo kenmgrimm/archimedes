@@ -12,13 +12,13 @@ module Neo4j
     # Load all taxonomy files from config/taxonomies and app/services/neo4j
     def load_taxonomies
       # Load from config/taxonomies first (if any)
-      taxonomies_dir = Rails.root.join('config/taxonomies')
+      taxonomies_dir = Rails.root.join("config", "taxonomies")
       if File.directory?(taxonomies_dir)
-        Dir.glob(File.join(taxonomies_dir, '*.yml')).each do |file|
+        Dir.glob(File.join(taxonomies_dir, "*.yml")).each do |file|
           load_taxonomy(file)
         end
       end
-      
+
       # Then load from app/services/neo4j
       Rails.root.glob("app/services/neo4j/taxonomy.yml").each do |file|
         load_taxonomy(file)
@@ -31,33 +31,30 @@ module Neo4j
     # Load a single taxonomy file
     def load_taxonomy(file_path)
       yaml_content = YAML.load_file(file_path, aliases: true) || {}
-      
+
       # Handle the case where the YAML file is empty or invalid
       raise TaxonomyError, "Empty or invalid YAML file: #{file_path}" if yaml_content.nil?
-      
+
       # Process entity types
       yaml_content.each do |key, value|
-        next if key == 'property_types' # Handle property types separately
-        
+        next if key == "property_types" # Handle property types separately
+
         # Ensure properties exist and is a hash
-        value = { 'properties' => {} } unless value.is_a?(Hash)
-        value['properties'] ||= {}
-        
+        value = { "properties" => {} } unless value.is_a?(Hash)
+        value["properties"] ||= {}
+
         # Handle inheritance
-        if value['extends']
-          parent_type = value['extends']
-          parent_props = @taxonomies[parent_type]&.dig('properties') || {}
-          value['properties'] = parent_props.merge(value['properties'])
+        if value["extends"]
+          parent_type = value["extends"]
+          parent_props = @taxonomies[parent_type]&.dig("properties") || {}
+          value["properties"] = parent_props.merge(value["properties"])
         end
-        
+
         @taxonomies[key] = value
       end
-      
+
       # Handle property types if defined in the YAML
-      if yaml_content['property_types']
-        @taxonomies['property_types'] = yaml_content['property_types']
-      end
-      
+      @taxonomies["property_types"] = yaml_content["property_types"] if yaml_content["property_types"]
     rescue Psych::SyntaxError => e
       @logger.error("YAML syntax error in #{file_path}: #{e.message}")
       raise TaxonomyError, "YAML syntax error in #{file_path}: #{e.message}"
@@ -68,7 +65,7 @@ module Neo4j
 
     # Get all entity types
     def entity_types
-      @taxonomies.keys.reject { |k| k == 'property_types' }
+      @taxonomies.keys.reject { |k| k == "property_types" }
     end
 
     # Get properties for a specific entity type
@@ -78,11 +75,11 @@ module Neo4j
 
       entity["properties"].each_with_object({}) do |(key, value), hash|
         # Convert property definition to a consistent hash format
-        prop = value.is_a?(Hash) ? value.dup : { 'type' => value }
-        
+        prop = value.is_a?(Hash) ? value.dup : { "type" => value }
+
         # Set default type to 'Text' if not specified
-        prop['type'] ||= 'Text'
-        
+        prop["type"] ||= "Text"
+
         # Convert to symbolized keys for consistent access
         hash[key] = prop.transform_keys(&:to_sym)
       end
@@ -98,27 +95,25 @@ module Neo4j
     def property_types
       @property_types ||= load_property_types
     end
-    
+
     # Load property types from built-in and custom definitions
     def load_property_types
       # First add the built-in types
       built_in_types = {
-        'Text' => { 'description' => 'Plain text' },
-        'Email' => { 'description' => 'Email address' },
-        'URL' => { 'description' => 'Web URL' },
-        'DateTime' => { 'description' => 'Date and time (ISO 8601)' },
-        'Duration' => { 'description' => 'Time duration (ISO 8601 duration format)' },
-        'Boolean' => { 'description' => 'True or false' },
-        'Number' => { 'description' => 'Numeric value' },
-        'Object' => { 'description' => 'Arbitrary key-value data' },
-        'Relationship' => { 'description' => 'Reference to another entity' }
+        "Text" => { "description" => "Plain text" },
+        "Email" => { "description" => "Email address" },
+        "URL" => { "description" => "Web URL" },
+        "DateTime" => { "description" => "Date and time (ISO 8601)" },
+        "Duration" => { "description" => "Time duration (ISO 8601 duration format)" },
+        "Boolean" => { "description" => "True or false" },
+        "Number" => { "description" => "Numeric value" },
+        "Object" => { "description" => "Arbitrary key-value data" },
+        "Relationship" => { "description" => "Reference to another entity" }
       }
-      
+
       # Add any additional types defined in the taxonomy
-      if @taxonomies['property_types']
-        built_in_types.merge!(@taxonomies['property_types'])
-      end
-      
+      built_in_types.merge!(@taxonomies["property_types"]) if @taxonomies["property_types"]
+
       built_in_types.transform_keys(&:to_s)
     end
 
@@ -189,13 +184,13 @@ module Neo4j
     # Get all entities that extend a specific type
     def entities_extending(type_name)
       @taxonomies.select do |_, entity|
-        entity.is_a?(Hash) && entity['extends'] == type_name
+        entity.is_a?(Hash) && entity["extends"] == type_name
       end.keys
     end
 
     # Get the parent type of an entity
     def parent_type(entity_type)
-      @taxonomies[entity_type.to_s]&.dig('extends')
+      @taxonomies[entity_type.to_s]&.dig("extends")
     end
 
     # Check if a type is a subtype of another type
@@ -203,6 +198,7 @@ module Neo4j
       current = subtype
       while current
         return true if current == supertype
+
         current = parent_type(current)
       end
       false
@@ -212,17 +208,17 @@ module Neo4j
     def all_properties_for(entity_type)
       properties = {}
       current = entity_type
-      
+
       while current
         entity = @taxonomies[current.to_s]
-        if entity && entity['properties']
+        if entity && entity["properties"]
           # Convert to symbolized keys for consistency
-          entity_props = entity['properties'].transform_keys(&:to_sym)
+          entity_props = entity["properties"].transform_keys(&:to_sym)
           properties = entity_props.merge(properties)
         end
-        current = entity&.dig('extends')
+        current = entity&.dig("extends")
       end
-      
+
       properties
     end
 
@@ -230,27 +226,27 @@ module Neo4j
     def validate_entity(entity_type, entity_data)
       errors = []
       properties = all_properties_for(entity_type)
-      
+
       # Check for missing required properties
       properties.each do |prop_name, prop_def|
         if prop_def[:required] && !entity_data.key?(prop_name.to_s) && !entity_data.key?(prop_name.to_sym)
           errors << "Missing required property: #{prop_name}"
         end
       end
-      
+
       # Check property types
       entity_data.each do |key, value|
         prop_def = properties[key.to_sym] || properties[key.to_s]
         next unless prop_def
-        
+
         # Check enum values if specified
         if prop_def[:enum] && !prop_def[:enum].include?(value)
           errors << "Invalid value '#{value}' for property '#{key}'. Must be one of: #{prop_def[:enum].join(', ')}"
         end
-        
+
         # TODO: Add type validation based on property type
       end
-      
+
       errors
     end
   end

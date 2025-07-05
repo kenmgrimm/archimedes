@@ -121,15 +121,15 @@ Dir.glob(File.join(input_base, "*")) do |input_folder|
     puts "Processing content (#{description.size} characters, #{image_docs.size} images)..."
 
     # Get the taxonomy context and build the system prompt
-    taxonomy_context = extractor.send(:build_taxonomy_context)  # Use send to access private method
+    taxonomy_context = extractor.send(:build_taxonomy_context) # Use send to access private method
     system_prompt = extractor.send(:build_neo4j_extraction_prompt, taxonomy_context)
-    
+
     # Prepare the full messages array that will be sent to the API
     full_messages = [
       { role: "system", content: system_prompt },
       *messages
     ]
-    
+
     # Save the full prompt to a file
     prompt_content = "# System Prompt\n\n#{system_prompt}\n\n# Messages Sent\n"
     full_messages.each_with_index do |msg, i|
@@ -138,15 +138,15 @@ Dir.glob(File.join(input_base, "*")) do |input_folder|
         prompt_content += msg[:content]
       elsif msg[:content].is_a?(Array)
         msg[:content].each do |part|
-          if part.is_a?(Hash) && part[:type] == 'text'
+          if part.is_a?(Hash) && part[:type] == "text"
             prompt_content += part[:text].to_s
-          elsif part.is_a?(Hash) && part[:type] == 'image_url'
+          elsif part.is_a?(Hash) && part[:type] == "image_url"
             prompt_content += "[Image: #{part[:image_url][:url][0..100]}...]"
           end
         end
       end
     end
-    
+
     # Use the extractor with the messages array
     result = extractor.extract_with_messages(messages)
 
@@ -167,10 +167,10 @@ Dir.glob(File.join(input_base, "*")) do |input_folder|
     # Save the results (overwrite existing file)
     output_file = File.join(output_folder, "extraction.json")
     prompt_file = File.join(output_folder, "prompt.txt")
-    
+
     # Save the extraction results
     File.write(output_file, JSON.pretty_generate(output))
-    
+
     # Save the complete prompt to a separate file
     File.write(prompt_file, prompt_content)
 

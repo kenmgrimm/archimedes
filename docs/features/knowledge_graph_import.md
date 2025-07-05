@@ -52,10 +52,6 @@ app/
           item_importer.rb
           address_importer.rb
           # Other entity importers...
-        relationships/
-          ownership_importer.rb
-          family_relationship_importer.rb
-          # Other relationship importers...
       knowledge_graph_builder.rb
       taxonomy.yml
 ```

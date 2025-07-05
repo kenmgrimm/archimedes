@@ -43,16 +43,16 @@ module Neo4j
         if image_docs.any?
           # Create a single message with both text and images
           content = []
-          
+
           # Add text content if present
           unless text_content.strip.empty?
             # Add a clear instruction to analyze both text and images together
-            content << { 
-              type: "text", 
+            content << {
+              type: "text",
               text: "Please analyze the following information. The text describes the image(s) that follow.\n\n#{text_content}"
             }
           end
-          
+
           # Add images
           image_docs.each do |doc_path|
             content << {
@@ -63,26 +63,24 @@ module Neo4j
               }
             }
           end
-          
+
           # Ensure we have at least one content item
-          if content.empty?
-            content << { type: "text", text: "Analyze the following image(s):" }
-          end
-          
+          content << { type: "text", text: "Analyze the following image(s):" } if content.empty?
+
           # Add a system message to provide context about the current user
           messages = [
             {
               role: "system",
               content: "You are an AI assistant that extracts structured information from text and images. " \
-                      "When the text refers to 'my' or 'I' or other first-person pronouns, it refers to the current user (Kenneth Grimm). " \
-                      "When extracting information about vehicles or other items, include all relevant details from both the text and images."
+                       "When the text refers to 'my' or 'I' or other first-person pronouns, it refers to the current user (Kenneth Grimm). " \
+                       "When extracting information about vehicles or other items, include all relevant details from both the text and images."
             },
             {
               role: "user",
               content: content
             }
           ]
-          
+
           response = @openai.extract_entities_with_taxonomy(
             messages: messages,
             taxonomy: taxonomy_context
@@ -187,8 +185,8 @@ module Neo4j
         - The current user is #{user_description}
         - User ID: #{current_user.id}
         - Email: #{current_user.email}
-        #{current_user.phone.present? ? "- Phone: #{current_user.phone}" : ""}
-        #{current_user.birth_date.present? ? "- Birth Date: #{current_user.birth_date}" : ""}
+        #{"- Phone: #{current_user.phone}" if current_user.phone.present?}
+        #{"- Birth Date: #{current_user.birth_date}" if current_user.birth_date.present?}
 
         # Important User References:
         - First-person pronouns (I, me, my, mine, myself) always refer to #{user_description}.
@@ -245,13 +243,13 @@ module Neo4j
 
       types.map do |type, details|
         desc = if details.is_a?(Hash)
-                 details[:description] || details['description'] || "No description available"
+                 details[:description] || details["description"] || "No description available"
                else
                  "No description available"
                end
 
-        props = if details.is_a?(Hash) && (details[:properties] || details['properties'])
-                  props_hash = details[:properties] || details['properties']
+        props = if details.is_a?(Hash) && (details[:properties] || details["properties"])
+                  props_hash = details[:properties] || details["properties"]
                   props_hash.map { |k, v| "  - #{k}: #{v}" }.join("\n")
                 else
                   "  No properties defined"
@@ -267,19 +265,19 @@ module Neo4j
 
       types.map do |name, details|
         desc = if details.is_a?(Hash)
-                 details[:description] || details['description'] || "No description available"
+                 details[:description] || details["description"] || "No description available"
                else
                  "No description available"
                end
 
         source = if details.is_a?(Hash)
-                   details[:source] || details['source'] || "Unknown source"
+                   details[:source] || details["source"] || "Unknown source"
                  else
                    "Unknown source"
                  end
 
         target = if details.is_a?(Hash)
-                   details[:target] || details['target'] || "Unknown target"
+                   details[:target] || details["target"] || "Unknown target"
                  else
                    "Unknown target"
                  end
@@ -516,6 +514,7 @@ module Neo4j
     # @return [String] Formatted terms as a string
     def format_taxonomy_terms(terms)
       return "None defined" if terms.blank?
+
       terms.map { |t| "- #{t}" }.join("\n")
     end
   end

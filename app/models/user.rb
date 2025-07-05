@@ -21,7 +21,7 @@ class User < ApplicationRecord
     # In a real app, you'd get this from the current request context
     # For now, we'll just return the first user or create a default one
     user = first_or_initialize
-    
+
     if user.new_record?
       user.full_name = "Kenneth Grimm"
       user.given_name = "Kenneth"
@@ -31,7 +31,7 @@ class User < ApplicationRecord
       user.password = "password123" # Change this in production!
       user.save!
     end
-    
+
     user
   end
 

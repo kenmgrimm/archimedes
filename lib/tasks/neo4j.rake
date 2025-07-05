@@ -3,6 +3,42 @@ require "neo4j-ruby-driver"
 require "neo4j_seeder"
 
 namespace :neo4j do
+  desc "Clear all data from Neo4j database (use with caution!)"
+  task clear: :environment do
+    puts "Clearing all data from Neo4j database..."
+
+    driver = Neo4j::Driver::GraphDatabase.driver(
+      NEO4J_CONFIG[:url],
+      Neo4j::Driver::AuthTokens.basic(NEO4J_CONFIG[:username], NEO4J_CONFIG[:password]),
+      encryption: NEO4J_CONFIG[:encryption]
+    )
+
+    begin
+      driver.session do |session|
+        # Delete all nodes and relationships
+        puts "Deleting all nodes and relationships..."
+        session.run("MATCH (n) DETACH DELETE n")
+        puts "Deleted all nodes and relationships"
+
+        # Reset any auto-increment counters
+        begin
+          puts "Resetting indexes..."
+          session.run("CALL db.indexes() YIELD indexName CALL db.awaitIndex(indexName) YIELD success RETURN count(*)")
+          puts "Indexes reset complete"
+        rescue StandardError => e
+          puts "Note: Could not reset indexes - #{e.message}"
+        end
+      end
+
+      puts "✅ Neo4j database cleared successfully"
+    rescue StandardError => e
+      puts "❌ Error clearing Neo4j database: #{e.message}"
+      puts e.backtrace.join("\n") if ENV["DEBUG"]
+      raise
+    ensure
+      driver&.close
+    end
+  end
   desc "Set up Neo4j schema from YAML definition"
   task setup_schema: :environment do
     puts "Setting up Neo4j schema..."
@@ -189,9 +225,9 @@ namespace :neo4j do
 
     # Manually set Neo4j configuration
     neo4j_config = {
-      url: ENV.fetch("NEO4J_URL", "bolt://127.0.0.1:7687").gsub("localhost", "127.0.0.1"),
-      username: ENV.fetch("NEO4J_USERNAME", "neo4j"),
-      password: ENV.fetch("NEO4J_PASSWORD", "password"),
+      url: ENV.fetch("NEO4J_HTTP_URL"),
+      username: ENV.fetch("NEO4J_USERNAME"),
+      password: ENV.fetch("NEO4J_PASSWORD"),
       encryption: false
     }
 
