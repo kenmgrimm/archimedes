@@ -234,6 +234,39 @@ module Neo4j
         5. If you're not confident about an extraction, either don't include it or set a low confidence score.
         6. When the text refers to the current user (using first-person pronouns or any of their known names),
            create a relationship to the User entity with ID #{current_user.id}.
+        7. For any uploaded photos or images (e.g., JPG, PNG, HEIC):
+           - Always create a Photo entity for each uploaded image file
+           - The Photo entity should include metadata like filename, format, and size
+           - If the image contains recognizable content (vehicles, documents, people, etc.), 
+             create appropriate entities and link them using DEPICTS relationships
+           - For documents in photos (e.g., a lease agreement), create a Document entity
+             and relate it to the Photo with a HAS_DOCUMENT relationship
+           - Include a description of the photo's contents when possible
+           - Set confidence based on how clearly the content is visible and identifiable
+
+        8. For any uploaded documents (e.g., PDF, DOCX, TXT):
+           - Always create a Document entity for each uploaded file
+           - The Document entity should include metadata like filename, type, and size
+           - Extract text content and create entities for any identifiable information
+             (e.g., people, addresses, dates, financial information)
+           - Relate the Document to extracted entities using appropriate relationships
+             (e.g., IDENTIFIES, REFERENCES, CONTAINS)
+           - For documents that are about specific assets or properties, create those
+             entities and relate them to the document
+
+        9. For any physical objects, possessions, or assets mentioned in text or shown in images:
+           - Create an Asset entity with appropriate properties
+           - Use the most specific category that applies (e.g., 'vehicle', 'electronic', 'furniture')
+           - Include any identifying details mentioned (make, model, color, etc.)
+           - Create an OWNS relationship to the current user if it's their possession
+           - Set confidence based on how clearly the asset is described or visible
+        9. If the input appears to be a list of items (e.g., a shopping list, to-do list), create:
+           - A List entity with a name from the first line (if available)
+           - ListItem entities for each item in the list
+           - HAS_ITEM relationships from the List to each ListItem
+           - Set appropriate confidence scores based on clarity
+           - Include the full text of each item in the source_text field
+       10. For lists, extract as much structure as possible from the items (quantities, descriptions, etc.)
       PROMPT
     end
 
@@ -242,15 +275,21 @@ module Neo4j
       return "None defined" if types.blank?
 
       types.map do |type, details|
+        # Normalize details to use string keys
+        details = details.with_indifferent_access if details.respond_to?(:with_indifferent_access)
+
         desc = if details.is_a?(Hash)
-                 details[:description] || details["description"] || "No description available"
+                 details["description"] || details[:description] || "No description available"
                else
                  "No description available"
                end
 
-        props = if details.is_a?(Hash) && (details[:properties] || details["properties"])
-                  props_hash = details[:properties] || details["properties"]
-                  props_hash.map { |k, v| "  - #{k}: #{v}" }.join("\n")
+        props = if details.is_a?(Hash) && (details["properties"] || details[:properties])
+                  props_hash = details["properties"] || details[:properties]
+                  props_hash.map do |k, v|
+                    prop_desc = v.is_a?(Hash) ? v.inspect : v.to_s
+                    "  - #{k}: #{prop_desc}"
+                  end.join("\n")
                 else
                   "  No properties defined"
                 end
@@ -334,9 +373,10 @@ module Neo4j
     # Get all entity types with their properties
     def entity_types_with_properties
       @taxonomy_service.entity_types.index_with do |type|
+        entity_definition = @taxonomy_service.taxonomy_for(type)
         {
-          description: @taxonomy_service.properties_for(type)[:description],
-          properties: @taxonomy_service.properties_for(type).except(:description)
+          description: entity_definition["description"] || "No description available",
+          properties: @taxonomy_service.properties_for(type)
         }
       end
     end

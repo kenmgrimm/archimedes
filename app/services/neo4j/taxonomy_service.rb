@@ -12,16 +12,11 @@ module Neo4j
     # Load all taxonomy files from config/taxonomies and app/services/neo4j
     def load_taxonomies
       # Load from config/taxonomies first (if any)
-      taxonomies_dir = Rails.root.join("config", "taxonomies")
+      taxonomies_dir = Rails.root.join("app", "services", "neo4j", "taxonomy")
       if File.directory?(taxonomies_dir)
         Dir.glob(File.join(taxonomies_dir, "*.yml")).each do |file|
           load_taxonomy(file)
         end
-      end
-
-      # Then load from app/services/neo4j
-      Rails.root.glob("app/services/neo4j/taxonomy.yml").each do |file|
-        load_taxonomy(file)
       end
     rescue StandardError => e
       @logger.error("Failed to load taxonomies: #{e.message}")
@@ -68,7 +63,7 @@ module Neo4j
       @taxonomies.keys.reject { |k| k == "property_types" }
     end
 
-    # Get properties for a specific entity type
+    # Get properties for a specific entity type (excludes relationships)
     def properties_for(entity_type)
       entity = @taxonomies[entity_type.to_s]
       return {} unless entity && entity["properties"]
@@ -87,13 +82,32 @@ module Neo4j
 
     # Get all relationship types for an entity type
     def relationship_types_for(entity_type)
-      properties = properties_for(entity_type)
-      properties.select { |_, prop| prop[:type].to_s == "Relationship" }
+      entity = @taxonomies[entity_type.to_s]
+      return {} unless entity
+
+      # Get relationships from the relations section
+      relations = entity["relations"] || {}
+
+      # Convert to the expected format
+      relations.each_with_object({}) do |(rel_name, rel_def), hash|
+        hash[rel_name] = {
+          target: rel_def["to"],
+          cardinality: rel_def["cardinality"] || "one",
+          description: rel_def["description"]
+        }
+      end
     end
 
     # Get all property types
     def property_types
       @property_types ||= load_property_types
+    end
+    
+    # Get the full taxonomy definition for a specific entity type
+    # @param entity_type [String] The type of entity to look up
+    # @return [Hash] The full entity definition including description, properties, and relations
+    def taxonomy_for(entity_type)
+      @taxonomies[entity_type.to_s] || {}
     end
 
     # Load property types from built-in and custom definitions
@@ -112,7 +126,7 @@ module Neo4j
       }
 
       # Add any additional types defined in the taxonomy
-      built_in_types.merge!(@taxonomies["property_types"]) if @taxonomies["property_types"]
+      built_in_types.merge!(@taxonomies["property_types"] || {})
 
       built_in_types.transform_keys(&:to_s)
     end
@@ -186,6 +200,41 @@ module Neo4j
       @taxonomies.select do |_, entity|
         entity.is_a?(Hash) && entity["extends"] == type_name
       end.keys
+    end
+
+    # Get all relationships where this entity type is the target
+    def relationships_targeting(entity_type)
+      @taxonomies.each_with_object({}) do |(source_type, entity), result|
+        next unless entity.is_a?(Hash) && entity["relations"]
+
+        entity["relations"].each do |rel_name, rel_def|
+          target = rel_def["to"]
+          target = [target] unless target.is_a?(Array)
+
+          next unless target.include?(entity_type)
+
+          result[source_type] ||= {}
+          result[source_type][rel_name] = {
+            cardinality: rel_def["cardinality"] || "one",
+            description: rel_def["description"]
+          }
+        end
+      end
+    end
+
+    # Get all relationships for an entity type, including both incoming and outgoing
+    def all_relationships_for(entity_type)
+      outgoing = relationship_types_for(entity_type).transform_values { |v| v.merge(direction: :outgoing) }
+      incoming = relationships_targeting(entity_type).each_with_object({}) do |(source, rels), hash|
+        rels.each do |rel_name, rel_def|
+          hash["#{source}_#{rel_name}"] = rel_def.merge(
+            direction: :incoming,
+            source: source
+          )
+        end
+      end
+
+      outgoing.merge(incoming)
     end
 
     # Get the parent type of an entity

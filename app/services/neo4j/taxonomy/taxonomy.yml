@@ -1,0 +1,1408 @@
+# Personal Knowledge Graph Taxonomy
+# A comprehensive schema for organizing personal information, relationships, and activities
+# Version: 1.0.0
+# Last Updated: 2025-07-05
+
+# ======================
+# Core Entity Types
+# ======================
+
+# Location Information
+Address:
+  description: >
+    A physical location where someone lives, works, or visits.
+    Examples: "123 Main St, Anytown, USA", "Office 42, 500 Tech Park"
+  properties:
+    street: 
+      description: Street name and number (e.g., "123 Main St")
+    street2: 
+      description: Additional address line (e.g., "Apt 4B", "Floor 3")
+    city: 
+      description: City or town name
+    state: 
+      description: State, province, or region (use official abbreviations)
+    postalCode: 
+      description: Postal or ZIP code
+    country: 
+      description: Full country name (e.g., "United States")
+    type: 
+      enum: 
+        - home: Primary residence
+        - work: Workplace or office
+        - vacation: Vacation property
+        - other: Any other type of address
+      default: home
+      description: The type of address
+    primary: 
+      type: Boolean
+      default: false
+      description: Whether this is the primary address of this type
+    notes: 
+      description: Any additional context or special instructions
+  relations:
+    # Inverse relationships
+    LIVED_AT_BY:
+      to: Person
+      cardinality: many
+      description: People who live at this address
+    WORKED_AT_BY:
+      to: Person
+      cardinality: many
+      description: People who work at this address
+
+# People and Relationships
+Person:
+  description: >
+    A human being with whom the user interacts.
+    Examples: Family members, friends, colleagues, service providers
+  properties:
+    name:
+      required: true
+      description: Full name in display format (e.g., "Dr. Jane A. Smith, PhD")
+    givenName:
+      description: First/given name (e.g., "John", "Mary")
+    familyName:
+      description: Last/family name (e.g., "Smith")
+    middleName:
+      description: Middle name(s) or initial(s) (e.g., "Alexander" or "A.")
+    prefix:
+      description: Name prefix (e.g., "Mr.", "Mrs.", "Dr.", "Prof.")
+    suffix:
+      description: Name suffix (e.g., "Jr.", "Sr.", "III", "PhD")
+    birthDate:
+      type: Date
+      description: Date of birth in YYYY-MM-DD format
+    email:
+      type: Email
+      description: Primary email address
+    phone:
+      description: Primary phone number in E.164 format (e.g., +15551234567)
+    notes:
+      description: Personal notes or reminders about this person
+  relations:
+    # Personal relationships
+    PARENT_OF:
+      to: Person
+      cardinality: many
+      description: Biological, adoptive, or legal parent relationship
+    CHILD_OF:
+      to: Person
+      cardinality: many
+      description: Biological, adoptive, or legal child relationship
+    SIBLING:
+      to: Person
+      cardinality: many
+      description: Full, half, or step sibling relationship
+      symmetric: true
+    SPOUSE:
+      to: Person
+      cardinality: one
+      description: Current spouse or domestic partner
+      symmetric: true
+    PARTNER:
+      to: Person
+      cardinality: one
+      description: Romantic partner (when not married)
+      symmetric: true
+    FRIEND:
+      to: Person
+      cardinality: many
+      description: Personal friendship or acquaintance
+      symmetric: true
+    COLLEAGUE:
+      to: Person
+      cardinality: many
+      description: Current or past work relationship
+      symmetric: true
+    
+    # Location relationships
+    LIVES_AT:
+      to: Address
+      cardinality: many
+      description: Current residence addresses
+      properties:
+        startDate:
+          type: Date
+          description: When this living arrangement began
+        endDate:
+          type: Date
+          description: When this living arrangement ended (if applicable)
+        type:
+          enum: [permanent, temporary, seasonal, other]
+          default: permanent
+    
+    WORKS_AT:
+      to: Address
+      cardinality: many
+      description: Workplace addresses
+      properties:
+        jobTitle: 
+          description: Job title/position at this location
+        department:
+          description: Department or division
+        startDate:
+          type: Date
+        endDate:
+          type: Date
+    
+    # Ownership and responsibility
+    OWNS:
+      to:
+        - Asset
+        - Document
+        - Property
+      cardinality: many
+      description: Ownership of physical or digital items
+      properties:
+        startDate:
+          type: Date
+          description: When ownership began
+        endDate:
+          type: Date
+          description: When ownership ended (if applicable)
+        percentage:
+          type: Number
+          description: Percentage of ownership (0-100)
+    
+    MAINTAINS:
+      to:
+        - Asset
+        - Property
+      cardinality: many
+      description: Responsibility for maintenance
+      properties:
+        responsibility:
+          description: Type of maintenance responsibility
+          enum: [primary, secondary, emergency, other]
+    
+    INSURES:
+      to:
+        - Asset
+        - Property
+      cardinality: many
+      description: Insurance coverage provided
+      properties:
+        policyNumber:
+          description: Insurance policy identifier
+        provider:
+          description: Name of insurance company
+        coverageAmount:
+          type: Number
+          description: Coverage amount in currency's smallest unit
+    
+    # Social and event relationships
+    ATTENDS:
+      to: Event
+      cardinality: many
+      description: Events this person is attending
+      properties:
+        rsvp:
+          enum: [accepted, declined, tentative, needs_action]
+          default: needs_action
+        role:
+          description: Role at the event (e.g., "guest", "organizer", "speaker")
+
+ContactMethod:
+  description: Ways to contact someone
+  properties:
+    type:
+      enum:
+        - email
+        - phone
+        - social
+        - address
+      required: true
+    value:
+      required: true
+    label:
+      description: e.g., "work", "home", "mobile"
+    preferred:
+      type: Boolean
+
+# Time-based Entities
+Event:
+  description: A scheduled occurrence with a specific time
+  properties:
+    title:
+      required: true
+    description:
+    startTime:
+      type: DateTime
+      required: true
+    endTime:
+      type: DateTime
+    allDay:
+      type: Boolean
+      default: false
+    location:
+      description: Could be a place ID or free text
+    status:
+      enum:
+        - scheduled
+        - tentative
+        - confirmed
+        - cancelled
+      default: scheduled
+    priority:
+      enum:
+        - high
+        - medium
+        - low
+      default: medium
+  relations:
+    ATTENDED_BY:
+      to: Person
+      description: Person attending an event
+
+# ======================
+# Productivity Entities
+# ======================
+
+List:
+  description: >
+    A collection of related items, such as a shopping list, to-do list, or checklist.
+    Examples: "Grocery List", "Weekend Projects", "Books to Read"
+  properties:
+    name:
+      required: true
+      description: Short, descriptive name for the list
+    description:
+      description: Detailed explanation of the list's purpose
+    type:
+      enum:
+        - todo: Tasks to be completed
+        - shopping: Items to purchase
+        - checklist: Items to verify
+        - inventory: Items to track
+        - other: Any other type of list
+      default: other
+    isShared:
+      type: Boolean
+      default: false
+      description: Whether the list is shared with others
+    isArchived:
+      type: Boolean
+      default: false
+      description: Whether the list is archived (read-only)
+  relations:
+    CREATED_BY:
+      to: Person
+      description: Who created this list
+    HAS_ITEM:
+      to: ListItem
+      cardinality: many
+      description: Items contained in this list
+    SHARED_WITH:
+      to: Person
+      cardinality: many
+      description: People with access to this list
+      properties:
+        permission:
+          enum: [view, edit, manage]
+          default: view
+
+ListItem:
+  description: >
+    An individual entry in a list, representing a single item or task.
+    Examples: "Milk" in a grocery list, "Fix sink" in a to-do list
+  properties:
+    name:
+      required: true
+      description: Short description of the item
+    description:
+      description: Additional details about the item
+    quantity:
+      type: Number
+      description: How many of this item (for shopping lists)
+    unit:
+      description: Unit of measurement (e.g., "lbs", "liters")
+    isCompleted:
+      type: Boolean
+      default: false
+      description: Whether the item is checked off
+    dueDate:
+      type: DateTime
+      description: When this item is due
+    priority:
+      enum: [critical, high, medium, low, none]
+      default: none
+  relations:
+    BELONGS_TO:
+      to: List
+      cardinality: one
+      description: The list containing this item
+    ASSIGNED_TO:
+      to: Person
+      description: Who is responsible for this item
+
+# ======================
+# Task Management
+# ======================
+
+Task:
+  description: >
+    A unit of work that needs to be completed.
+    Examples: "Prepare presentation", "Fix leaky faucet", "Plan vacation"
+  properties:
+    title:
+      required: true
+      description: Short, action-oriented description
+    description:
+      description: Detailed explanation of the task
+    status:
+      enum:
+        - not_started: Task has not been started
+        - in_progress: Work has begun on the task
+        - on_hold: Task is temporarily paused
+        - in_review: Task is being reviewed
+        - completed: Task is finished
+        - cancelled: Task was abandoned
+      default: not_started
+    priority:
+      enum:
+        - critical: Must be done as soon as possible
+        - high: Important and time-sensitive
+        - medium: Normal priority
+        - low: Can be deferred if needed
+      default: medium
+    dueDate:
+      type: DateTime
+      description: When the task should be completed
+    startDate:
+      type: DateTime
+      description: When work on the task should begin
+    timeEstimate:
+      type: Duration
+      description: Estimated time required to complete (ISO 8601 duration)
+    timeSpent:
+      type: Duration
+      description: Actual time spent on the task
+    completionPercentage:
+      type: Number
+      minimum: 0
+      maximum: 100
+      default: 0
+      description: Progress toward completion
+    isRecurring:
+      type: Boolean
+      default: false
+      description: Whether the task repeats
+    recurrenceRule:
+      description: RRULE string for recurring tasks (RFC 5545)
+  relations:
+    CREATED_BY:
+      to: Person
+      description: Who created this task
+    ASSIGNED_TO:
+      to: Person
+      description: Who is responsible for completing the task
+    DEPENDS_ON:
+      to: Task
+      cardinality: many
+      description: Tasks that must be completed first
+    HAS_SUBTASK:
+      to: Task
+      cardinality: many
+      description: Smaller tasks that make up this task
+    RELATED_TO:
+      to:
+        - Task
+        - Project
+        - Event
+        - Document
+      cardinality: many
+      description: Related items
+    HAS_TAG:
+      to: Text
+      cardinality: many
+      description: Categories or labels for organization
+    HAS_ATTACHMENT:
+      to:
+        - Document
+        - URL
+      cardinality: many
+      description: Supporting files or links
+
+Reminder:
+  description: >
+    A notification to be shown at a specific time or when a condition is met.
+    Examples: "Take medication at 8pm", "Call John tomorrow at 2pm"
+  properties:
+    message:
+      required: true
+      description: The content of the reminder
+    dueAt:
+      type: DateTime
+      required: true
+      description: When the reminder should be triggered
+    status:
+      enum:
+        - pending: Reminder is active
+        - completed: Action was taken
+        - snoozed: Reminder was postponed
+        - dismissed: Reminder was dismissed
+      default: pending
+    method:
+      enum:
+        - notification: System or app notification
+        - email: Email reminder
+        - sms: Text message
+        - call: Phone call
+        - other: Another method
+      default: notification
+    isRecurring:
+      type: Boolean
+      default: false
+      description: Whether the reminder repeats
+    recurrenceRule:
+      description: RRULE string for recurring reminders (RFC 5545)
+  relations:
+    RELATED_TO:
+      to:
+        - Task
+        - Event
+        - Note
+        - ListItem
+      cardinality: one
+      description: What this reminder is for
+    CREATED_BY:
+      to: Person
+      description: Who created this reminder
+
+# ======================
+# Project Management
+# ======================
+
+Project:
+  description: >
+    A collection of related tasks, resources, and milestones working toward a common goal.
+    Examples: "Home Renovation", "Product Launch", "Wedding Planning"
+  properties:
+    name:
+      required: true
+      description: Short, descriptive name for the project
+    description:
+      description: Detailed explanation of the project's purpose and scope
+    status:
+      enum:
+        - planning: Initial planning and setup
+        - active: Work is in progress
+        - on_hold: Work is temporarily paused
+        - completed: Project is finished
+        - abandoned: Project was cancelled
+      default: planning
+    startDate:
+      type: DateTime
+      description: Official start date of the project
+    targetDate:
+      type: DateTime
+      description: Expected or desired completion date
+    actualEndDate:
+      type: DateTime
+      description: When the project was actually completed
+    budget:
+      type: Number
+      description: Total budget in the currency's smallest unit (e.g., cents)
+    priority:
+      enum: [critical, high, medium, low]
+      default: medium
+    isTemplate:
+      type: Boolean
+      default: false
+      description: Whether this is a reusable project template
+    settings:
+      type: Object
+      description: Project-specific configuration and metadata
+  relations:
+    OWNED_BY:
+      to: Person
+      description: Who is responsible for this project
+    HAS_TASK:
+      to: Task
+      cardinality: many
+      description: Tasks that belong to this project
+    HAS_MILESTONE:
+      to: Milestone
+      cardinality: many
+      description: Major checkpoints in the project
+    HAS_DOCUMENT:
+      to: Document
+      cardinality: many
+      description: Documents related to this project
+    HAS_TAG:
+      to: Text
+      cardinality: many
+      description: Categories or labels for organization
+    TEAM_MEMBER:
+      to: Person
+      cardinality: many
+      description: People involved in the project
+      properties:
+        role:
+          description: Team member's role (e.g., "developer", "designer")
+        startDate:
+          type: DateTime
+        endDate:
+          type: DateTime
+
+Milestone:
+  description: >
+    A significant point or event in the project timeline.
+    Examples: "Design Phase Complete", "Beta Launch", "Client Approval"
+  properties:
+    name:
+      required: true
+      description: Short, descriptive name
+    description:
+      description: Detailed explanation
+    dueDate:
+      type: DateTime
+      description: When the milestone should be achieved
+    completedDate:
+      type: DateTime
+      description: When the milestone was actually achieved
+    isCritical:
+      type: Boolean
+      default: false
+      description: Whether this is a critical path milestone
+  relations:
+    PART_OF:
+      to: Project
+      description: The project this milestone belongs to
+    DEPENDS_ON:
+      to: Milestone
+      cardinality: many
+      description: Other milestones that must be completed first
+
+# ======================
+# Knowledge Management
+# ======================
+
+Note:
+  description: >
+    A piece of information or documentation, typically in free-form text.
+    Examples: Meeting notes, ideas, research, journal entries
+  properties:
+    title:
+      required: true
+      description: Brief summary of the note's content
+    content:
+      required: true
+      description: The main text content (can include markdown)
+    createdAt:
+      type: DateTime
+      required: true
+      description: When the note was created
+    updatedAt:
+      type: DateTime
+      required: true
+      description: When the note was last modified
+    visibility:
+      enum:
+        - private: Only visible to creator
+        - shared: Visible to specific people
+        - public: Visible to everyone
+      default: private
+    isPinned:
+      type: Boolean
+      default: false
+      description: Whether the note is pinned/starred
+  relations:
+    CREATED_BY:
+      to: Person
+      description: Who created this note
+    HAS_TAG:
+      to: Text
+      cardinality: many
+      description: Categories or topics for organization
+    RELATED_TO:
+      to:
+        - Note
+        - Task
+        - Project
+        - Person
+        - Event
+      cardinality: many
+      description: Related entities
+    HAS_ATTACHMENT:
+      to:
+        - Document
+        - URL
+      cardinality: many
+      description: Files or links attached to this note
+    SHARED_WITH:
+      to: Person
+      cardinality: many
+      description: People with access to this note
+      properties:
+        permission:
+          enum: [view, comment, edit]
+          default: view
+
+Document:
+  description: >
+    A file or document, either physical or digital.
+    Examples: PDF reports, spreadsheets, scanned receipts, contracts
+  properties:
+    title:
+      required: true
+      description: Name of the document
+    description:
+      description: Brief summary of the document's content
+    filePath:
+      description: Path to the actual file in storage
+    fileType:
+      description: File extension (e.g., pdf, docx, xlsx, jpg)
+    mimeType:
+      description: Internet media type (e.g., "application/pdf")
+    fileSize:
+      type: Number
+      description: Size in bytes
+    url:
+      type: URL
+      description: Direct URL if stored online
+    content:
+      description: Extracted text content (for search/indexing)
+    language:
+      description: Document language (ISO 639-1 code)
+    pageCount:
+      type: Number
+      description: Number of pages (for multi-page documents)
+    processedAt:
+      type: DateTime
+      description: When content was last extracted/processed
+    expiresAt:
+      type: DateTime
+      description: When the document is no longer valid/relevant
+  relations:
+    OWNED_BY:
+      to: Person
+      description: Who owns this document
+    UPLOADED_BY:
+      to: Person
+      description: Who uploaded the document
+    DOCUMENTS:
+      to:
+        - Asset
+        - Property
+        - Project
+        - Task
+      description: What this document provides information about
+    HAS_TAG:
+      to: Text
+      cardinality: many
+      description: Categories or labels for organization
+    HAS_VERSION:
+      to: Document
+      cardinality: many
+      description: Previous versions of this document
+    RELATED_TO:
+      to:
+        - Document
+        - Note
+        - Task
+        - Project
+      cardinality: many
+      description: Related items
+    SHARED_WITH:
+      to: Person
+      cardinality: many
+      description: People with access to this document
+      properties:
+        permission:
+          enum: [view, comment, edit, manage]
+          default: view
+
+Photo:
+  description: >
+    A digital image or photograph, typically in JPEG, PNG, or HEIC format.
+    Examples: Vacation photos, document scans, screenshots, ID photos
+  properties:
+    url:
+      type: URL
+      required: true
+      description: Direct URL to the image file
+    thumbnailUrl:
+      type: URL
+      description: URL to a smaller version of the image
+    description:
+      description: Caption or description of the photo
+    altText:
+      description: Alternative text for accessibility
+    width:
+      type: Number
+      description: Image width in pixels
+    height:
+      type: Number
+      description: Image height in pixels
+    fileSize:
+      type: Number
+      description: File size in bytes
+    format:
+      enum: [jpeg, png, gif, heic, webp, tiff, raw, other]
+      description: Image format/extension
+    takenAt:
+      type: DateTime
+      description: When the photo was taken (from EXIF data if available)
+    location:
+      description: Geographic coordinates or place name where the photo was taken
+    cameraMake:
+      description: Camera manufacturer (from EXIF)
+    cameraModel:
+      description: Camera model (from EXIF)
+    aperture:
+      description: Camera aperture setting (from EXIF)
+    exposure:
+      description: Exposure time (from EXIF)
+    iso:
+      type: Number
+      description: ISO speed (from EXIF)
+    focalLength:
+      type: Number
+      description: Focal length in mm (from EXIF)
+    isFavorite:
+      type: Boolean
+      default: false
+      description: Whether the photo is marked as a favorite
+  relations:
+    DEPICTS:
+      to:
+        - Person
+        - Asset
+        - Property
+        - Event
+      description: What or who is shown in the photo
+    TAKEN_BY:
+      to: Person
+      description: Who took the photo
+    PART_OF_ALBUM:
+      to: Album
+      cardinality: many
+      description: Photo albums containing this photo
+    RELATED_TO:
+      to:
+        - Photo
+        - Event
+        - Note
+      cardinality: many
+      description: Related photos or content
+    TAGGED_WITH:
+      to: Text
+      cardinality: many
+      description: Tags for categorization
+
+Album:
+  description: >
+    A collection of photos, typically organized around an event, date, or theme.
+    Examples: "Summer Vacation 2023", "Family Reunion", "Home Renovation"
+  properties:
+    name:
+      required: true
+      description: Title of the album
+    description:
+      description: Description or story behind the album
+    coverPhoto:
+      type: URL
+      description: URL to the album cover image
+    startDate:
+      type: DateTime
+      description: When the earliest photo was taken
+    endDate:
+      type: DateTime
+      description: When the latest photo was taken
+    isShared:
+      type: Boolean
+      default: false
+      description: Whether the album is shared with others
+    location:
+      description: Primary location where photos were taken
+  relations:
+    CREATED_BY:
+      to: Person
+      description: Who created the album
+    HAS_PHOTO:
+      to: Photo
+      cardinality: many
+      description: Photos in this album
+    SHARED_WITH:
+      to: Person
+      cardinality: many
+      description: People with access to this album
+      properties:
+        permission:
+          enum: [view, comment, add_photos, manage]
+          default: view
+
+# ======================
+# Assets & Properties
+# ======================
+
+Asset:
+  description: >
+    A valuable item owned by someone, either physical or digital.
+    Examples: Vehicles, electronics, furniture, collectibles, investments
+  properties:
+    name:
+      required: true
+      description: Common name of the asset
+    description:
+      description: Detailed description and features
+    category:
+      required: true
+      enum:
+        - vehicle: Cars, motorcycles, boats, etc.
+        - electronic: Computers, phones, cameras, etc.
+        - furniture: Chairs, tables, sofas, etc.
+        - appliance: Refrigerators, washers, etc.
+        - jewelry: Watches, rings, etc.
+        - collectible: Art, coins, memorabilia
+        - digital: Cryptocurrency, NFTs, domains
+        - financial: Stocks, bonds, accounts
+        - other: Anything that doesn't fit above
+    make:
+      description: Manufacturer or brand
+    model:
+      description: Model name or number
+    serialNumber:
+      description: Unique identifier from manufacturer
+    purchaseDate:
+      type: DateTime
+      description: When the asset was acquired
+    purchasePrice:
+      type: Number
+      description: Original purchase price in the currency's smallest unit
+    purchaseLocation:
+      description: Where the asset was purchased
+    currentValue:
+      type: Number
+      description: Current estimated value in the currency's smallest unit
+    valueDate:
+      type: DateTime
+      description: When the current value was assessed
+    condition:
+      enum: [new, excellent, good, fair, poor]
+      description: Current physical condition
+    status:
+      enum: [active, in_use, in_storage, in_repair, lost, sold, disposed]
+      default: active
+    warrantyExpires:
+      type: DateTime
+      description: When the warranty period ends
+    insurancePolicyNumber:
+      description: Related insurance policy ID
+    notes:
+      description: Any additional information
+  relations:
+    OWNED_BY:
+      to: Person
+      description: Legal owner of the asset
+    USED_BY:
+      to: Person
+      cardinality: many
+      description: Primary users of the asset
+    LOCATED_AT:
+      to: 
+        - Property
+        - Address
+      description: Where the asset is typically stored or used
+    HAS_DOCUMENT:
+      to: Document
+      cardinality: many
+      description: Related documents (receipts, manuals, warranties)
+    HAS_MAINTENANCE:
+      to: Maintenance
+      cardinality: many
+      description: Maintenance and service records
+    INSURED_BY:
+      to: InsurancePolicy
+      description: Insurance coverage for this asset
+    DEPRECIATES_AS:
+      to: DepreciationSchedule
+      description: How this asset loses value over time
+
+Property:
+  description: >
+    A piece of real estate, including land and any structures on it.
+    Examples: Primary residence, vacation home, rental property, land parcel
+  properties:
+    name:
+      description: Informal name (e.g., "Beach House", "Downtown Office")
+    propertyType:
+      enum:
+        - single_family: Detached single-family home
+        - multi_family: Duplex, triplex, etc.
+        - apartment: Individual unit in a larger building
+        - condo: Condominium unit
+        - townhouse: Attached home in a row of similar homes
+        - commercial: Office, retail, industrial space
+        - land: Vacant land
+        - farm: Agricultural property
+        - other: Any other type
+      required: true
+    address:
+      type: Address
+      required: true
+    yearBuilt:
+      type: Integer
+      description: Year construction was completed
+    squareFeet:
+      type: Number
+      description: Total livable area in square feet
+    lotSize:
+      type: Number
+      description: Total land area in square feet or acres
+    bedrooms:
+      type: Integer
+      description: Number of bedrooms
+    bathrooms:
+      type: Number
+      description: Number of bathrooms (can be fractional)
+    purchaseDate:
+      type: DateTime
+      description: When the property was acquired
+    purchasePrice:
+      type: Number
+      description: Purchase price in the currency's smallest unit
+    currentValue:
+      type: Number
+      description: Current market value estimate
+    valueDate:
+      type: DateTime
+      description: When the current value was assessed
+    mortgageBalance:
+      type: Number
+      description: Remaining mortgage principal
+    mortgageRate:
+      type: Number
+      description: Interest rate on mortgage (as decimal)
+    mortgageTerm:
+      type: Integer
+      description: Loan term in years
+    propertyTax:
+      type: Number
+      description: Annual property tax amount
+    hoaFee:
+      type: Number
+      description: Monthly HOA or condo fee
+    isRental:
+      type: Boolean
+      default: false
+      description: Whether the property is rented to others
+    isPrimaryResidence:
+      type: Boolean
+      default: false
+      description: Whether this is the owner's primary home
+    notes:
+      description: Any additional information
+  relations:
+    OWNED_BY:
+      to: Person
+      cardinality: many
+      description: Legal owners of the property
+    HAS_ROOM:
+      to: Room
+      cardinality: many
+      description: Rooms or areas within the property
+    HAS_MAINTENANCE:
+      to: Maintenance
+      cardinality: many
+      description: Maintenance and repair records
+    HAS_IMPROVEMENT:
+      to: Improvement
+      cardinality: many
+      description: Renovations and upgrades
+    HAS_APPLIANCE:
+      to: Appliance
+      cardinality: many
+      description: Major appliances and systems
+    HAS_DOCUMENT:
+      to: Document
+      cardinality: many
+      description: Related documents (deed, survey, inspection reports)
+    HAS_INSURANCE:
+      to: InsurancePolicy
+      cardinality: many
+      description: Insurance policies covering the property
+    HAS_TAX_RECORD:
+      to: TaxRecord
+      cardinality: many
+      description: Property tax records
+    HAS_UTILITY_ACCOUNT:
+      to: UtilityAccount
+      cardinality: many
+      description: Utility service accounts
+    HAS_TENANT:
+      to: Person
+      cardinality: many
+      description: Current tenants/renters
+      properties:
+        startDate:
+          type: DateTime
+        endDate:
+          type: DateTime
+        monthlyRent:
+          type: Number
+        leaseDocument:
+          type: URL
+
+Room:
+  description: >
+    A distinct space within a property, such as a bedroom, bathroom, or living area.
+    Examples: "Master Bedroom", "Kitchen", "Home Office"
+  properties:
+    name:
+      required: true
+      description: Name or identifier for the room
+    roomType:
+      enum:
+        - bedroom
+        - bathroom
+        - kitchen
+        - living_room
+        - dining_room
+        - home_office
+        - laundry
+        - storage
+        - garage
+        - basement
+        - attic
+        - other
+      required: true
+    level:
+      type: Integer
+      description: Floor/level number (0=ground, 1=first floor, etc.)
+    squareFeet:
+      type: Number
+      description: Area in square feet
+    description:
+      description: Additional details about the room
+  relations:
+    PART_OF:
+      to: Property
+      description: The property this room belongs to
+    CONTAINS:
+      to: 
+        - Asset
+        - Appliance
+      cardinality: many
+      description: Items located in this room
+    HAS_MAINTENANCE:
+      to: Maintenance
+      cardinality: many
+      description: Maintenance specific to this room
+
+# ======================
+# Supporting Entities
+# ======================
+
+Maintenance:
+  description: >
+    A record of maintenance, repair, or service performed on an asset or property.
+    Examples: Oil change, HVAC servicing, roof repair, software update
+  properties:
+    title:
+      required: true
+      description: Brief description of the maintenance
+    description:
+      description: Detailed notes about what was done
+    datePerformed:
+      type: DateTime
+      required: true
+      description: When the maintenance occurred
+    nextDueDate:
+      type: DateTime
+      description: When this maintenance should be performed again
+    cost:
+      type: Number
+      description: Cost in the currency's smallest unit
+    serviceProvider:
+      description: Company or person who performed the service
+    warrantyUntil:
+      type: DateTime
+      description: When the service warranty expires
+    receiptNumber:
+      description: Reference number for the service receipt
+    isRecurring:
+      type: Boolean
+      default: false
+      description: Whether this is a recurring maintenance item
+    recurrenceRule:
+      description: RRULE string for recurring maintenance (RFC 5545)
+  relations:
+    PERFORMED_ON:
+      to:
+        - Asset
+        - Property
+        - Room
+        - Appliance
+      description: What was serviced
+    PERFORMED_BY:
+      to:
+        - Person
+        - Organization
+      description: Who performed the service
+    HAS_DOCUMENT:
+      to: Document
+      cardinality: many
+      description: Related documents (receipts, manuals, warranties)
+
+Appliance:
+  description: >
+    A device or piece of equipment designed to perform a specific task, especially in the home.
+    Examples: Refrigerator, washing machine, furnace, water heater
+  properties:
+    name:
+      required: true
+      description: Common name of the appliance
+    type:
+      enum:
+        - kitchen: Refrigerator, oven, dishwasher, etc.
+        - laundry: Washer, dryer
+        - hvac: Furnace, air conditioner, water heater
+        - home_entertainment: TV, sound system
+        - computer: Desktop, laptop, printer
+        - other: Any other type
+      required: true
+    make:
+      description: Manufacturer
+    model:
+      description: Model name or number
+    serialNumber:
+      description: Unique identifier from manufacturer
+    purchaseDate:
+      type: DateTime
+      description: When the appliance was purchased
+    installationDate:
+      type: DateTime
+      description: When the appliance was installed
+    warrantyExpires:
+      type: DateTime
+      description: When the warranty period ends
+    lastServiceDate:
+      type: DateTime
+      description: When the appliance was last serviced
+    nextServiceDate:
+      type: DateTime
+      description: When the next service is due
+    status:
+      enum: [active, needs_service, in_repair, replaced, disposed]
+      default: active
+    notes:
+      description: Any additional information
+  relations:
+    LOCATED_IN:
+      to: Room
+      description: Where the appliance is installed
+    OWNED_BY:
+      to: Person
+      description: Who owns this appliance
+    HAS_MAINTENANCE:
+      to: Maintenance
+      cardinality: many
+      description: Service and repair records
+    HAS_MANUAL:
+      to: Document
+      description: Owner's manual or documentation
+    REPLACES:
+      to: Appliance
+      description: Previous appliance this one replaced
+
+Improvement:
+  description: >
+    A renovation, upgrade, or improvement made to a property.
+    Examples: Kitchen remodel, new roof, finished basement
+  properties:
+    name:
+      required: true
+      description: Brief description of the improvement
+    description:
+      description: Detailed explanation of the work done
+    startDate:
+      type: DateTime
+      description: When work began
+    endDate:
+      type: DateTime
+      description: When work was completed
+    cost:
+      type: Number
+      description: Total cost in the currency's smallest unit
+    contractor:
+      description: Company or person who performed the work
+    warrantyUntil:
+      type: DateTime
+      description: When the workmanship warranty expires
+    permitNumber:
+      description: Building permit reference
+    isMajor:
+      type: Boolean
+      default: false
+      description: Whether this is a major capital improvement
+  relations:
+    IMPROVES:
+      to:
+        - Property
+        - Room
+      description: What was improved
+    CONTRACTOR:
+      to:
+        - Person
+        - Organization
+      description: Who performed the work
+    HAS_DOCUMENT:
+      to: Document
+      cardinality: many
+      description: Related documents (permits, contracts, receipts)
+    HAS_BEFORE_PHOTO:
+      to: Photo
+      cardinality: many
+      description: Photos taken before the work
+    HAS_AFTER_PHOTO:
+      to: Photo
+      cardinality: many
+      description: Photos taken after the work was completed
+
+InsurancePolicy:
+  description: >
+    A contract that provides financial protection against specified risks.
+    Examples: Homeowners, auto, life, health insurance
+  properties:
+    policyNumber:
+      required: true
+      description: Unique identifier from the insurance company
+    type:
+      enum:
+        - auto: Vehicle insurance
+        - home: Homeowners/renters insurance
+        - life: Life insurance
+        - health: Health insurance
+        - liability: General liability
+        - umbrella: Umbrella policy
+        - other: Any other type
+      required: true
+    provider:
+      description: Insurance company name
+    agent:
+      description: Contact information for insurance agent
+    startDate:
+      type: DateTime
+      description: When coverage begins
+    endDate:
+      type: DateTime
+      description: When coverage ends
+    premiumAmount:
+      type: Number
+      description: Cost of the policy in the currency's smallest unit
+    premiumFrequency:
+      enum: [monthly, quarterly, semi_annually, annually]
+      default: annually
+      description: How often premiums are paid
+    deductible:
+      type: Number
+      description: Deductible amount in the currency's smallest unit
+    coverageLimit:
+      type: Number
+      description: Maximum coverage amount
+    notes:
+      description: Any additional information
+  relations:
+    INSURES:
+      to:
+        - Person
+        - Asset
+        - Property
+      cardinality: many
+      description: What or who is covered by this policy
+    HAS_DOCUMENT:
+      to: Document
+      cardinality: many
+      description: Policy documents and related paperwork
+    HAS_CLAIM:
+      to: InsuranceClaim
+      cardinality: many
+      description: Claims made against this policy
+
+InsuranceClaim:
+  description: >
+    A request for payment under an insurance policy.
+    Examples: Auto accident claim, property damage claim
+  properties:
+    claimNumber:
+      required: true
+      description: Unique identifier from the insurance company
+    dateFiled:
+      type: DateTime
+      required: true
+      description: When the claim was submitted
+    dateResolved:
+      type: DateTime
+      description: When the claim was settled or closed
+    status:
+      enum: [draft, filed, under_review, approved, paid, denied, appealed, closed]
+      default: draft
+    description:
+      required: true
+      description: Explanation of the claim
+    amountClaimed:
+      type: Number
+      description: Amount claimed in the currency's smallest unit
+    amountPaid:
+      type: Number
+      description: Amount paid by insurance
+    notes:
+      description: Any additional information
+  relations:
+    FILED_UNDER:
+      to: InsurancePolicy
+      description: The insurance policy this claim is under
+    RELATED_TO:
+      to:
+        - Asset
+        - Property
+        - Person
+      description: What or who the claim is about
+    HAS_DOCUMENT:
+      to: Document
+      cardinality: many
+      description: Related documents (estimates, receipts, correspondence)
+
+# Personal Data
+Account:
+  description: Login credentials for a service
+  properties:
+    service:
+      required: true
+      description: e.g., "GitHub", "Email"
+    username:
+    email:
+      type: Email
+    url:
+      type: URL
+      description: Login URL
+    notes:
+      description: Any additional info
+    # Note: Actual passwords should be stored in a secure password manager
+  relations:
+    OWNED_BY:
+      to: Person
+      description: Person who owns this account
+
+# Property Types
+property_types:
+  Text:
+    description: Plain text
+  Email:
+    description: Email address
+  URL:
+    description: Web URL
+  DateTime:
+    description: Date and time (ISO 8601)
+  Duration:
+    description: Time duration (ISO 8601 duration format)
+  Boolean:
+    description: True or false
+  Number:
+    description: Numeric value
+  Object:
+    description: Arbitrary key-value data
+  Relationship:
+    description: Reference to another entity

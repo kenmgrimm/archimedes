@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+
 require "json"
 require "fileutils"
 require "pathname"
@@ -6,12 +7,34 @@ require "base64"
 require "mimemagic"
 require_relative "../config/environment"
 
+# add description of script purpose, usage and arguments
+# usage: `be rails runner scripts/test_extraction.rb <directory>`
+# if directory is specified, only process that directory
+# if directory is not specified, process all directories in input
+
 # Check for required environment variables
 unless ENV["OPENAI_API_KEY"]
   puts "Error: OPENAI_API_KEY environment variable is not set"
   puts "Please set your OpenAI API key and try again"
   exit 1
 end
+
+input_base = File.join(File.dirname(__FILE__), "input")
+target_dirs = if ARGV[0]
+                # Use the first argument as a specific directory to process
+                specified_dir = File.join(input_base, ARGV[0])
+                if Dir.exist?(specified_dir)
+                  puts "Processing specified directory: #{ARGV[0]}"
+                  [specified_dir]
+                else
+                  puts "Error: Directory not found - #{specified_dir}"
+                  exit 1
+                end
+              else
+                # Process all directories in the input base
+                puts "No directory specified, processing all directories in: #{input_base}"
+                Dir.glob(File.join(input_base, "*"))
+              end
 
 # Set up directories
 input_base = File.join(File.dirname(__FILE__), "input")
@@ -36,9 +59,8 @@ rescue StandardError => e
   nil
 end
 
-# Process each folder in the input directory
-Dir.glob(File.join(input_base, "*")) do |input_folder|
-  # Dir.glob(File.join(input_base, "*")) do |input_folder|
+# Process each folder in the target directories
+target_dirs.each do |input_folder|
   next unless File.directory?(input_folder)
 
   folder_name = File.basename(input_folder)

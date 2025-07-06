@@ -173,12 +173,7 @@ module OpenAI
     def build_system_prompt(config)
       return config[:system_prompt] if config[:system_prompt]
 
-      if config[:response_format] == :neo4j_extraction
-        # Add 'json' to the prompt to satisfy OpenAI's requirement when using response_format: { type: 'json_object' }
-        build_neo4j_extraction_prompt(config[:taxonomy] || {}) + "\n\nPlease provide your response in valid JSON format."
-      else
-        "You are a helpful assistant that extracts structured information from text. Please provide your response in valid JSON format."
-      end
+      "You are a helpful assistant that extracts structured information from text. Please provide your response in valid JSON format."
     end
 
     def build_user_prompt(text, config)
@@ -200,126 +195,7 @@ module OpenAI
       end
     end
 
-    def build_neo4j_extraction_prompt(taxonomy)
-      entity_types = taxonomy[:entity_types] || {}
-      relationship_types = taxonomy[:relationship_types] || {}
-
-      <<~PROMPT
-        You are an AI assistant that extracts structured information from text to build a knowledge graph in Neo4j.
-        You MUST respond with a valid JSON object containing the extracted entities and relationships.
-
-        # Available Entity Types:
-        #{format_entity_types(entity_types)}
-
-        # Available Relationship Types:
-        #{format_relationship_types(relationship_types)}
-
-        # Instructions:
-        1. Extract entities and relationships using ONLY the types defined above
-        2. If you encounter something that doesn't fit the taxonomy:
-           - For entities: Use the most specific available type and add "suggested_type": "preferred_type"
-           - For relationships: Use the closest match and add "suggested_relationship": "preferred_relationship"
-        3. For properties, only use those defined for each entity type
-
-        # Required Response Format:
-        {
-          "entities": [
-            {
-              "type": "EntityType",
-              "name": "Entity Name",
-              "properties": {
-                // Entity properties as key-value pairs
-              },
-              "confidence": 0.0,  // Confidence score (0.0 to 1.0)
-              "source_text": "Original text from which this entity was extracted"
-            }
-          ],
-          "relationships": [
-            {
-              "type": "RelationshipType",
-              "source": "Source Entity Name",
-              "target": "Target Entity Name",
-              "properties": {
-                // Relationship properties as key-value pairs
-              },
-              "confidence": 0.0,  // Confidence score (0.0 to 1.0)
-              "source_text": "Original text from which this relationship was extracted"
-            }
-          ]
-        }
-        4. If an important concept has no good match, include it in the "suggestions" section
-
-        # Output Format:
-        {
-          "entities": [
-            {
-              "type": "EntityType",  // Must be from the list above
-              "name": "Entity Name", // Human-readable name
-              "description": "Brief description",
-              "properties": {        // Only use properties defined for this entity type
-                "property1": "value1"
-              },
-              "suggested_type": "PreferredType",  // Only if no good match exists
-              "suggested_properties": {           // Properties not in the schema
-                "new_property": "value"
-              },
-              "confidence": 0.0-1.0,
-              "source_text": "exact text reference"
-            }
-          ],
-          "relationships": [
-            {
-              "type": "RelationshipType",  // Must be from the list above
-              "source": "source_entity_name",
-              "target": "target_entity_name",
-              "properties": {},
-              "suggested_relationship": "PreferredRelationship", // If no good match
-              "confidence": 0.0-1.0,
-              "source_text": "exact text reference"
-            }
-          ],
-          "suggestions": {
-            "new_entity_types": [
-              {
-                "name": "NewType",
-                "description": "Description of when to use this type",
-                "example": "Example usage"
-              }
-            ],
-            "new_relationship_types": [
-              {
-                "name": "NEW_RELATIONSHIP",
-                "description": "When to use this relationship",
-                "from": ["EntityType1", "EntityType2"],
-                "to": ["EntityType3", "EntityType4"]
-              }
-            ],
-            "new_properties": [
-              {
-                "entity_type": "EntityType",
-                "property": "new_property",
-                "type": "Text|Number|Date|etc",
-                "description": "What this property represents"
-              }
-            ]
-          }
-        }
-      PROMPT
-    end
-
-    def format_entity_types(types)
-      return "Any (but please suggest specific types)" if types.empty?
-
-      types.map { |t| "- #{t}" }.join("\n")
-    end
-
-    def format_relationship_types(types)
-      return "Any" if types.empty?
-
-      types.map do |name, details|
-        "- #{name}: #{details[:description]} (from: #{details[:source]}, to: #{details[:target]})"
-      end.join("\n")
-    end
+    # Formatting helpers moved to EntityExtractionService
 
     def parse_response(response, config)
       content = response.dig("choices", 0, "message", "content")

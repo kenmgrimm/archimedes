@@ -43,5 +43,5 @@
 .DS_Store
 
 # neoj4 input / output
-scripts/input/
+# scripts/input/
 scripts/output/
