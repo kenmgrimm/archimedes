@@ -100,7 +100,7 @@ module OpenAI
     # @param temperature [Float] Controls randomness (0.0 to 1.0)
     # @param max_tokens [Integer] Maximum number of tokens to generate
     # @return [Hash] Structured extraction result
-    def extract_structured_data(text:, prompt_config: {}, model: "gpt-4-turbo", temperature: 0.2, max_tokens: 2048)
+    def extract_structured_data(text:, prompt_config: {}, model: "gpt-4-turbo", temperature: 0.2, max_tokens: 4096)
       prompt_config = prompt_config.dup
 
       # Build the system prompt
@@ -116,11 +116,9 @@ module OpenAI
       ]
 
       # Add examples if provided
-      if prompt_config[:examples]
-        prompt_config[:examples].each do |example|
-          messages << { role: "user", content: example[:input] }
-          messages << { role: "assistant", content: example[:output].to_json }
-        end
+      prompt_config[:examples]&.each do |example|
+        messages << { role: "user", content: example[:input] }
+        messages << { role: "assistant", content: example[:output].to_json }
       end
 
       @logger.debug("Sending request to OpenAI API with model: #{model}")
@@ -201,7 +199,7 @@ module OpenAI
       content = response.dig("choices", 0, "message", "content")
       @logger.debug("Raw response content: #{content.inspect}")
 
-      if content.nil? || content.empty?
+      if content.blank?
         @logger.error("Empty or nil content in OpenAI response")
         raise ExtractionError, "Empty response from OpenAI API"
       end

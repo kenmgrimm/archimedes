@@ -174,7 +174,6 @@ module WeaviateSeeds
       private
 
       def lookup_object(class_name, key)
-        debugger if class_name.nil? || key.nil?
         object_id = @object_ids[class_name.to_sym][key.to_sym]
         @weaviate.find_by_id(class_name, object_id)
       end

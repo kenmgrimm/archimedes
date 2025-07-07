@@ -260,7 +260,7 @@ module WeaviateVisualization
         next if processed_links.include?(link_key)
 
         # Increment connection counts for both nodes
-        next unless source_node = node_map[source_id]
+        next unless (source_node = node_map[source_id])
 
         source_node[:connections] += 1
         target_node[:connections] += 1

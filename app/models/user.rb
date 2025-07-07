@@ -44,7 +44,7 @@ class User < ApplicationRecord
   def prompt_description
     refs = all_references
     if refs.size > 1
-      "the current user (#{refs[0]}, also known as #{refs[1..-1].join(', ')})"
+      "the current user (#{refs[0]}, also known as #{refs[1..].join(', ')})"
     else
       "the current user (#{refs.first})"
     end
