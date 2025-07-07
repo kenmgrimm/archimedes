@@ -272,11 +272,11 @@ if __FILE__ == $PROGRAM_NAME
     importer.create_node("Post", {
                            title: "Hello Neo4j",
                            content: "This is a test post",
-                           created_at: Time.now.to_s
+                           created_at: Time.zone.now.to_s
                          }, :post1)
 
     # Create relationship
-    importer.create_relationship(:john, "AUTHORED", :post1, { at: Time.now.to_s })
+    importer.create_relationship(:john, "AUTHORED", :post1, { at: Time.zone.now.to_s })
 
     puts "✅ Test data created successfully!"
 

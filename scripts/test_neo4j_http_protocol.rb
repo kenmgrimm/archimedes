@@ -198,7 +198,7 @@ if response[:code] == 200
 
   check_response = neo4j_http_request("POST", @neo4j_tx_path, check_query)
 
-  if check_response[:code] == 200 && check_response[:body][:results]&.first&.dig(:data, 0, :row, 0) == 0
+  if check_response[:code] == 200 && check_response[:body][:results]&.first&.dig(:data, 0, :row, 0)&.zero?
     puts "Verified database is empty"
   else
     puts "Warning: Could not verify database is empty"
@@ -273,7 +273,7 @@ else
 end
 
 # Create relationships
-relationship_queries = extraction_data[:relationships].map do |rel|
+relationship_queries = extraction_data[:relationships].filter_map do |rel|
   source_id = @node_id_map[rel[:source_id]]
   target_id = @node_id_map[rel[:target_id]]
 
@@ -307,7 +307,7 @@ relationship_queries = extraction_data[:relationships].map do |rel|
     resultDataContents: ["row"],
     includeStats: true
   }
-end.compact # Remove any nil queries from missing nodes
+end
 
 # Execute relationship creation in a single transaction
 puts "\nCreating #{relationship_queries.size} relationships..."

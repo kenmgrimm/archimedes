@@ -3,10 +3,36 @@
 # frozen_string_literal: true
 
 require "dotenv/load"
+require "openai"
+require_relative "../app/services/neo4j/deduplication_service"
 
 unless defined?(Rails)
   puts "This script must be run in a Rails environment. Please use: bundle exec rails runner #{__FILE__}"
   exit 1
+end
+
+# Initialize deduplication service with error handling and proper logging
+def initialize_deduplication_service
+  return nil if ENV["OPENAI_API_KEY"].blank?
+
+  begin
+    openai_client = OpenAI::Client.new(access_token: ENV.fetch("OPENAI_API_KEY", nil))
+    service = Neo4j::DeduplicationService.new(openai_client, logger: Rails.logger)
+    puts "Deduplication service initialized with OpenAI integration"
+    service
+  rescue StandardError => e
+    puts "WARNING: Failed to initialize deduplication service: #{e.message}"
+    puts "Deduplication will be disabled for this import."
+    nil
+  end
+end
+
+# Initialize the deduplication service
+deduplication_service = initialize_deduplication_service
+
+# If OpenAI isn't available, we'll still run but with limited deduplication
+if deduplication_service.nil? && ENV["OPENAI_API_KEY"].blank?
+  puts "WARNING: OPENAI_API_KEY not set. Deduplication will be limited to exact matches."
 end
 
 # Configuration
@@ -23,7 +49,7 @@ FileUtils.rm_f(DEBUG_LOG) # Safely remove existing debug log if it exists
 def debug_log(*messages)
   return unless ENV["DEBUG"]
 
-  timestamp = Time.now.strftime("%Y-%m-%d %H:%M:%S.%L")
+  timestamp = Time.zone.now.strftime("%Y-%m-%d %H:%M:%S.%L")
   log_entries = messages.map { |msg| "[#{timestamp}] #{msg}" }
 
   # Ensure the directory exists
@@ -153,7 +179,7 @@ def find_existing_entity(session, entity)
   case entity[:type]
   when "Person"
     # For people, match on name and email if available
-    query = "MATCH (e:Person) WHERE " +
+    query = "MATCH (e:Person) WHERE " \
             "e.name = $name " +
             (entity[:properties]&.key?(:email) ? "AND e.email = $email " : "") +
             "RETURN e.id as id LIMIT 1"
@@ -198,7 +224,7 @@ rescue StandardError => e
 end
 
 # Then modify the import_to_neo4j method to use this
-def import_to_neo4j(driver, data)
+def import_to_neo4j(driver, data, deduplication_service = nil)
   puts "Starting import with #{data[:entities]&.size || 0} entities and #{data[:relationships]&.size || 0} relationships"
   name_to_id = {}
 
@@ -206,6 +232,9 @@ def import_to_neo4j(driver, data)
     driver.session do |session|
       # First pass: process all entities
       (data[:entities] || []).each do |entity|
+        # Skip if entity is already marked as a duplicate
+        next if entity[:_is_duplicate]
+
         # Use the entity type as label, default to 'Entity'
         labels = [entity[:type] || "Entity"].flatten.map(&:to_s).reject(&:empty?).map(&:capitalize)
 
@@ -222,35 +251,84 @@ def import_to_neo4j(driver, data)
           updated_at: Time.now.iso8601
         }
 
-        # Add all properties from the entity
-        if entity[:properties].is_a?(Hash)
-          # Convert all properties to strings or JSON strings
-          entity_props = entity[:properties].each_with_object({}) do |(k, v), hash|
-            next if v.nil?
+        # Process entity properties
+        params = (entity[:properties] || {}).each_with_object({}) do |(key, value), hash|
+          # Skip nil values
+          next if value.nil?
 
-            hash[k] = v.is_a?(Hash) || v.is_a?(Array) ? v.to_json : v.to_s
-          end
+          # Convert keys to symbols for consistency
+          key = key.to_sym
 
-          # Merge the processed properties
-          props.merge!(entity_props)
+          # Handle different property types
+          hash[key] = case value
+                      when Hash, Array
+                        # Convert complex objects to JSON strings
+                        value.to_json
+                      else
+                        value
+                      end
+        end
 
-          # Debug log the properties being set for photo nodes
-          if labels.include?("Photo")
-            debug_log(
-              "  Setting properties for Photo #{entity_name}:",
-              *entity_props.map { |k, v| "    #{k}: #{v.inspect}" }
-            )
-          end
+        # Merge the processed properties
+        props.merge!(params)
+
+        # Debug log the properties being set for photo nodes
+        if labels.include?("Photo")
+          debug_log(
+            "  Setting properties for Photo #{entity_name}:",
+            *params.map { |k, v| "    #{k}: #{v.inspect}" }
+          )
         end
 
         # Store the original properties as JSON for reference
         props[:_original_properties] = entity[:properties].to_json
 
+        # Only run deduplication if the service is available
+        if deduplication_service
+          puts "  Checking for duplicates of: #{entity_name} (Type: #{entity[:type]})"
+
+          # Convert entity to the format expected by deduplication service
+          dedupe_entity = {
+            "id" => entity_id,
+            "name" => entity_name,
+            "type" => entity[:type],
+            "properties" => entity[:properties] || {}
+          }
+
+          begin
+            # Find potential duplicates
+            potential_duplicates = deduplication_service.find_potential_duplicates(dedupe_entity, entity[:type])
+
+            if potential_duplicates.any?
+              puts "  Found #{potential_duplicates.size} potential duplicates"
+
+              begin
+                # Use AI to check if any of these are actual duplicates
+                duplicate = deduplication_service.check_for_duplicate(dedupe_entity, potential_duplicates, entity[:type])
+
+                if duplicate
+                  puts "  Found duplicate: #{duplicate.name} (ID: #{duplicate.id})"
+                  # Update the name_to_id mapping to point to the duplicate
+                  name_to_id[entity_name] = duplicate.id
+                  # Skip creating this entity
+                  next
+                end
+              rescue StandardError => e
+                puts "  Error during AI deduplication: #{e.message}"
+                puts "  Continuing with entity creation..."
+              end
+            end
+          rescue StandardError => e
+            puts "  Error finding potential duplicates: #{e.message}"
+            puts "  Continuing with entity creation..."
+          end
+        end
+
+        # If we get here, either no duplicates were found or deduplication is disabled
+        puts "  Creating new entity: #{entity_name} (ID: #{entity_id})"
+
         # Store the mapping from name to ID for relationships
         name_to_id[entity_name] = entity_id
-
-        # Build the Cypher query
-        puts "  Creating/updating entity: #{entity_name} (ID: #{entity_id})"
 
         # Debug logging for photo nodes
         if labels.include?("Photo")
@@ -284,18 +362,18 @@ def import_to_neo4j(driver, data)
 
           # First, ensure the node exists with the right labels and set all properties
           query = [
-            'MERGE (n {id: $id})',
+            "MERGE (n {id: $id})",
             "SET n:#{labels.join(':')}",
-            'SET n += $props',
-            'RETURN id(n) as internal_id'
-          ].join(' ')
-          
+            "SET n += $props",
+            "RETURN id(n) as internal_id"
+          ].join(" ")
+
           # Create a params hash with just the properties we want to set
-          params = { 
+          params = {
             id: entity_id,
-            props: props.reject { |k, _| k == :id }
+            props: props.except(:id)
           }
-          
+
           # Debug log the query for photo nodes
           if labels.include?("Photo")
             debug_log(
@@ -309,7 +387,7 @@ def import_to_neo4j(driver, data)
             debug_log(
               "  Executing Cypher:",
               "  Query: #{query}",
-              "  Params: #{params.reject { |k, _| k == :password }.inspect}"
+              "  Params: #{params.except(:password).inspect}"
             )
           end
 
@@ -394,7 +472,7 @@ def import_to_neo4j(driver, data)
 end
 
 # Load extraction data from a directory of JSON files or a specific file
-def load_extraction_data(input_path)
+def load_extraction_data(_input_path = nil)
   data_dir = File.join(File.dirname(__FILE__), "output")
   puts "\nLoading extraction data from: #{data_dir}"
 
@@ -453,57 +531,80 @@ def load_extraction_data(input_path)
   { entities: all_entities, relationships: all_relationships }
 end
 
+# Validate photo properties against required criteria
+# @param photo [Neo4j::Driver::Types::Node] The photo node to validate
+# @return [Array<String>] Array of validation issues, empty if photo is valid
+def validate_photo_properties(photo)
+  issues = []
+
+  # Check dimensions
+  issues << "missing dimensions" unless photo.properties.key?(:width) && photo.properties.key?(:height)
+
+  # Check URL
+  if photo.properties[:url].to_s.empty? || !photo.properties[:url].to_s.start_with?("http")
+    issues << "invalid URL: #{photo.properties[:url]}"
+  end
+
+  # Check content type
+  content_type = photo.properties[:content_type].to_s.downcase
+  unless ["image/jpeg", "image/png", "image/gif"].include?(content_type)
+    issues << "unsupported content type: #{photo.properties[:content_type]}"
+  end
+
+  issues
+end
+
 # Verify photo properties in Neo4j
 def verify_photo_properties(driver)
-  puts "\n Verifying Photo nodes in Neo4j..."
+  puts "\nVerifying Photo nodes in Neo4j..."
 
   driver.session do |session|
-    # First, let's see what nodes we have with the Photo label
-    result = session.run("MATCH (p:Photo) RETURN p")
-    photos = result.map { |record| record[:p] }
+    # Find all photo nodes
+    query = "MATCH (p:Photo) RETURN p"
+    result = session.run(query)
 
-    if photos.empty?
+    # Process each photo and collect validation results
+    validation_results = []
+    photos_processed = 0
+
+    # Process each record and collect validation results
+    result.each do |record|
+      photo = record["p"]
+      photos_processed += 1
+
+      # Check for issues
+      issues = validate_photo_properties(photo)
+      validation_results << { id: photo.id, issues: issues } if issues.any?
+
+      # Print debug info if requested
+      next unless ENV["DEBUG"]
+
+      puts "\n  Photo #{photos_processed} (ID: #{photo.id}):"
+      puts "    Labels: #{photo.labels.join(', ')}"
+      puts "    Properties:"
+      photo.properties.each { |k, v| puts "      #{k}: #{v.inspect}" }
+      puts "    Validation issues: #{issues.any? ? issues.join(', ') : 'None'}"
+    end
+
+    # Report results
+    if photos_processed.zero?
       puts "  No Photo nodes found in the database"
       return
     end
 
-    puts "  Found #{photos.size} Photo nodes:"
+    puts "  Verified #{photos_processed} photos"
 
-    # Now let's look at all nodes and their properties
-    all_nodes = session.run("MATCH (n) RETURN n, labels(n) as labels")
-
-    puts "\n  All nodes in the database:"
-    all_nodes.each_with_index do |record, index|
-      node = record[:n]
-      labels = record[:labels]
-
-      puts "\n  Node #{index + 1}:"
-      puts "    Labels: #{labels.join(', ')}"
-      puts "    Properties:"
-
-      if node.properties.empty?
-        puts "      No properties"
-      else
-        node.properties.each do |key, value|
-          puts "      #{key}: #{value.inspect}"
+    if validation_results.any?
+      puts "  Found #{validation_results.size} photos with issues"
+      if ENV["DEBUG"]
+        puts "\n  Issues found:"
+        validation_results.each do |result|
+          puts "  - Photo #{result[:id]}:"
+          result[:issues].each { |issue| puts "    • #{issue}" }
         end
       end
-    end
-
-    # Now specifically check Photo nodes
-    puts "\n  Photo nodes details:"
-    photos.each_with_index do |photo, index|
-      puts "\n  Photo #{index + 1}:"
-      puts "    Labels: #{photo.labels.join(', ')}"
-
-      if photo.properties.empty?
-        puts "    No properties"
-      else
-        puts "    Properties:"
-        photo.properties.each do |key, value|
-          puts "      #{key}: #{value.inspect}"
-        end
-      end
+    else
+      puts "  All photos are valid"
     end
   end
 end
@@ -584,7 +685,7 @@ begin
       id: user_data[:id],
       username: user_data[:username],
       type: "User",
-      properties: user_data.reject { |k, _| [:id, :username, :type].include?(k) }
+      properties: user_data.except(:id, :username, :type)
     }
   end
 
@@ -594,7 +695,7 @@ begin
       id: person_data[:id],
       name: person_data[:name],
       type: "Person",
-      properties: person_data.reject { |k, _| [:id, :name, :type].include?(k) }
+      properties: person_data.except(:id, :name, :type)
     }
   end
 
@@ -626,7 +727,7 @@ begin
   end
 
   # Run the import
-  results = import_to_neo4j(driver, data)
+  results = import_to_neo4j(driver, data, deduplication_service)
 
   # Verify photo properties after import
   verify_photo_properties(driver)

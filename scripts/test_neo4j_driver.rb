@@ -7,7 +7,7 @@ ENV["RAILS_LOG_LEVEL"] = "debug"
 require_relative "../config/environment"
 
 # Configure logger to output to STDOUT
-Rails.logger = Logger.new(STDOUT)
+Rails.logger = Logger.new($stdout)
 Rails.logger.level = Logger::DEBUG
 
 # Load Neo4j driver
@@ -67,7 +67,7 @@ begin
 
   # Test connection with a simple query
   begin
-    Rails.logger.info("\n" + ("=" * 80))
+    Rails.logger.info("\n#{'=' * 80}")
     Rails.logger.info "TESTING NEO4J DRIVER CONNECTION"
     Rails.logger.info "=" * 80
 

@@ -5,7 +5,7 @@ require "neo4j-ruby-driver"
 require "logger"
 
 # Initialize logger
-logger = Logger.new(STDOUT)
+logger = Logger.new($stdout)
 logger.level = ENV["LOG_LEVEL"] ? Logger.const_get(ENV["LOG_LEVEL"].upcase) : Logger::INFO
 
 # Neo4j connection details

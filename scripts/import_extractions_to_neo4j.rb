@@ -123,7 +123,7 @@ class Neo4jImportService
   # Import extraction data from JSON
   def import_extraction(extraction_data)
     stats = { nodes: 0, relationships: 0, errors: [] }
-    start_time = Time.now
+    start_time = Time.zone.now
 
     logger.info "Starting import of extraction data..."
 
@@ -202,7 +202,7 @@ class Neo4jImportService
       logger.warn "No relationships found in extraction data"
     end
 
-    end_time = Time.now
+    end_time = Time.zone.now
     stats[:duration] = end_time - start_time
 
     logger.info "Import completed in #{stats[:duration].round(2)}s: #{stats[:nodes]} nodes, #{stats[:relationships]} relationships, #{stats[:errors].size} errors"
