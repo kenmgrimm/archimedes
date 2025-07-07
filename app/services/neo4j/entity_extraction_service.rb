@@ -160,30 +160,6 @@ module Neo4j
                        raise ExtractionError, "Failed to parse image processing response: #{e.message}"
                      end
                      image_result
-
-                   # Second pass: Combine image results with original text
-                   #  if user_text.strip.present?
-                   #    @logger.info("Processing text content in second pass with image context")
-                   #    text_prompt = <<~PROMPT
-                   #      Previous analysis of images in this context:
-                   #      #{JSON.pretty_generate(image_result)}
-
-                   #      User provided context: #{user_text}
-
-                   #      Please analyze the above text content and extract any additional entities or relationships that weren't captured in the image analysis. Return the combined results.
-                   #    PROMPT
-
-                   #    text_result = @openai.extract_entities_with_taxonomy(
-                   #      text: text_prompt,
-                   #      taxonomy: taxonomy_context
-                   #    )
-
-                   #    # Merge the results from both passes
-                   #    merge_extraction_results(image_result, text_result)
-                   #  else
-                   #    @logger.info("No additional text content to process")
-                   #    image_result
-                   #  end
                    else
                      # Fall back to text-only processing if no images
                      @logger.info("Processing text-only content")
@@ -206,8 +182,8 @@ module Neo4j
 
     # Build the extraction prompt with taxonomy context
     def build_neo4j_extraction_prompt(taxonomy_context)
-      entity_types = taxonomy_context[:entity_types] || {}
-      relationship_types = taxonomy_context[:relationship_types] || {}
+      taxonomy_context[:entity_types] || {}
+      taxonomy_context[:relationship_types] || {}
 
       # Get user references for the prompt
       user_refs = current_user.all_references
@@ -433,57 +409,6 @@ module Neo4j
     def property_type_descriptions
       @taxonomy_service.property_types.transform_values { |v| v["description"] }
     end
-
-    # Parse and validate the response from OpenAI
-    # Merge results from multiple extraction passes (e.g., image + text)
-    # @param first_result [Hash] The first set of extraction results
-    # @param second_result [Hash] The second set of extraction results to merge
-    # @return [Hash] Combined results with deduplicated entities and relationships
-    # def merge_extraction_results(first_result, second_result)
-    #   return first_result if second_result.nil? || second_result.empty?
-    #   return second_result if first_result.nil? || first_result.empty?
-
-    #   @logger.info("Merging extraction results")
-
-    #   # Start with a deep copy of the first result
-    #   merged = {
-    #     entities: (first_result[:entities] || []).dup,
-    #     relationships: (first_result[:relationships] || []).dup
-    #   }
-
-    #   # Track entity unique identifiers to avoid duplicates
-    #   entity_signatures = Set.new
-    #   merged[:entities].each do |entity|
-    #     entity_signatures << entity_signature(entity)
-    #   end
-
-    #   # Add entities from second result if they don't already exist
-    #   (second_result[:entities] || []).each do |entity|
-    #     sig = entity_signature(entity)
-    #     unless entity_signatures.include?(sig)
-    #       merged[:entities] << entity
-    #       entity_signatures << sig
-    #     end
-    #   end
-
-    #   # Track relationship unique identifiers to avoid duplicates
-    #   relationship_signatures = Set.new
-    #   merged[:relationships].each do |rel|
-    #     relationship_signatures << relationship_signature(rel)
-    #   end
-
-    #   # Add relationships from second result if they don't already exist
-    #   (second_result[:relationships] || []).each do |rel|
-    #     sig = relationship_signature(rel)
-    #     unless relationship_signatures.include?(sig)
-    #       merged[:relationships] << rel
-    #       relationship_signatures << sig
-    #     end
-    #   end
-
-    #   @logger.info("Merged results: #{merged[:entities].size} entities, #{merged[:relationships].size} relationships")
-    #   merged
-    # end
 
     # Generate a unique signature for an entity to detect duplicates
     def entity_signature(entity)
