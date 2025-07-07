@@ -96,12 +96,10 @@ module Neo4j
       @importers[:extraction] = Neo4j::Importers::BoltExtractionImporter.new
 
       # Auto-discover and register entity importers
-      Dir[Rails.root.join("app", "services", "neo4j", "importers", "entities", "*.rb", "services", "neo4j", "importers",
-                          "entities", "*.rb")].each do |f|
+      Rails.root.glob("app/services/neo4j/importers/entities/*.rb/services/neo4j/importers/entities/*.rb").each do |f|
         require_dependency f
       end
-      Dir[Rails.root.join("app", "services", "neo4j", "importers", "relationships", "*.rb", "services",
-                          "neo4j", "importers", "relationships", "*.rb")].each do |f|
+      Rails.root.glob("app/services/neo4j/importers/relationships/*.rb/services/neo4j/importers/relationships/*.rb").each do |f|
         require_dependency f
       end
 

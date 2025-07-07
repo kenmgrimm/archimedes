@@ -56,13 +56,13 @@ module Neo4j
     # List all available fixtures
     # @return [Array<String>] List of fixture file paths
     def list_fixtures
-      Dir.glob(@output_dir.join("*.json")).sort
+      Dir.glob(@output_dir.join("*.json"))
     end
 
     private
 
     def ensure_output_directory
-      FileUtils.mkdir_p(@output_dir) unless Dir.exist?(@output_dir)
+      FileUtils.mkdir_p(@output_dir)
     end
 
     def generate_filename(source = nil)

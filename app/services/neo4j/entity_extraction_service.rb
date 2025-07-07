@@ -72,7 +72,7 @@ module Neo4j
             {
               role: "system",
               content: "You are an AI assistant that extracts structured information from text and images. " \
-                       "When the text refers to 'my' or 'I' or other first-person pronouns, it refers to the current user (Kenneth Grimm). " \
+                       "When the text refers to 'my' or 'I' or other first-person pronouns, it refers to the current user (#{current_user.prompt_description}). " \
                        "When extracting information about vehicles or other items, include all relevant details from both the text and images."
             },
             {
@@ -82,12 +82,14 @@ module Neo4j
           ]
 
           response = @openai.extract_entities_with_taxonomy(
+            model: "gpt-4-vision-preview",
             messages: messages,
             taxonomy: taxonomy_context
           )
         else
           # For text-only content, we can use the simpler API
           response = @openai.extract_entities_with_taxonomy(
+            model: "gpt-4o-turbo",
             text: text_content,
             taxonomy: taxonomy_context
           )
@@ -122,43 +124,77 @@ module Neo4j
 
         # Extract image files from messages
         image_files = extract_images_from_messages(messages)
+        user_text = messages.reject do |m|
+          m[:role] == "system" || (m[:content].is_a?(Array) && m[:content].any? { |c| c[:type] == "image_url" })
+        end.pluck(:content).join("\n\n")
+        raw_response = nil
 
         # Process with OpenAI
+        prompt = build_neo4j_extraction_prompt(taxonomy_context) + "\n\nUser provided context:#{user_text}"
+
         response = if image_files.any?
-                     # Use chat_with_files for multimodal processing
+                     @logger.info("Processing #{image_files.size} image(s) in first pass")
+                     # First pass: Process images only
                      raw_response = @openai.chat_with_files(
-                       prompt: build_neo4j_extraction_prompt(taxonomy_context),
+                       prompt: prompt,
                        files: image_files,
                        model: "gpt-4o"
                      )
 
-                     # Extract the content from the response
-                     content = raw_response.dig("choices", 0, "message", "content")
+                     # Extract the content from the image response
+                     image_content = raw_response.dig("choices", 0, "message", "content")
 
-                     if content.nil? || content.empty?
-                       @logger.error("Empty content in OpenAI response")
+                     if image_content.blank?
+                       @logger.error("Empty content in image processing response")
                        @logger.error("Full response: #{raw_response.inspect}")
-                       raise ExtractionError, "Empty content in OpenAI response"
+                       raise ExtractionError, "Empty content in image processing response"
                      end
 
-                     # Parse the JSON content
+                     # Parse the JSON content from image processing
                      begin
-                       JSON.parse(content, symbolize_names: true)
+                       image_result = JSON.parse(image_content, symbolize_names: true)
+                       @logger.info("Successfully processed #{image_result[:entities]&.size || 0} entities from images")
                      rescue JSON::ParserError => e
-                       @logger.error("Failed to parse OpenAI response: #{e.message}")
-                       @logger.error("Content: #{content}")
-                       raise ExtractionError, "Failed to parse OpenAI response: #{e.message}"
+                       @logger.error("Failed to parse image processing response: #{e.message}")
+                       @logger.error("Content: #{image_content}")
+                       raise ExtractionError, "Failed to parse image processing response: #{e.message}"
                      end
+                     image_result
+
+                   # Second pass: Combine image results with original text
+                   #  if user_text.strip.present?
+                   #    @logger.info("Processing text content in second pass with image context")
+                   #    text_prompt = <<~PROMPT
+                   #      Previous analysis of images in this context:
+                   #      #{JSON.pretty_generate(image_result)}
+
+                   #      User provided context: #{user_text}
+
+                   #      Please analyze the above text content and extract any additional entities or relationships that weren't captured in the image analysis. Return the combined results.
+                   #    PROMPT
+
+                   #    text_result = @openai.extract_entities_with_taxonomy(
+                   #      text: text_prompt,
+                   #      taxonomy: taxonomy_context
+                   #    )
+
+                   #    # Merge the results from both passes
+                   #    merge_extraction_results(image_result, text_result)
+                   #  else
+                   #    @logger.info("No additional text content to process")
+                   #    image_result
+                   #  end
                    else
-                     # Fall back to text-only processing
+                     # Fall back to text-only processing if no images
+                     @logger.info("Processing text-only content")
                      @openai.extract_entities_with_taxonomy(
-                       text: messages.map { |m| m[:content] }.join("\n\n"),
+                       text: messages.pluck(:content).join("\n\n"),
                        taxonomy: taxonomy_context
                      )
                    end
 
         # Parse and validate the response
-        parse_and_validate_response(response)
+        parse_and_validate_response(response, raw_response)
       rescue StandardError => e
         @logger.error("Extraction with messages failed: #{e.message}")
         @logger.error(e.backtrace.join("\n")) if e.backtrace
@@ -178,95 +214,92 @@ module Neo4j
       user_description = current_user.prompt_description
 
       <<~PROMPT
-        You are an AI assistant that extracts structured information from text and images to build a knowledge graph in Neo4j.
-        You MUST respond with a valid JSON object containing the extracted entities and relationships.
+        Extract detailed knowledge from the provided content to build a comprehensive personal knowledge graph.#{' '}
+        Focus on identifying all relevant entities, their properties, and relationships.
 
-        # Current User Context:
-        - The current user is #{user_description}
-        - User ID: #{current_user.id}
-        - Email: #{current_user.email}
-        #{"- Phone: #{current_user.phone}" if current_user.phone.present?}
-        #{"- Birth Date: #{current_user.birth_date}" if current_user.birth_date.present?}
+        # User Context:
+        - You are analyzing content for: #{user_description} (ID: #{current_user.id})
+        - First-person pronouns (I, me, my, mine) refer to this user
+        - Known aliases: #{user_refs.join(', ')}
 
-        # Important User References:
-        - First-person pronouns (I, me, my, mine, myself) always refer to #{user_description}.
-        - The following names and references all refer to the same person (#{user_description}):
-          #{user_refs.map { |r| "* #{r}" }.join("\n          ")}
+        # Extraction Guidelines:
+        1. Extract ALL possible entities and relationships from the content
+        2. Include every relevant detail as entity properties
+        3. Set confidence scores (0.0-1.0) reflecting your certainty
+        4. Always include the exact source text for each extraction
 
-        # Available Entity Types:
-        #{format_entity_types(entity_types)}
+        # For Images/Documents:
+        - Create Photo/Document entities with all available metadata
+        - Extract and link any identifiable content (people, assets, text)
+        - Include detailed descriptions of visual content
 
-        # Relationship Types:
-        #{format_relationship_types(relationship_types)}
+        # For Assets:
+        - Attempt to describe any asset that can be seen as a full asset.  Any part of an Asset, for example a keyboard on a laptop, a door on a house, a wheel on a car, etc. should be categorized as the parent asset.  A door on a house should be categorized as the house.
+        - Create Asset entities with all available metadata
+        - Include detailed descriptions of visual content
 
-        # Response Format:
+        # For Lists:
+        - Create List and ListItem entities
+        - Extract quantities, descriptions, and other structured data
+        - Preserve the original text in source_text
+
+        # Response Format (JSON):
+        {
+          "entities": [{
+            "type": "EntityType",
+            "name": "Name",
+            "properties": {"key": "value"},
+            "confidence": 0.95,
+            "source_text": "Original text"
+          }],
+          "relationships": [{
+            "type": "RELATIONSHIP_NAME",
+            "source": "SourceEntity",
+            "source_type": "SourceEntityType",
+            "target": "TargetEntity",
+            "target_type": "TargetEntityType",
+            "properties": {"key": "value"},
+            "confidence": 0.95,
+            "source_text": "Original text"
+          }]
+
+        Response Example:
         {
           "entities": [
             {
-              "type": "EntityType",
-              "name": "Entity Name",
+              "type": "Person",
+              "name": "John Doe",
+              "properties": {"email": "john@example.com"},
+              "confidence": 0.98,
+              "source_text": "John Doe's laptop"
+            },
+            {
+              "type": "Asset",
+              "name": "MacBook Pro 2023",
               "properties": {
-                "key": "value"
+                "model": "MacBook Pro 16"",
+                "serial_number": "C02X12345678"
               },
-              "confidence": 0.95,
-              "source_text": "Original text from which this entity was extracted"
+              "confidence": 0.97,
+              "source_text": "MacBook Pro 2023"
             }
           ],
           "relationships": [
             {
-              "type": "RelationshipType",
-              "source": "SourceEntityName",
-              "target": "TargetEntityName",
+              "type": "OWNS",
+              "source": "John Doe",
+              "source_type": "Person",
+              "target": "MacBook Pro 2023",
+              "target_type": "Asset",
               "properties": {
-                "key": "value"
+                "since": "2023-01-15",
+                "purchase_price": 2499.99
               },
-              "confidence": 0.95,
-              "source_text": "Original text from which this relationship was extracted"
+              "confidence": 0.99,
+              "source_text": "John Doe's MacBook Pro 2023"
             }
           ]
         }
-
-        # Important Notes:
-        1. Only include entities and relationships that are explicitly mentioned in the text.
-        2. Set confidence scores between 0.0 and 1.0 based on your certainty.
-        3. Include the exact source text that led to each extraction.
-        4. Use the most specific entity type that matches the data.
-        5. If you're not confident about an extraction, either don't include it or set a low confidence score.
-        6. When the text refers to the current user (using first-person pronouns or any of their known names),
-           create a relationship to the User entity with ID #{current_user.id}.
-        7. For any uploaded photos or images (e.g., JPG, PNG, HEIC):
-           - Always create a Photo entity for each uploaded image file
-           - The Photo entity should include metadata like filename, format, and size
-           - If the image contains recognizable content (vehicles, documents, people, etc.), 
-             create appropriate entities and link them using DEPICTS relationships
-           - For documents in photos (e.g., a lease agreement), create a Document entity
-             and relate it to the Photo with a HAS_DOCUMENT relationship
-           - Include a description of the photo's contents when possible
-           - Set confidence based on how clearly the content is visible and identifiable
-
-        8. For any uploaded documents (e.g., PDF, DOCX, TXT):
-           - Always create a Document entity for each uploaded file
-           - The Document entity should include metadata like filename, type, and size
-           - Extract text content and create entities for any identifiable information
-             (e.g., people, addresses, dates, financial information)
-           - Relate the Document to extracted entities using appropriate relationships
-             (e.g., IDENTIFIES, REFERENCES, CONTAINS)
-           - For documents that are about specific assets or properties, create those
-             entities and relate them to the document
-
-        9. For any physical objects, possessions, or assets mentioned in text or shown in images:
-           - Create an Asset entity with appropriate properties
-           - Use the most specific category that applies (e.g., 'vehicle', 'electronic', 'furniture')
-           - Include any identifying details mentioned (make, model, color, etc.)
-           - Create an OWNS relationship to the current user if it's their possession
-           - Set confidence based on how clearly the asset is described or visible
-        9. If the input appears to be a list of items (e.g., a shopping list, to-do list), create:
-           - A List entity with a name from the first line (if available)
-           - ListItem entities for each item in the list
-           - HAS_ITEM relationships from the List to each ListItem
-           - Set appropriate confidence scores based on clarity
-           - Include the full text of each item in the source_text field
-       10. For lists, extract as much structure as possible from the items (quantities, descriptions, etc.)
       PROMPT
     end
 
@@ -402,20 +435,88 @@ module Neo4j
     end
 
     # Parse and validate the response from OpenAI
-    def parse_and_validate_response(response)
+    # Merge results from multiple extraction passes (e.g., image + text)
+    # @param first_result [Hash] The first set of extraction results
+    # @param second_result [Hash] The second set of extraction results to merge
+    # @return [Hash] Combined results with deduplicated entities and relationships
+    # def merge_extraction_results(first_result, second_result)
+    #   return first_result if second_result.nil? || second_result.empty?
+    #   return second_result if first_result.nil? || first_result.empty?
+
+    #   @logger.info("Merging extraction results")
+
+    #   # Start with a deep copy of the first result
+    #   merged = {
+    #     entities: (first_result[:entities] || []).dup,
+    #     relationships: (first_result[:relationships] || []).dup
+    #   }
+
+    #   # Track entity unique identifiers to avoid duplicates
+    #   entity_signatures = Set.new
+    #   merged[:entities].each do |entity|
+    #     entity_signatures << entity_signature(entity)
+    #   end
+
+    #   # Add entities from second result if they don't already exist
+    #   (second_result[:entities] || []).each do |entity|
+    #     sig = entity_signature(entity)
+    #     unless entity_signatures.include?(sig)
+    #       merged[:entities] << entity
+    #       entity_signatures << sig
+    #     end
+    #   end
+
+    #   # Track relationship unique identifiers to avoid duplicates
+    #   relationship_signatures = Set.new
+    #   merged[:relationships].each do |rel|
+    #     relationship_signatures << relationship_signature(rel)
+    #   end
+
+    #   # Add relationships from second result if they don't already exist
+    #   (second_result[:relationships] || []).each do |rel|
+    #     sig = relationship_signature(rel)
+    #     unless relationship_signatures.include?(sig)
+    #       merged[:relationships] << rel
+    #       relationship_signatures << sig
+    #     end
+    #   end
+
+    #   @logger.info("Merged results: #{merged[:entities].size} entities, #{merged[:relationships].size} relationships")
+    #   merged
+    # end
+
+    # Generate a unique signature for an entity to detect duplicates
+    def entity_signature(entity)
+      "#{entity[:type]}:#{entity[:name]}:#{entity.dig(:properties, :id) || entity.dig('properties', 'id')}"
+    end
+
+    # Generate a unique signature for a relationship to detect duplicates
+    def relationship_signature(rel)
+      "#{rel[:type]}:#{rel[:source]}->#{rel[:target]}:#{rel.dig(:properties, :id) || rel.dig('properties', 'id')}"
+    end
+
+    def parse_and_validate_response(response, raw_response)
       # Log the raw response for debugging
       @logger.debug("Raw response: #{response.class.name}")
       @logger.debug("Response content: #{response.inspect}")
 
       # If response is already in the expected format, return it
       if response.is_a?(Hash) && response.key?(:entities) && response.key?(:relationships)
+
+        # Store the full response for debugging
+        response[:openai_response] = raw_response
+
         @logger.debug("Response is already in the expected format")
         return response
       end
 
+      ### Maybe nothing past here is necessary
+
       # Handle error responses from the API
       if response.is_a?(Hash) && response[:error].present?
         error_msg = "OpenAI API error: #{response[:error][:message]}"
+        # Store the full response for debugging
+        response[:openai_response] = raw_response
         @logger.error(error_msg)
         raise ExtractionError, error_msg
       end
@@ -459,6 +560,9 @@ module Neo4j
       # Ensure we have the required top-level keys or provide defaults
       result[:entities] ||= []
       result[:relationships] ||= []
+
+      # Store the full response for debugging
+      result[:openai_response] = raw_response
 
       # Ensure entities and relationships are arrays
       unless result[:entities].is_a?(Array) && result[:relationships].is_a?(Array)

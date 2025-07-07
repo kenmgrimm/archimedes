@@ -89,8 +89,8 @@ module Neo4j
       relations = entity["relations"] || {}
 
       # Convert to the expected format
-      relations.each_with_object({}) do |(rel_name, rel_def), hash|
-        hash[rel_name] = {
+      relations.transform_values do |rel_def|
+        {
           target: rel_def["to"],
           cardinality: rel_def["cardinality"] || "one",
           description: rel_def["description"]
@@ -102,7 +102,7 @@ module Neo4j
     def property_types
       @property_types ||= load_property_types
     end
-    
+
     # Get the full taxonomy definition for a specific entity type
     # @param entity_type [String] The type of entity to look up
     # @return [Hash] The full entity definition including description, properties, and relations
@@ -289,7 +289,7 @@ module Neo4j
         next unless prop_def
 
         # Check enum values if specified
-        if prop_def[:enum] && !prop_def[:enum].include?(value)
+        if prop_def[:enum]&.exclude?(value)
           errors << "Invalid value '#{value}' for property '#{key}'. Must be one of: #{prop_def[:enum].join(', ')}"
         end
 
