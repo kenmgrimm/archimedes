@@ -7,7 +7,7 @@ namespace :import do
     require "fileutils"
 
     # Configure logger
-    logger = Logger.new(STDOUT)
+    logger = Logger.new($stdout)
     logger.level = ENV["DEBUG"] ? Logger::DEBUG : Logger::INFO
 
     # Get the output directory

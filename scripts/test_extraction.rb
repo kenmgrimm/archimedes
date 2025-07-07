@@ -36,18 +36,22 @@ target_dirs = if ARGV[0]
                 Dir.glob(File.join(input_base, "*"))
               end
 
+def current_user
+  @current_user ||= User.current
+end
+
 # Set up directories
-input_base = File.join(File.dirname(__FILE__), "input")
+File.join(File.dirname(__FILE__), "input")
 output_base = File.join(File.dirname(__FILE__), "output")
 FileUtils.mkdir_p(output_base)
 
 # Initialize the OpenAI client with debug logging
 puts "Initializing OpenAI client..."
-openai_service = OpenAI::ClientService.new(logger: Logger.new(STDOUT))
+openai_service = OpenAI::ClientService.new(logger: Logger.new($stdout))
 
 # Initialize the extractor
 puts "Initializing entity extractor..."
-extractor = Neo4j::EntityExtractionService.new(openai_service, logger: Logger.new(STDOUT))
+extractor = Neo4j::EntityExtractionService.new(openai_service, logger: Logger.new($stdout))
 
 # Helper method to encode image to base64
 def encode_image(image_path)
@@ -102,7 +106,7 @@ target_dirs.each do |input_folder|
       documents << {
         path: file_path,
         name: file_name,
-        type: file_ext[1..-1] # Remove the dot
+        type: file_ext[1..] # Remove the dot
       }
     end
 
@@ -154,7 +158,27 @@ target_dirs.each do |input_folder|
 
     # Save the full prompt to a file
     prompt_content = "# System Prompt\n\n#{system_prompt}\n\n# Messages Sent\n"
-    full_messages.each_with_index do |msg, i|
+
+    full_messages.select { |msg| msg[:role] == "system" }.each_with_index do |msg, i|
+      prompt_content += "\n## Message #{i + 1} (#{msg[:role]})\n"
+      if msg[:content].is_a?(String)
+        prompt_content += msg[:content]
+      elsif msg[:content].is_a?(Array)
+        msg[:content].each do |part|
+          if part.is_a?(Hash) && part[:type] == "text"
+            prompt_content += part[:text].to_s
+          elsif part.is_a?(Hash) && part[:type] == "image_url"
+            prompt_content += "[Image: #{part[:image_url][:url][0..100]}...]"
+          end
+        end
+      end
+    end
+
+    prompt_content +=
+      "\n\n# User Messages:\n" \
+      "NOTE:  PAY PARTICULAR ATTENTION TO ANY TEXT IN THE FOLLOWING USER MESSAGES.  This is the user provided text that will provide context for any images or documents that follow.  It will also contain key data that should be extracted and included in the output. Ensure that all relevant entities and relationships are extracted from the text and any images or documents that follow. Remember to keep in mind that the text may refer to 'my' or 'I' or other first-person pronouns, it refers to the current user (#{current_user.prompt_description}).\n\n"
+
+    full_messages.select { |msg| msg[:role] == "user" }.each_with_index do |msg, i|
       prompt_content += "\n## Message #{i + 1} (#{msg[:role]})\n"
       if msg[:content].is_a?(String)
         prompt_content += msg[:content]
@@ -189,6 +213,7 @@ target_dirs.each do |input_folder|
     # Save the results (overwrite existing file)
     output_file = File.join(output_folder, "extraction.json")
     prompt_file = File.join(output_folder, "prompt.txt")
+    openai_response_file = File.join(output_folder, "openai_response.json")
 
     # Save the extraction results
     File.write(output_file, JSON.pretty_generate(output))
@@ -196,8 +221,12 @@ target_dirs.each do |input_folder|
     # Save the complete prompt to a separate file
     File.write(prompt_file, prompt_content)
 
+    # Save the debug information to a separate file
+    File.write(openai_response_file, result[:openai_response].to_json)
+
     puts "✓ Results saved to: #{output_file}"
     puts "✓ Full prompt saved to: #{prompt_file}"
+    puts "✓ OpenAI response saved to: #{openai_response_file}"
   rescue StandardError => e
     puts "Error processing folder #{folder_name}: #{e.message}"
     puts e.backtrace.join("\n") if ENV["DEBUG"]
