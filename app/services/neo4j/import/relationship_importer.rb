@@ -196,25 +196,11 @@ module Neo4j
             next entity["id"]
           end
 
-          # Second try: Look for nodes where any property contains the name (case-insensitive)
-          type_filter = type ? ":#{type}" : ""
-          query = "MATCH (n#{type_filter}) "
-          query += "WHERE any(prop in keys(n) WHERE toLower(toString(n[prop])) CONTAINS toLower(toString($name))) "
-          query += "RETURN id(n) as id, labels(n) as labels, properties(n) as props "
-          query += "ORDER BY size(keys(n)) LIMIT 1"
-
-          log_info("  + Trying to find node with name in any string property: #{name.inspect}")
-          log_debug("  + Executing query: #{query} with name=#{name.inspect}")
-
-          result = tx.run(query, name: name, type: type)
-          entity = result.first
-
-          if entity && entity["id"]
-            log_info("  + Found node with matching property: #{entity['id']} (Labels: #{entity['labels'].inspect})")
-            next entity["id"]
-          end
+          # Second try: Skip complex property matching due to array handling complexity
+          log_info("  + Skipping complex property matching, proceeding to Ruby-side filtering")
 
           # Third try: Directly query all nodes and filter in Ruby (slower but more flexible)
+          type_filter = type ? ":#{type}" : ""
           log_info("  + Falling back to Ruby-side filtering for node: #{name.inspect}")
           query = "MATCH (n#{type_filter}) RETURN id(n) as id, labels(n) as labels, properties(n) as props"
           log_debug("  + Executing query: #{query}")
@@ -227,12 +213,22 @@ module Neo4j
             next unless entity && entity["id"]
 
             # Check if any string property contains the name (case-insensitive)
-            entity["props"].each do |_, value|
-              next unless value.to_s.downcase.include?(name_lower)
-
-              log_info("  + Found matching node by property: #{entity['id']} (Labels: #{entity['labels'].inspect})")
-              found_id = entity["id"]
-              break
+            entity["props"].each do |key, value|
+              next if key == "embedding" # Skip embedding arrays
+              
+              # Handle arrays by checking each item
+              if value.is_a?(Array)
+                found_in_array = value.any? { |item| item.to_s.downcase.include?(name_lower) }
+                if found_in_array
+                  log_info("  + Found matching node by array property: #{entity['id']} (Labels: #{entity['labels'].inspect})")
+                  found_id = entity["id"]
+                  break
+                end
+              elsif value.to_s.downcase.include?(name_lower)
+                log_info("  + Found matching node by property: #{entity['id']} (Labels: #{entity['labels'].inspect})")
+                found_id = entity["id"]
+                break
+              end
             end
 
             # If we found a match, break out of the loop

@@ -132,45 +132,48 @@ module Neo4j
         # Process with OpenAI
         prompt = build_neo4j_extraction_prompt(taxonomy_context) + "\n\nUser provided context:#{user_text}"
 
-        response = if image_files.any?
-                     @logger.info("Processing #{image_files.size} image(s) in first pass")
-                     # First pass: Process images only
-                     raw_response = @openai.chat_with_files(
-                       prompt: prompt,
-                       files: image_files,
-                       model: "gpt-4o"
-                     )
+        if image_files.any?
+          @logger.info("Processing #{image_files.size} image(s) in first pass")
+          # First pass: Process images only
+          raw_response = @openai.chat_with_files(
+            prompt: prompt,
+            files: image_files,
+            model: "gpt-4o"
+          )
 
-                     # Extract the content from the image response
-                     image_content = raw_response.dig("choices", 0, "message", "content")
+          # Extract the content from the image response
+          image_content = raw_response.dig("choices", 0, "message", "content")
 
-                     if image_content.blank?
-                       @logger.error("Empty content in image processing response")
-                       @logger.error("Full response: #{raw_response.inspect}")
-                       raise ExtractionError, "Empty content in image processing response"
-                     end
+          if image_content.blank?
+            @logger.error("Empty content in image processing response")
+            @logger.error("Full response: #{raw_response.inspect}")
+            raise ExtractionError, "Empty content in image processing response"
+          end
 
-                     # Parse the JSON content from image processing
-                     begin
-                       image_result = JSON.parse(image_content, symbolize_names: true)
-                       @logger.info("Successfully processed #{image_result[:entities]&.size || 0} entities from images")
-                     rescue JSON::ParserError => e
-                       @logger.error("Failed to parse image processing response: #{e.message}")
-                       @logger.error("Content: #{image_content}")
-                       raise ExtractionError, "Failed to parse image processing response: #{e.message}"
-                     end
-                     image_result
-                   else
-                     # Fall back to text-only processing if no images
-                     @logger.info("Processing text-only content")
-                     @openai.extract_entities_with_taxonomy(
-                       text: messages.pluck(:content).join("\n\n"),
-                       taxonomy: taxonomy_context
-                     )
-                   end
+          # Parse the JSON content from image processing
+          begin
+            response = JSON.parse(image_content, symbolize_names: true)
+            @logger.info("Successfully processed #{response[:entities]&.size || 0} entities from images")
+          rescue JSON::ParserError => e
+            @logger.error("Failed to parse image processing response: #{e.message}")
+            @logger.error("Content: #{image_content}")
+            raise ExtractionError, "Failed to parse image processing response: #{e.message}"
+          end
+        else
+          @logger.info("Processing text-only content")
+          raw_response = @openai.extract_entities_with_taxonomy(
+            text: messages.pluck(:content).join("\n\n"),
+            taxonomy: taxonomy_context
+          )
+          response = raw_response
+        end
+
+        @logger.debug("OpenAI response: #{raw_response.inspect}")
+        @logger.debug("Parsed extraction response: #{response.inspect}")
 
         # Parse and validate the response
         parse_and_validate_response(response, raw_response)
+
       rescue StandardError => e
         @logger.error("Extraction with messages failed: #{e.message}")
         @logger.error(e.backtrace.join("\n")) if e.backtrace
@@ -238,8 +241,11 @@ module Neo4j
             "confidence": 0.95,
             "source_text": "Original text"
           }]
+        }
 
-        Response Example:
+        Response Examples:
+
+        # Asset Example:
         {
           "entities": [
             {
@@ -273,6 +279,58 @@ module Neo4j
               },
               "confidence": 0.99,
               "source_text": "John Doe's MacBook Pro 2023"
+            }
+          ]
+        }
+
+        # List Example:
+        {
+          "entities": [
+            {
+              "type": "List",
+              "name": "Hardware Store Shopping List",
+              "properties": {
+                "category": "shopping",
+                "status": "active"
+              },
+              "confidence": 0.95,
+              "source_text": "hardware store list"
+            },
+            {
+              "type": "ListItem",
+              "name": "desk cord clips",
+              "properties": {},
+              "confidence": 0.99,
+              "source_text": "desk cord clips"
+            },
+            {
+              "type": "ListItem",
+              "name": "Clothesline",
+              "properties": {},
+              "confidence": 0.99,
+              "source_text": "Clothesline"
+            }
+          ],
+          "relationships": [
+            {
+              "type": "HAS_ITEM",
+              "source": "Hardware Store Shopping List",
+              "source_type": "List",
+              "target": "desk cord clips",
+              "target_type": "ListItem",
+              "properties": {},
+              "confidence": 0.95,
+              "source_text": "hardware store list: desk cord clips"
+            },
+            {
+              "type": "HAS_ITEM",
+              "source": "Hardware Store Shopping List",
+              "source_type": "List",
+              "target": "Clothesline",
+              "target_type": "ListItem",
+              "properties": {},
+              "confidence": 0.95,
+              "source_text": "hardware store list: Clothesline"
             }
           ]
         }

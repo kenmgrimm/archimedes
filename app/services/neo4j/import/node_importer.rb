@@ -1,255 +1,573 @@
 # frozen_string_literal: true
 
 require_relative "base_importer"
+require_relative "property_formatter"
+require_relative "vector_search"
+require_relative "node_matcher_registry"
+require_relative "node_operations"
+require_relative "relationship_manager"
+require_relative "../../openai/embedding_service"
+require_relative "../../openai/entity_matching_service"
 
 module Neo4j
   module Import
     # Handles importing nodes into Neo4j with deduplication
     class NodeImporter < BaseImporter
-      # Imports a collection of nodes
-      # @param nodes [Array<Hash>] Array of node data hashes
+      # @param logger [Logger] Logger instance for progress and errors
+      # @param dry_run [Boolean] If true, don't make any changes to the database
+      # @param enable_vector_search [Boolean, nil] Override for enabling vector similarity search
+      # @param similarity_threshold [Float, nil] Override for minimum similarity score (0-1)
+      # @param enable_human_review [Boolean] If true, queue uncertain matches for human review
+      def initialize(logger: nil, dry_run: false, enable_vector_search: nil, similarity_threshold: nil, debug: false, enable_human_review: false)
+        super(logger: logger, dry_run: dry_run)
+        @debug = debug
+        @enable_human_review = enable_human_review
+
+        # Initialize services
+        @enable_vector_search = enable_vector_search.nil? ? ENV["VECTOR_SEARCH_ENABLED"] == "true" : enable_vector_search
+        @similarity_threshold = similarity_threshold || ENV.fetch("VECTOR_SIMILARITY_THRESHOLD", 0.8).to_f
+
+        @property_formatter = PropertyFormatter.new(debug: @debug)
+
+        if @enable_vector_search
+          @embedding_service = OpenAI::EmbeddingService.new
+          @entity_matching_service = OpenAI::EntityMatchingService.new
+          @vector_search = VectorSearch.new(
+            @embedding_service,
+            logger: logger,
+            similarity_threshold: @similarity_threshold,
+            debug: @debug
+          )
+          log_info("Vector search enabled with similarity threshold: #{@similarity_threshold}")
+        else
+          log_info("Vector search is disabled")
+        end
+
+        # Initialize operation handlers
+        @node_operations = NodeOperations.new(
+          logger: logger,
+          dry_run: dry_run,
+          debug: debug,
+          property_formatter: @property_formatter,
+          vector_search: @vector_search
+        )
+
+        @relationship_manager = RelationshipManager.new(
+          logger: logger,
+          dry_run: dry_run,
+          debug: debug
+        )
+
+        # Initialize human review manager if enabled
+        if @enable_human_review
+          require_relative 'human_review_manager'
+          @human_review_manager = HumanReviewManager.new(logger: logger)
+          log_info("Human review enabled for uncertain matches")
+        end
+      end
+
+      # Imports a collection of entities (main interface method)
+      # @param entities [Array<Hash>] Array of entity hashes to import
       # @return [Hash] Import statistics
-      def import(nodes)
-        stats = { total: nodes.size, created: 0, updated: 0, skipped: 0, errors: 0 }
+      def import(entities)
+        return { total: 0, created: 0, updated: 0, skipped: 0, errors: 0, duplicates: 0 } if entities.empty?
 
-        log_info("Starting import of #{nodes.size} nodes...")
+        # Group entities by type for efficient processing
+        entities_by_type = entities.group_by { |entity| entity[:type] || entity["type"] }
 
-        nodes.each_with_index do |node_data, index|
-          log_info("\n[#{index + 1}/#{nodes.size}] Processing node:")
-          log_info("  Type: #{node_data[:type] || node_data['type']}")
-          log_info("  Name: #{node_data[:name] || node_data['name']}")
-          log_info("  Properties: #{node_data[:properties] || node_data['properties']}")
+        # Aggregate stats across all types
+        total_stats = { total: 0, created: 0, updated: 0, skipped: 0, errors: 0, duplicates: 0 }
 
-          begin
-            import_node(node_data, stats)
-            log_info("  Status: #{stats[:created] > 0 ? 'Created' : 'Updated'}")
-          rescue StandardError => e
-            log_error("  Failed to import node: #{e.message}")
-            log_error(e.backtrace.join("\n")) if @debug
-            stats[:errors] += 1
+        entities_by_type.each do |type, type_entities|
+          log_info("Importing #{type_entities.size} #{type} nodes...")
+          
+          # Convert entities to the format expected by import_nodes
+          formatted_entities = type_entities.map do |entity|
+            # Ensure properties include the name field
+            properties = entity[:properties] || entity["properties"] || {}
+            properties["name"] = entity[:name] || entity["name"] if entity[:name] || entity["name"]
+            properties
           end
+
+          type_stats = import_nodes(formatted_entities, type: type)
+          
+          # Aggregate stats
+          total_stats.each_key do |key|
+            total_stats[key] += type_stats[key] if type_stats[key]
+          end
+
+          log_info("Completed #{type} import: #{type_stats[:created]} created, #{type_stats[:updated]} updated, #{type_stats[:skipped]} skipped, #{type_stats[:errors]} errors")
         end
 
-        log_info("\nImport completed: #{stats[:created]} created, #{stats[:updated]} updated, #{stats[:errors]} errors")
-        stats
+        total_stats
       end
 
-      private
+      # Imports a collection of nodes
+      # @param nodes [Array<Hash>] Array of node hashes to import
+      # @param type [String] The type/label of the nodes
+      # @param batch_size [Integer] Number of nodes to process in each batch
+      # @return [Hash] Import statistics
+      def import_nodes(nodes, type:, batch_size: 100)
+        stats = {
+          total: nodes.size,
+          created: 0,
+          updated: 0,
+          skipped: 0,
+          errors: 0,
+          duplicates: 0
+        }
 
-      def import_node(node_data, stats)
-        type = node_data[:type] || node_data["type"]
+        total_batches = (nodes.size / batch_size.to_f).ceil
 
-        # Extract properties, ensuring all keys are strings
-        properties = (node_data[:properties] || node_data["properties"] || {}).transform_keys(&:to_s)
+        nodes.each_slice(batch_size).with_index do |batch, batch_index|
+          log_info("\n=== Processing batch #{batch_index + 1} of #{total_batches} ===")
 
-        # Ensure name is set from the node data if not already in properties
-        node_name = properties["name"] || node_data[:name] || node_data["name"]
-        properties["name"] ||= node_name if node_name
+          Neo4j::DatabaseService.write_transaction do |tx|
+            batch.each_with_index do |node_data, index|
+              log_info("\n[#{(batch_index * batch_size) + index + 1}/#{nodes.size}] Processing node")
 
-        log_info("Importing #{type} node: #{properties['name'] || properties['id']}")
-        log_debug("Node properties: #{properties.inspect}")
+              begin
+                # Format properties
+                properties = @property_formatter.format_properties(node_data, logger: @logger)
 
-        with_transaction do |tx|
-          if (existing = find_existing_node(tx, type, properties))
-            update_node(tx, existing, properties, stats)
-          else
-            create_node(tx, type, properties, stats)
-          end
-        end
-      end
+                # Find or create node
+                existing_node = find_existing_node(tx, type, properties)
 
-      def find_existing_node(tx, type, properties)
-        # First try to find by ID if present
-        if (node_id = properties["id"] || properties[:id])
-          log_info("  + Trying to find by ID: #{node_id}")
-          query = "MATCH (n:#{type} {id: $id}) RETURN n LIMIT 1"
-          log_info("  + Executing query: #{query} with id: #{node_id.inspect}")
-
-          # Use keyword arguments for parameters
-          result = tx.run(query, id: node_id)
-
-          if result.any?
-            node = result.single&.first
-            log_info("  + Found existing node by ID: #{node&.id}")
-            return node
-          end
-        end
-
-        # Try to find by name if present
-        if (node_name = properties["name"] || properties[:name])
-          # Ensure we have a string name
-          node_name = node_name.to_s.strip
-          unless node_name.empty?
-            log_info("  + Trying to find by name: #{node_name}")
-            query = ""
-            query += "MATCH (n:#{type}) "
-            query += "WHERE n.name = $name "
-            query += "RETURN n, id(n) as id LIMIT 1"
-
-            log_info("  + Executing query: #{query} with name: #{node_name.inspect}")
-
-            # Use keyword arguments for parameters
-            result = tx.run(query, name: node_name)
-
-            if result.any?
-              record = result.first
-              if record && record["id"]
-                node = record["n"]
-                log_info("  + Found existing node by name: #{record['id']} (Labels: #{node.labels.inspect})")
-                return node
+                if existing_node
+                  if node_needs_update?(existing_node, properties)
+                    @node_operations.update_node(tx, existing_node, properties, stats)
+                  else
+                    log_info("  + Node already exists and is up to date")
+                    stats[:skipped] += 1
+                  end
+                else
+                  @node_operations.create_node(tx, type, properties, stats)
+                end
+              rescue StandardError => e
+                log_error("  + ERROR processing node: #{e.message}")
+                log_error(e.backtrace.join("\n")) if @debug
+                stats[:errors] += 1
+                next
               end
             end
           end
         end
 
-        # Try to find by matching all properties if no ID or name match
-        log_info("  + Trying to find by all properties: #{properties.inspect}")
+        stats
+      end
 
-        # Format properties for query
-        props = {}
-        where_parts = []
-
-        properties.each_with_index do |(k, v), index|
-          next if v.nil? || v.to_s.empty? || k.to_s == "id" # Skip empty values and id
-
-          param = "p#{index}"
-          where_parts << "n.#{k} = $#{param}"
-          props[param.to_sym] = v # Use symbol keys for parameters
+      # Find an existing node that matches the given properties
+      # @param tx [Neo4j::Core::CypherSession::Transaction] The Neo4j transaction
+      # @param type [String] The node type to search for
+      # @param properties [Hash] The properties to match against
+      # @return [Neo4j::Core::Node, nil] The matching node, or nil if not found
+      def find_existing_node(tx, type, properties)
+        puts "\n🔍 FIND_EXISTING_NODE - Starting search for #{type}" if @debug
+        puts "  Properties: #{properties.keys.join(', ')}" if @debug
+        
+        # First try exact matching on unique constraints
+        puts "  Step 1: Trying constraint matching..." if @debug
+        existing_node = find_node_by_constraints(tx, type, properties)
+        if existing_node
+          puts "  ✅ Found via constraints!" if @debug
+          return existing_node
         end
+        puts "  ❌ No constraint matches" if @debug
 
-        if where_parts.any?
-          where_clause = where_parts.join(" AND ")
-          query = "MATCH (n:#{type}) WHERE #{where_clause} RETURN n LIMIT 1"
-          log_info("  + Executing query: #{query} with params: #{props.inspect}")
+        # If vector search is enabled, try similarity search
+        if @enable_vector_search && properties["embedding"].is_a?(Array)
+          puts "  Step 2: Trying vector search (has embedding)..." if @debug
 
-          # Convert props to keyword arguments
-          result = tx.run(query, **props)
+          # Get type-specific similarity threshold
+          threshold = NodeMatcherRegistry.similarity_threshold_for(type)
 
-          if result.any?
-            node = result.single&.first
-            log_info("  + Found existing node by properties: #{node&.id}")
-            return node
+          similar_nodes = @vector_search.find_similar_nodes(
+            tx,
+            type,
+            properties["embedding"],
+            threshold: threshold
+          )
+
+          # Return the most similar node if above threshold
+          best_match = similar_nodes.first
+          if best_match&.dig(:similarity).to_f >= threshold
+            puts "  ✅ Found via vector search! (similarity: #{best_match[:similarity].round(4)})" if @debug
+            return best_match[:node]
+          else
+            puts "  ❌ Vector search found no matches above threshold" if @debug
+          end
+        else
+          if @enable_vector_search
+            puts "  Step 2: Skipping vector search (no embedding)" if @debug
+          else
+            puts "  Step 2: Vector search disabled" if @debug
           end
         end
 
-        log_info("  + No existing node found matching criteria")
+        # Fall back to fuzzy matching using NodeMatcherRegistry (with human review if enabled)
+        puts "  Step 3: Trying fuzzy matching..." if @debug
+        
+        # Debug: Check what nodes exist before fuzzy matching
+        if @debug
+          debug_result = tx.run("MATCH (n:#{type}) RETURN count(n) as count")
+          node_count = debug_result.first[:count]
+          puts "    Debug: Found #{node_count} existing #{type} nodes in database"
+        end
+        
+        fuzzy_result = find_node_by_fuzzy_matching_with_review(tx, type, properties)
+        if fuzzy_result
+          puts "  ✅ Found via fuzzy matching!" if @debug
+          return fuzzy_result
+        end
+        puts "  ❌ No fuzzy matches" if @debug
+        
+        puts "  Step 4: Trying property matching..." if @debug
+        property_result = find_node_by_properties(tx, type, properties)
+        if property_result
+          puts "  ✅ Found via property matching!" if @debug
+          return property_result
+        end
+        puts "  ❌ No property matches" if @debug
+        
+        puts "  🚫 No existing node found - will create new one" if @debug
         nil
       end
 
-      def create_node(tx, type, properties, stats)
-        # Ensure name is always a string
-        name_property = properties["name"] || properties[:name]
-
-        # Convert to string and clean up
-        node_name = if name_property.is_a?(Array)
-                      # Use the first non-blank name if available
-                      name = name_property.find { |n| n.to_s.present? }
-                      name.to_s.strip
-                    else
-                      name_property.to_s.strip
-                    end
-
-        # Fall back to a default name if empty
-        node_name = "Unnamed #{type.downcase}" if node_name.blank?
-
-        # Ensure name is set in properties
-        properties = properties.merge("name" => node_name)
-
-        log_info("  + Creating new #{type} node: #{node_name}")
-
-        if dry_run
-          log_info("  - DRY RUN: Would create node with properties: #{properties.inspect}")
-          stats[:created] += 1
-          return { id: "dry-run-id", labels: [type], properties: properties.merge("name" => node_name) }
+      # Find a node by its unique constraints
+      # @param tx [Neo4j::Core::CypherSession::Transaction] The Neo4j transaction
+      # @param type [String] The node type to search for
+      # @param properties [Hash] The properties to match against
+      # @return [Neo4j::Core::Node, nil] The matching node, or nil if not found
+      def find_node_by_constraints(tx, type, properties)
+        # First try to find by ID if present
+        if properties["id"]
+          escaped_type = type.include?(' ') ? "`#{type}`" : type
+          query = "MATCH (n:#{escaped_type} {id: $id}) RETURN n LIMIT 1"
+          result = tx.run(query, id: properties["id"])
+          record = result.first
+          return record[:n] if record
         end
 
-        begin
-          # Set the processed name in properties
-          properties = properties.merge("name" => node_name)
-
-          # Format properties for Neo4j
-          formatted_props = format_properties(properties)
-
-          # Build the CREATE query
-          query = "CREATE (n:#{type} $props) RETURN n"
-
-          log_info("  + Executing query: #{query}")
-          log_info("  + With properties: #{formatted_props.inspect}")
-
-          # Execute the query with keyword arguments
-          result = tx.run(query, props: formatted_props)
-
-          # Extract the created node
-          record = result.single
-          if record.nil? || record["n"].nil?
-            log_error("  ! Failed to create node - no record returned")
-            log_error("  ! Query: #{query}")
-            log_error("  ! Props: #{formatted_props.inspect}")
-            return nil
-          end
-
-          node = record["n"]
-
-          # Log success
-          log_info("  + Successfully created node:")
-          log_info("    - ID: #{node.id}")
-          log_info("    - Labels: #{node.labels}")
-          log_info("    - Properties: #{node.properties}")
-
-          stats[:created] += 1
-          node
-        rescue StandardError => e
-          log_error("  ! Error creating node: #{e.message}")
-          log_error("  ! Query: #{query}")
-          log_error("  ! Props: #{formatted_props.inspect}")
-          log_error("  ! Backtrace: #{e.backtrace.join("\n")}") if @debug
-          raise
+        # Then try to find by other unique properties
+        unique_props = properties.select { |k, _| k.to_s.start_with?("unique_") }
+        if unique_props.any?
+          escaped_type = type.include?(' ') ? "`#{type}`" : type
+          where_clause = unique_props.map { |k, _| 
+            escaped_prop = k.to_s.include?(' ') ? "`#{k}`" : k
+            param_name = k.to_s.gsub(' ', '_')
+            "n.#{escaped_prop} = $#{param_name}"
+          }.join(" AND ")
+          query = "MATCH (n:#{escaped_type}) WHERE #{where_clause} RETURN n LIMIT 1"
+          # Convert unique properties to symbol keys with underscores
+          unique_params = unique_props.each_with_object({}) { |(k, v), h| h[k.to_s.gsub(' ', '_').to_sym] = v }
+          result = tx.run(query, **unique_params)
+          record = result.first
+          return record[:n] if record
         end
+
+        nil
       end
 
-      def update_node(tx, existing, properties, stats)
-        log_info("  ~ Updating existing #{existing.labels.first} node")
+      # Find a node by property matching
+      # @param tx [Neo4j::Core::CypherSession::Transaction] The Neo4j transaction
+      # @param type [String] The node type to search for
+      # @param properties [Hash] The properties to match against
+      # @return [Neo4j::Core::Node, nil] The matching node, or nil if not found
+      def find_node_by_properties(tx, type, properties)
+        # Skip if no properties to match on
+        return nil if properties.empty?
 
-        return if dry_run
+        # Create a simple property-based query
+        escaped_type = type.include?(' ') ? "`#{type}`" : type
+        where_clause = properties.map { |k, _| 
+          escaped_prop = k.to_s.include?(' ') ? "`#{k}`" : k
+          param_name = k.to_s.gsub(' ', '_')
+          "n.#{escaped_prop} = $#{param_name}"
+        }.join(" AND ")
+        query = "MATCH (n:#{escaped_type}) WHERE #{where_clause} RETURN n LIMIT 1"
 
-        # Don't update the ID if it exists
-        properties = properties.except("id")
-
-        # Ensure name is a string if present
-        if properties.key?("name")
-          name = properties["name"]
-          if name.is_a?(Array)
-            # Use the first non-blank name if available
-            name = name.find { |n| n.to_s.present? }&.to_s
-            name = "Unnamed #{existing.labels.first.downcase}" if name.blank?
-            properties["name"] = name
-          end
-        end
-
-        return if properties.empty? # Nothing to update after processing
-
-        formatted_props = format_properties(properties)
-
-        # Build SET clause for properties
-        set_clause = properties.keys.map { |k| "n.#{k} = $props.#{k}" }.join(", ")
-        query = "MATCH (n) WHERE id(n) = $id SET #{set_clause} RETURN n"
-
-        log_info("  + Executing update query: #{query}")
-        log_debug("  + With properties: #{formatted_props.inspect}")
-
-        result = tx.run(query, id: existing.id, props: formatted_props)
-
-        if result.any?
-          stats[:updated] += 1
-          result.single&.first
-        else
-          log_error("  ! Failed to update node #{existing.id}")
+        begin
+          # Convert properties to symbol keys for the neo4j-driver, replacing spaces with underscores
+          params = properties.each_with_object({}) { |(k, v), h| h[k.to_s.gsub(' ', '_').to_sym] = v }
+          result = tx.run(query, **params)
+          record = result.first
+          record ? record[:n] : nil
+        rescue StandardError => e
+          log_error("Error finding node by properties: #{e.message}")
+          log_error(e.backtrace.join("\n")) if @debug
           nil
         end
       end
 
-      def format_properties(properties)
-        properties.transform_values { |v| format_property(v) }
+      # Find a node using fuzzy matching with optional human review
+      # @param tx [Neo4j::Core::CypherSession::Transaction] The Neo4j transaction
+      # @param type [String] The node type to search for
+      # @param properties [Hash] The properties to match against
+      # @return [Neo4j::Core::Node, nil] The matching node, or nil if not found
+      def find_node_by_fuzzy_matching_with_review(tx, type, properties)
+        return find_node_by_fuzzy_matching(tx, type, properties) unless @enable_human_review
+
+        # With human review enabled, evaluate each potential match
+        puts "\\n=== Fuzzy Matching with Human Review ===" if @debug
+        puts "Type: #{type}" if @debug
+        puts "Properties: #{properties.keys.join(', ')}" if @debug
+
+        # Query for all nodes of the specified type
+        escaped_type = type.include?(' ') ? "`#{type}`" : type
+        
+        # Build property list based on node type
+        if type == "Person"
+          query = "MATCH (n:#{escaped_type}) RETURN n, n.name as name, n.email as email, n.phone_number as phone_number, n.ID as ID, n.aliases as aliases"
+        elsif type == "Asset" || type == "Vehicle"  
+          query = "MATCH (n:#{escaped_type}) RETURN n, n.name as name, n.model as model, n.brand as brand, n.make as make, n.serial_number as serial_number, n.license_plate as license_plate, n.category as category, n.description as description"
+        else
+          query = "MATCH (n:#{escaped_type}) RETURN n, n.name as name, n.description as description, n.title as title"
+        end
+        
+        result = tx.run(query)
+        records = result.to_a
+        puts "Found #{records.size} records to evaluate" if @debug
+
+        matcher_class = NodeMatcherRegistry.matcher_for(type)
+
+        records.each_with_index do |record, index|
+          node = record[:n]
+          
+          # Reconstruct properties from individual fields
+          existing_props = extract_node_properties(record, type)
+          
+          puts "\\n--- Evaluating match #{index + 1} ---" if @debug
+          puts "Node ID: #{node.id}" if @debug
+          puts "Existing: #{existing_props['name']}" if @debug
+          puts "New: #{properties['name']}" if @debug
+
+          # Use human review manager to evaluate the match
+          decision = @human_review_manager.evaluate_merge_decision(
+            existing_props, 
+            properties, 
+            matcher_class
+          )
+
+          case decision[:action]
+          when :auto_merge
+            puts "  ✅ Auto-merge approved (#{decision[:confidence].round(3)} confidence)" if @debug
+            return node
+          when :auto_reject
+            puts "  ❌ Auto-reject (#{decision[:confidence].round(3)} confidence)" if @debug
+            next
+          when :human_review
+            puts "  🤔 Queued for human review (#{decision[:confidence].round(3)} confidence)" if @debug
+            puts "  Review ID: #{decision[:review_id]}" if @debug
+            # Continue to next potential match
+            next
+          end
+        end
+
+        puts "No automatic matches found" if @debug
+        nil
+      end
+
+      # Find a node using fuzzy matching logic from NodeMatcherRegistry (original method)
+      # @param tx [Neo4j::Core::CypherSession::Transaction] The Neo4j transaction
+      # @param type [String] The node type to search for
+      # @param properties [Hash] The properties to match against
+      # @return [Neo4j::Core::Node, nil] The matching node, or nil if not found
+      def find_node_by_fuzzy_matching(tx, type, properties)
+        puts "\n=== Fuzzy Matching ===" if @debug
+        puts "Type: #{type}" if @debug
+        puts "Properties: #{properties.keys.join(', ')}" if @debug
+
+        # Enable debug mode for this operation if @debug is true
+        original_debug = $debug_mode
+        $debug_mode = @debug
+
+        begin
+          # Query for all nodes of the specified type
+          # Escape type names that contain spaces or special characters
+          escaped_type = type.include?(' ') ? "`#{type}`" : type
+          # Build property list based on node type
+          if type == "Person"
+            query = "MATCH (n:#{escaped_type}) RETURN n, n.name as name, n.email as email, n.phone_number as phone_number, n.ID as ID, n.aliases as aliases"
+          elsif type == "Asset" || type == "Vehicle"  
+            query = "MATCH (n:#{escaped_type}) RETURN n, n.name as name, n.model as model, n.brand as brand, n.make as make, n.serial_number as serial_number, n.license_plate as license_plate, n.category as category, n.description as description"
+          else
+            # Default for other types
+            query = "MATCH (n:#{escaped_type}) RETURN n, n.name as name, n.description as description, n.title as title"
+          end
+          puts "Executing query: #{query}" if @debug
+
+          result = tx.run(query)
+          puts "Executing fuzzy matching query..." if @debug
+
+          # Collect all results to avoid result stream consumption issues
+          records = result.to_a
+          puts "Found #{records.size} records to check" if @debug
+          records.each_with_index do |record, index|
+            node = record[:n]
+            # Reconstruct properties from individual fields based on node type
+            if type == "Person"
+              existing_props = {
+                "name" => record[:name],
+                "email" => record[:email], 
+                "phone_number" => record[:phone_number],
+                "ID" => record[:ID],
+                "aliases" => record[:aliases]
+              }.compact
+            elsif type == "Asset" || type == "Vehicle"
+              existing_props = {
+                "name" => record[:name],
+                "model" => record[:model],
+                "brand" => record[:brand], 
+                "make" => record[:make],
+                "serial_number" => record[:serial_number],
+                "license_plate" => record[:license_plate],
+                "category" => record[:category],
+                "description" => record[:description]
+              }.compact
+            else
+              # Default for other types
+              existing_props = {
+                "name" => record[:name],
+                "description" => record[:description],
+                "title" => record[:title]
+              }.compact
+            end
+
+            puts "\n--- Checking match #{index + 1} ---" if @debug
+            puts "Node ID: #{node.id}" if @debug
+            puts "Existing props keys: #{existing_props.keys.join(', ')}" if @debug
+            puts "New props keys: #{properties.keys.join(', ')}" if @debug
+            puts "Existing name: '#{existing_props['name']}'" if @debug
+            puts "New name: '#{properties['name']}'" if @debug
+
+            # Log specific properties for comparison
+            if type == "Address"
+              log_debug("  Street: #{existing_props['street']} <=> #{properties['street']}")
+              log_debug("  City:   #{existing_props['city']} <=> #{properties['city']}")
+              log_debug("  State:  #{existing_props['state']} <=> #{properties['state']}")
+              log_debug("  ZIP:    #{existing_props['zip'] || existing_props['postalCode']} <=> #{properties['zip'] || properties['postalCode']}")
+              log_debug("  Country:#{existing_props['country']} <=> #{properties['country']}")
+            end
+
+            # Enable detailed debug logging for the fuzzy match
+            NodeMatcherRegistry.debug = true if @debug
+
+            puts "Calling NodeMatcherRegistry.fuzzy_match?..." if @debug
+            puts "  Using matcher: #{NodeMatcherRegistry.matcher_for(type).name}" if @debug
+            match_result = NodeMatcherRegistry.fuzzy_match?(type, existing_props, properties, debug: @debug)
+            if match_result
+              puts "✅ Found fuzzy match!" if @debug
+              return node
+            else
+              puts "❌ No match" if @debug
+            end
+
+            # Reset debug mode
+            NodeMatcherRegistry.debug = false if @debug
+          end
+
+          log_debug("No fuzzy matches found")
+          nil
+        rescue StandardError => e
+          log_error("Error during fuzzy matching: #{e.message}")
+          log_error(e.backtrace.join("\n")) if @debug
+          nil
+        ensure
+          # Restore original debug mode
+          $debug_mode = original_debug
+        end
+      end
+
+      # Extract node properties from Neo4j record based on node type
+      # @param record [Hash] Neo4j record with node properties
+      # @param type [String] The node type
+      # @return [Hash] Extracted properties
+      def extract_node_properties(record, type)
+        case type
+        when "Person"
+          {
+            "name" => record[:name],
+            "email" => record[:email], 
+            "phone_number" => record[:phone_number],
+            "ID" => record[:ID],
+            "aliases" => record[:aliases]
+          }.compact
+        when "Asset", "Vehicle"
+          {
+            "name" => record[:name],
+            "model" => record[:model],
+            "brand" => record[:brand], 
+            "make" => record[:make],
+            "serial_number" => record[:serial_number],
+            "license_plate" => record[:license_plate],
+            "category" => record[:category],
+            "description" => record[:description]
+          }.compact
+        else
+          {
+            "name" => record[:name],
+            "description" => record[:description],
+            "title" => record[:title]
+          }.compact
+        end
+      end
+
+      # Check if a node needs to be updated
+      # @param node [Neo4j::Node] The existing node
+      # @param new_properties [Hash] The new properties
+      # @return [Boolean] True if the node needs to be updated
+      def node_needs_update?(node, new_properties)
+        existing_properties = node.properties
+
+        new_properties.any? do |key, value|
+          existing_value = existing_properties[key.to_s]
+          existing_value != value
+        end
+      end
+
+      # Create a relationship between two nodes
+      # @param from_node [Neo4j::Node] The source node
+      # @param to_node [Neo4j::Node] The target node
+      # @param rel_type [Symbol] The relationship type
+      # @param properties [Hash] Relationship properties
+      # @param stats [Hash] Statistics hash to update
+      # @return [Neo4j::Relationship, nil] The created relationship or nil if failed
+      def create_relationship(from_node, to_node, rel_type, properties = {}, stats = {})
+        Neo4j::DatabaseService.write_transaction do |tx|
+          @relationship_manager.create_relationship(tx, from_node, to_node, rel_type, properties, stats)
+        end
+      end
+
+      # Find existing relationships between nodes
+      # @param from_node [Neo4j::Node] The source node
+      # @param to_node [Neo4j::Node] The target node
+      # @param rel_type [Symbol] The relationship type to look for
+      # @return [Array<Neo4j::Relationship>] Array of matching relationships
+      def find_relationships(from_node, to_node, rel_type = nil)
+        Neo4j::DatabaseService.read_transaction do |tx|
+          @relationship_manager.find_relationships(tx, from_node, to_node, rel_type)
+        end
+      end
+
+      # Delegate node creation to NodeOperations
+      delegate :create_node, to: :@node_operations
+
+      # Delegate node update to NodeOperations
+      delegate :update_node, to: :@node_operations
+
+      # Delegate vector search to VectorSearch
+      def find_similar_nodes(tx, type, embedding, threshold = nil)
+        @vector_search.find_similar_nodes(tx, type, embedding, threshold)
+      end
+
+      # Delegate property formatting to PropertyFormatter
+      def format_property(value, depth: 0)
+        @property_formatter.format_property(value, depth: depth, logger: @logger)
+      end
+
+      # Delegate properties formatting to PropertyFormatter
+      def format_properties(properties, is_top_level: true)
+        @property_formatter.format_properties(properties, is_top_level: is_top_level, logger: @logger)
       end
     end
   end
