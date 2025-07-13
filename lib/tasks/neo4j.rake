@@ -1,6 +1,15 @@
 # frozen_string_literal: true
 
 namespace :neo4j do
+  desc "Clear all data from Neo4j database"
+  task clear_db: :environment do
+    Neo4j::DatabaseService.write_transaction do |tx|
+      tx.run("MATCH (n) DETACH DELETE n")
+    end
+    puts "✅ Neo4j database cleared successfully!"
+  end
+  
+  # Existing import task...
   desc "Import data into Neo4j from a directory of JSON files or a specific file"
   task :import, [:input_path] => :environment do |_t, args|
     require_relative "../../app/services/neo4j/knowledge_graph_builder_v2"
