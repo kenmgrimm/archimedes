@@ -11,6 +11,13 @@ module OpenAI
     # Generate an embedding for a single text string
     # Returns the embedding as an array of floats
     def embed(text)
+      generate_embedding(text)
+    end
+
+    # Alias for embed to maintain backward compatibility
+    # @param text [String] The text to generate an embedding for
+    # @return [Array<Float>, nil] The embedding vector or nil if generation failed
+    def generate_embedding(text)
       return nil if text.blank?
 
       # Generate a unique request ID for tracking
