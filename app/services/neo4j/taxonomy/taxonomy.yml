@@ -1,860 +1,700 @@
 # Personal Knowledge Graph Taxonomy
-# A comprehensive schema for organizing personal information, relationships, and activities
-# Version: 1.0.0
-# Last Updated: 2025-07-05
+# A flexible schema for organizing personal information with dynamic properties
+# Version: 2.0.0 - Simplified Entity Model
+# Last Updated: 2025-07-15
 
 # ======================
-# Core Entity Types
+# DESIGN PHILOSOPHY
 # ======================
+# This taxonomy uses a small set of generic entities with:
+# 1. CORE PROPERTIES: Required fields for all entities of this type
+# 2. STANDARD PROPERTIES: Common optional fields with validation
+# 3. DYNAMIC PROPERTIES: Unlimited custom properties stored as JSONB
+#
+# Example: An "Item" could be a car, laptop, book, or anything else
+# - Core: name, type, created_at
+# - Standard: description, value, location
+# - Dynamic: {make: "Toyota", model: "Camry", year: 2020} for car
+#           {brand: "Apple", storage: "512GB", os: "macOS"} for laptop
 
-# Location Information
-Address:
-  description: >
-    A physical location where someone lives, works, or visits.
-    Examples: "123 Main St, Anytown, USA", "Office 42, 500 Tech Park"
-  properties:
-    street: 
-      description: Street name and number (e.g., "123 Main St")
-    street2: 
-      description: Additional address line (e.g., "Apt 4B", "Floor 3")
-    city: 
-      description: City or town name
-    state: 
-      description: State, province, or region (use official abbreviations)
-    postalCode: 
-      description: Postal or ZIP code
-    country: 
-      description: Full country name (e.g., "United States")
-    type: 
-      enum: 
-        - home: Primary residence
-        - work: Workplace or office
-        - vacation: Vacation property
-        - other: Any other type of address
-      default: home
-      description: The type of address
-    primary: 
-      type: Boolean
-      default: false
-      description: Whether this is the primary address of this type
-    notes: 
-      description: Any additional context or special instructions
-  relations:
-    # Inverse relationships
-    LIVED_AT_BY:
-      to: Person
-      cardinality: many
-      description: People who live at this address
-    WORKED_AT_BY:
-      to: Person
-      cardinality: many
-      description: People who work at this address
+# ======================
+# CORE ENTITY TYPES
+# ======================
+# - Person: Human beings and contacts
+# - Location: Physical places and addresses  
+# - Item: Physical, tangible objects
+# - DigitalItem: Digital files and online resources
+# - Activity: Events, tasks, and time-based activities
+# - Collection: Groups and lists of related entities
+# - Information: Knowledge, notes, and ideas
 
-# People and Relationships
 Person:
   description: >
-    A human being with whom the user interacts.
-    Examples: Family members, friends, colleagues, service providers
-  properties:
+    Any human being - family, friends, colleagues, service providers, contacts.
+    Represents people you interact with or reference in your personal knowledge graph.
+  
+  core_properties:
     name:
+      type: String
       required: true
-      description: Full name in display format (e.g., "Dr. Jane A. Smith, PhD")
-    firstName:
-      description: First/given name (e.g., "John", "Mary")
-    lastName:
-      description: Last/family name (e.g., "Smith")
-    middleName:
-      description: Middle name(s) or initial(s) (e.g., "Alexander" or "A.")
-    prefix:
-      description: Name prefix (e.g., "Mr.", "Mrs.", "Dr.", "Prof.")
-    suffix:
-      description: Name suffix (e.g., "Jr.", "Sr.", "III", "PhD")
-    birthDate:
-      type: Date
-      description: Date of birth in YYYY-MM-DD format
+      description: Full display name (e.g., "Dr. Jane Smith", "John")
+    
+    created_at:
+      type: DateTime
+      required: true
+      description: When this person was added to the knowledge graph
+    
+    updated_at:
+      type: DateTime
+      required: true
+      description: When this person's information was last modified
+
+  standard_properties:
+    first_name:
+      type: String
+      description: First/given name
+    
+    last_name:
+      type: String
+      description: Last/family name
+    
     email:
       type: Email
       description: Primary email address
-    phone:
-      description: Primary phone number in E.164 format (e.g., +15551234567)
-    notes:
-      description: Personal notes or reminders about this person
-  relations:
-    # Personal relationships
-    PARENT_OF:
-      to: Person
-      cardinality: many
-      description: Biological, adoptive, or legal parent relationship
-    CHILD_OF:
-      to: Person
-      cardinality: many
-      description: Biological, adoptive, or legal child relationship
-    SIBLING:
-      to: Person
-      cardinality: many
-      description: Full, half, or step sibling relationship
-      symmetric: true
-    SPOUSE:
-      to: Person
-      cardinality: one
-      description: Current spouse or domestic partner
-      symmetric: true
-    PARTNER:
-      to: Person
-      cardinality: one
-      description: Romantic partner (when not married)
-      symmetric: true
-    FRIEND:
-      to: Person
-      cardinality: many
-      description: Personal friendship or acquaintance
-      symmetric: true
-    COLLEAGUE:
-      to: Person
-      cardinality: many
-      description: Current or past work relationship
-      symmetric: true
     
-    # Location relationships
-    LIVES_AT:
-      to: Address
+    phone:
+      type: String
+      description: Primary phone number
+    
+    relationship:
+      type: String
+      description: Relationship to you (family, friend, colleague, etc.)
+    
+    notes:
+      type: Text
+      description: Personal notes about this person
+
+  dynamic_properties:
+    description: >
+      Unlimited custom properties stored as JSONB. Examples:
+      - {middle_name: "Alexander", nickname: "Alex"}
+      - {birthday: "1985-03-15", zodiac_sign: "Pisces"}
+      - {company: "Acme Corp", job_title: "Senior Engineer"}
+      - {social_media: {twitter: "@john", linkedin: "john-smith"}}
+      - {preferences: {coffee: "black", music: ["jazz", "rock"]}}
+
+  relations:
+    KNOWS:
+      to: Person
       cardinality: many
-      description: Current residence addresses
-      properties:
-        startDate:
-          type: Date
-          description: When this living arrangement began
-        endDate:
-          type: Date
-          description: When this living arrangement ended (if applicable)
-        type:
-          enum: [permanent, temporary, seasonal, other]
-          default: permanent
+      symmetric: true
+      description: Personal or professional relationship
+    
+    LIVES_AT:
+      to: Location
+      cardinality: many
+      description: Current or past residences
     
     WORKS_AT:
-      to: Address
+      to: Location
       cardinality: many
-      description: Workplace addresses
-      properties:
-        jobTitle: 
-          description: Job title/position at this location
-        department:
-          description: Department or division
-        startDate:
-          type: Date
-        endDate:
-          type: Date
+      description: Current or past workplaces
     
-    # Ownership and responsibility
     OWNS:
-      to:
-        - Asset
-        - Document
-        - Property
+      to: [Item, DigitalItem]
       cardinality: many
-      description: Ownership of physical or digital items
-      properties:
-        startDate:
-          type: Date
-          description: When ownership began
-        endDate:
-          type: Date
-          description: When ownership ended (if applicable)
-        percentage:
-          type: Number
-          description: Percentage of ownership (0-100)
+      description: Things this person owns (physical and digital)
     
-    # Social and event relationships
-    ATTENDS:
-      to: Event
+    PARTICIPATES_IN:
+      to: Activity
       cardinality: many
-      description: Events this person is attending
-      properties:
-        rsvp:
-          enum: [accepted, declined, tentative, needs_action]
-          default: needs_action
-        role:
-          description: Role at the event (e.g., "guest", "organizer", "speaker")
+      description: Events, meetings, activities they're involved in
 
-ContactMethod:
-  description: Ways to contact someone
-  properties:
-    type:
-      enum:
-        - email
-        - phone
-        - social
-        - address
+Location:
+  description: >
+    Any physical place - addresses, buildings, venues, geographic locations.
+    Can be specific (123 Main St) or general (Central Park, Tokyo).
+  
+  core_properties:
+    name:
+      type: String
       required: true
+      description: Display name for this location
+    
+    created_at:
+      type: DateTime
+      required: true
+    
+    updated_at:
+      type: DateTime
+      required: true
+
+  standard_properties:
+    address:
+      type: String
+      description: Full street address
+    
+    city:
+      type: String
+      description: City or locality
+    
+    state:
+      type: String
+      description: State, province, or region
+    
+    country:
+      type: String
+      description: Country name
+    
+    postal_code:
+      type: String
+      description: ZIP code or postal code
+    
+    location_type:
+      type: String
+      description: Type of location (home, office, restaurant, park, etc.)
+    
+    coordinates:
+      type: String
+      description: GPS coordinates (lat,lng)
+
+  dynamic_properties:
+    description: >
+      Custom location-specific properties. Examples:
+      - {apartment_number: "4B", floor: 3, building_name: "Sunset Towers"}
+      - {hours: "9am-5pm", phone: "+1-555-123-4567", website: "example.com"}
+      - {parking: "street only", wheelchair_accessible: true}
+      - {capacity: 200, amenities: ["wifi", "projector", "catering"]}
+
+  relations:
+    CONTAINS:
+      to: Location
+      cardinality: many
+      description: Sub-locations within this location
+    
+    NEAR:
+      to: Location
+      cardinality: many
+      symmetric: true
+      description: Geographically close locations
+    
+    HOSTS:
+      to: Activity
+      cardinality: many
+      description: Events or activities held at this location
+
+Item:
+  description: >
+    Any physical, tangible object - vehicles, tools, furniture, possessions.
+    For digital files, photos, and documents, use DigitalItem instead.
+  
+  core_properties:
+    name:
+      type: String
+      required: true
+      description: Item name or title
+    
+    item_type:
+      type: String
+      required: true
+      description: High-level category (vehicle, electronics, furniture, tool, etc.)
+    
+    created_at:
+      type: DateTime
+      required: true
+    
+    updated_at:
+      type: DateTime
+      required: true
+
+  standard_properties:
+    description:
+      type: Text
+      description: Detailed description of the item
+    
     value:
-      required: true
-    label:
-      description: e.g., "work", "home", "mobile"
-    preferred:
-      type: Boolean
-
-# Time-based Entities
-Event:
-  description: A scheduled occurrence with a specific time
-  properties:
-    title:
-      required: true
-    description:
-    startTime:
-      type: DateTime
-      required: true
-    endTime:
-      type: DateTime
-    allDay:
-      type: Boolean
-      default: false
-    location:
-      description: Could be a place ID or free text
-    status:
-      enum:
-        - scheduled
-        - tentative
-        - confirmed
-        - cancelled
-      default: scheduled
-    priority:
-      enum:
-        - high
-        - medium
-        - low
-      default: medium
-  relations:
-    ATTENDED_BY:
-      to: Person
-      description: Person attending an event
-
-# ======================
-# Productivity Entities
-# ======================
-
-List:
-  description: >
-    A collection of related items, such as a shopping list, to-do list, or checklist.
-    Examples: "Grocery List", "Weekend Projects", "Books to Read"
-  properties:
-    name:
-      required: true
-      description: Short, descriptive name for the list
-    description:
-      description: Detailed explanation of the list's purpose
-    type:
-      enum:
-        - todo: Tasks to be completed
-        - shopping: Items to purchase
-        - checklist: Items to verify
-        - inventory: Items to track
-        - other: Any other type of list
-      default: other
-    isShared:
-      type: Boolean
-      default: false
-      description: Whether the list is shared with others
-    isArchived:
-      type: Boolean
-      default: false
-      description: Whether the list is archived (read-only)
-  relations:
-    CREATED_BY:
-      to: Person
-      description: Who created this list
-    HAS_ITEM:
-      to: ListItem
-      cardinality: many
-      description: Items contained in this list
-    SHARED_WITH:
-      to: Person
-      cardinality: many
-      description: People with access to this list
-      properties:
-        permission:
-          enum: [view, edit, manage]
-          default: view
-
-ListItem:
-  description: >
-    An individual entry in a list, representing a single item or task.
-    Examples: "Milk" in a grocery list, "Fix sink" in a to-do list
-  properties:
-    name:
-      required: true
-      description: Short description of the item
-    description:
-      description: Additional details about the item
-    quantity:
       type: Number
-      description: How many of this item (for shopping lists)
-    unit:
-      description: Unit of measurement (e.g., "lbs", "liters")
-    isCompleted:
-      type: Boolean
-      default: false
-      description: Whether the item is checked off
-    dueDate:
-      type: DateTime
-      description: When this item is due
-    priority:
-      enum: [critical, high, medium, low, none]
-      default: none
-  relations:
-    BELONGS_TO:
-      to: List
-      cardinality: one
-      description: The list containing this item
-    ASSIGNED_TO:
-      to: Person
-      description: Who is responsible for this item
-
-# ======================
-# Task Management
-# ======================
-
-Task:
-  description: >
-    A unit of work that needs to be completed.
-    Examples: "Prepare presentation", "Fix leaky faucet", "Plan vacation"
-  properties:
-    title:
-      required: true
-      description: Short, action-oriented description
-    description:
-      description: Detailed explanation of the task
-    status:
-      enum:
-        - not_started: Task has not been started
-        - in_progress: Work has begun on the task
-        - on_hold: Task is temporarily paused
-        - in_review: Task is being reviewed
-        - completed: Task is finished
-        - cancelled: Task was abandoned
-      default: not_started
-    priority:
-      enum:
-        - critical: Must be done as soon as possible
-        - high: Important and time-sensitive
-        - medium: Normal priority
-        - low: Can be deferred if needed
-      default: medium
-    dueDate:
-      type: DateTime
-      description: When the task should be completed
-    startDate:
-      type: DateTime
-      description: When work on the task should begin
-    timeEstimate:
-      type: Duration
-      description: Estimated time required to complete (ISO 8601 duration)
-    timeSpent:
-      type: Duration
-      description: Actual time spent on the task
-    completionPercentage:
+      description: Estimated value in base currency
+    
+    purchase_date:
+      type: Date
+      description: When this item was acquired
+    
+    purchase_price:
       type: Number
-      minimum: 0
-      maximum: 100
-      default: 0
-      description: Progress toward completion
-    isRecurring:
-      type: Boolean
-      default: false
-      description: Whether the task repeats
-    recurrenceRule:
-      description: RRULE string for recurring tasks (RFC 5545)
-  relations:
-    CREATED_BY:
-      to: Person
-      description: Who created this task
-    ASSIGNED_TO:
-      to: Person
-      description: Who is responsible for completing the task
-    DEPENDS_ON:
-      to: Task
-      cardinality: many
-      description: Tasks that must be completed first
-    HAS_SUBTASK:
-      to: Task
-      cardinality: many
-      description: Smaller tasks that make up this task
-    RELATED_TO:
-      to:
-        - Task
-        - Project
-        - Event
-        - Document
-      cardinality: many
-      description: Related items
-    HAS_TAG:
-      to: Text
-      cardinality: many
-      description: Categories or labels for organization
-    HAS_ATTACHMENT:
-      to:
-        - Document
-        - URL
-      cardinality: many
-      description: Supporting files or links
-
-Reminder:
-  description: >
-    A notification to be shown at a specific time or when a condition is met.
-    Examples: "Take medication at 8pm", "Call John tomorrow at 2pm"
-  properties:
-    message:
-      required: true
-      description: The content of the reminder
-    dueAt:
-      type: DateTime
-      required: true
-      description: When the reminder should be triggered
+      description: Original purchase price
+    
+    condition:
+      type: String
+      description: Current physical condition (new, excellent, good, fair, poor)
+    
     status:
-      enum:
-        - pending: Reminder is active
-        - completed: Action was taken
-        - snoozed: Reminder was postponed
-        - dismissed: Reminder was dismissed
-      default: pending
-    method:
-      enum:
-        - notification: System or app notification
-        - email: Email reminder
-        - sms: Text message
-        - call: Phone call
-        - other: Another method
-      default: notification
-    isRecurring:
-      type: Boolean
-      default: false
-      description: Whether the reminder repeats
-    recurrenceRule:
-      description: RRULE string for recurring reminders (RFC 5545)
-  relations:
-    RELATED_TO:
-      to:
-        - Task
-        - Event
-        - Note
-        - ListItem
-      cardinality: one
-      description: What this reminder is for
-    CREATED_BY:
-      to: Person
-      description: Who created this reminder
+      type: String
+      description: Current status (owned, sold, lost, borrowed, etc.)
+    
+    physical_location:
+      type: String
+      description: Where the item is currently located
 
-# ======================
-# Project Management
-# ======================
+  dynamic_properties:
+    description: >
+      Physical item-specific properties stored as JSONB. Examples:
+      
+      Vehicle: {make: "Toyota", model: "Camry", year: 2020, mileage: 45000, vin: "123ABC", license_plate: "ABC123"}
+      
+      Electronics: {brand: "Apple", model: "MacBook Pro", serial: "ABC123", storage: "512GB", warranty_expires: "2025-12-01"}
+      
+      Furniture: {material: "oak", dimensions: "72x36x30", weight: "150lbs", room: "dining_room"}
+      
+      Tool: {brand: "DeWalt", model: "DCD771C2", battery_type: "20V", last_maintenance: "2025-06-01"}
+      
+      Collectible: {artist: "Picasso", year: 1950, medium: "oil", dimensions: "24x36", authenticated: true}
 
-Project:
-  description: >
-    A collection of related tasks, resources, and milestones working toward a common goal.
-    Examples: "Home Renovation", "Product Launch", "Wedding Planning"
-  properties:
-    name:
-      required: true
-      description: Short, descriptive name for the project
-    description:
-      description: Detailed explanation of the project's purpose and scope
-    status:
-      enum:
-        - planning: Initial planning and setup
-        - active: Work is in progress
-        - on_hold: Work is temporarily paused
-        - completed: Project is finished
-        - abandoned: Project was cancelled
-      default: planning
-    startDate:
-      type: DateTime
-      description: Official start date of the project
-    targetDate:
-      type: DateTime
-      description: Expected or desired completion date
-    actualEndDate:
-      type: DateTime
-      description: When the project was actually completed
-    budget:
-      type: Number
-      description: Total budget in the currency's smallest unit (e.g., cents)
-    priority:
-      enum: [critical, high, medium, low]
-      default: medium
-    isTemplate:
-      type: Boolean
-      default: false
-      description: Whether this is a reusable project template
-    settings:
-      type: Object
-      description: Project-specific configuration and metadata
   relations:
     OWNED_BY:
       to: Person
-      description: Who is responsible for this project
-    HAS_TASK:
-      to: Task
       cardinality: many
-      description: Tasks that belong to this project
-    HAS_MILESTONE:
-      to: Milestone
+      description: Current or past owners
+    
+    LOCATED_AT:
+      to: Location
+      cardinality: one
+      description: Current physical location
+    
+    RELATED_TO:
+      to: [Item, DigitalItem]
       cardinality: many
-      description: Major checkpoints in the project
-    HAS_DOCUMENT:
-      to: Document
+      symmetric: true
+      description: Associated or similar items
+    
+    USED_IN:
+      to: Activity
       cardinality: many
-      description: Documents related to this project
-    HAS_TAG:
-      to: Text
-      cardinality: many
-      description: Categories or labels for organization
-    TEAM_MEMBER:
-      to: Person
-      cardinality: many
-      description: People involved in the project
-      properties:
-        role:
-          description: Team member's role (e.g., "developer", "designer")
-        startDate:
-          type: DateTime
-        endDate:
-          type: DateTime
-
-Milestone:
-  description: >
-    A significant point or event in the project timeline.
-    Examples: "Design Phase Complete", "Beta Launch", "Client Approval"
-  properties:
-    name:
-      required: true
-      description: Short, descriptive name
-    description:
-      description: Detailed explanation
-    dueDate:
-      type: DateTime
-      description: When the milestone should be achieved
-    completedDate:
-      type: DateTime
-      description: When the milestone was actually achieved
-    isCritical:
-      type: Boolean
-      default: false
-      description: Whether this is a critical path milestone
-  relations:
+      description: Activities where this item is used
+    
     PART_OF:
-      to: Project
-      description: The project this milestone belongs to
-    DEPENDS_ON:
-      to: Milestone
+      to: Collection
       cardinality: many
-      description: Other milestones that must be completed first
+      description: Collections this item belongs to
+    
+    DOCUMENTED_BY:
+      to: DigitalItem
+      cardinality: many
+      description: Digital files that document this physical item
 
-# ======================
-# Knowledge Management
-# ======================
-
-Note:
+DigitalItem:
   description: >
-    A piece of information or documentation, typically in free-form text.
-    Examples: Meeting notes, ideas, research, journal entries
-  properties:
-    title:
-      required: true
-      description: Brief summary of the note's content
-    content:
-      required: true
-      description: The main text content (can include markdown)
-    createdAt:
-      type: DateTime
-      required: true
-      description: When the note was created
-    updatedAt:
-      type: DateTime
-      required: true
-      description: When the note was last modified
-    visibility:
-      enum:
-        - private: Only visible to creator
-        - shared: Visible to specific people
-        - public: Visible to everyone
-      default: private
-    isPinned:
-      type: Boolean
-      default: false
-      description: Whether the note is pinned/starred
-  relations:
-    CREATED_BY:
-      to: Person
-      description: Who created this note
-    HAS_TAG:
-      to: Text
-      cardinality: many
-      description: Categories or topics for organization
-    RELATED_TO:
-      to:
-        - Note
-        - Task
-        - Project
-        - Person
-        - Event
-      cardinality: many
-      description: Related entities
-    HAS_ATTACHMENT:
-      to:
-        - Document
-        - URL
-      cardinality: many
-      description: Files or links attached to this note
-    SHARED_WITH:
-      to: Person
-      cardinality: many
-      description: People with access to this note
-      properties:
-        permission:
-          enum: [view, comment, edit]
-          default: view
-
-Document:
-  description: >
-    A file or document, either physical or digital.
-    Examples: PDF reports, spreadsheets, scanned receipts, contracts
-  properties:
+    Any digital file, document, photo, video, or online resource.
+    For physical objects, use Item instead.
+  
+  core_properties:
     name:
+      type: String
       required: true
-      description: Name of the document
-    description:
-      description: Brief summary of the document's content
-    filePath:
-      description: Path to the actual file in storage
-    fileType:
-      description: File extension (e.g., pdf, docx, xlsx, jpg)
-    mimeType:
-      description: Internet media type (e.g., "application/pdf")
-    fileSize:
-      type: Number
-      description: Size in bytes
-    url:
-      type: URL
-      description: Direct URL if stored online
-    content:
-      description: Extracted text content (for search/indexing)
-    language:
-      description: Document language (ISO 639-1 code)
-    pageCount:
-      type: Number
-      description: Number of pages (for multi-page documents)
-    processedAt:
+      description: File name or title
+    
+    content_type:
+      type: String
+      required: true
+      description: Type of digital content (photo, document, video, audio, etc.)
+    
+    created_at:
       type: DateTime
-      description: When content was last extracted/processed
-    expiresAt:
+      required: true
+    
+    updated_at:
       type: DateTime
-      description: When the document is no longer valid/relevant
-  relations:
-    OWNED_BY:
-      to: Person
-      description: Who owns this document
-    UPLOADED_BY:
-      to: Person
-      description: Who uploaded the document
-    DOCUMENTS:
-      to:
-        - Asset
-        - Property
-        - Project
-        - Task
-      description: What this document provides information about
-    HAS_TAG:
-      to: Text
-      cardinality: many
-      description: Categories or labels for organization
-    HAS_VERSION:
-      to: Document
-      cardinality: many
-      description: Previous versions of this document
-    RELATED_TO:
-      to:
-        - Document
-        - Note
-        - Task
-        - Project
-      cardinality: many
-      description: Related items
-    SHARED_WITH:
-      to: Person
-      cardinality: many
-      description: People with access to this document
-      properties:
-        permission:
-          enum: [view, comment, edit, manage]
-          default: view
+      required: true
 
-Photo:
-  description: >
-    A digital image or photograph, typically in JPEG, PNG, or HEIC format.
-    Examples: Vacation photos, document scans, screenshots, ID photos
-  properties:
-    url:
-      type: URL
-      required: true
-      description: Direct URL to the image file
-    thumbnailUrl:
-      type: URL
-      description: URL to a smaller version of the image
+  standard_properties:
     description:
-      description: Caption or description of the photo
-    altText:
-      description: Alternative text for accessibility
-    width:
-      type: Number
-      description: Image width in pixels
-    height:
-      type: Number
-      description: Image height in pixels
-    fileSize:
+      type: Text
+      description: Description of the digital content
+    
+    file_path:
+      type: String
+      description: Local file system path
+    
+    file_size:
       type: Number
       description: File size in bytes
-    format:
-      enum: [jpeg, png, gif, heic, webp, tiff, raw, other]
-      description: Image format/extension
-    takenAt:
+    
+    url:
+      type: String
+      description: Web URL or cloud storage location
+    
+    mime_type:
+      type: String
+      description: MIME type (image/jpeg, application/pdf, etc.)
+    
+    date_created:
       type: DateTime
-      description: When the photo was taken (from EXIF data if available)
-    location:
-      description: Geographic coordinates or place name where the photo was taken
+      description: When the digital content was originally created
+    
+    source:
+      type: String
+      description: Where this digital item came from
+
+  dynamic_properties:
+    description: >
+      Digital content-specific properties stored as JSONB. Examples:
+      
+      Photo: {resolution: "4032x3024", camera: "iPhone 13", gps_location: "40.7128,-74.0060", people: ["John", "Jane"], photo_of: "truck license plate"}
+      
+      Document: {format: "PDF", pages: 10, language: "English", document_type: "receipt", vendor: "Toyota Dealership"}
+      
+      Video: {duration: 120, resolution: "1920x1080", codec: "h264", frame_rate: 30, audio_tracks: 2}
+      
+      Audio: {duration: 180, bitrate: 320, format: "mp3", artist: "John Doe", album: "My Album"}
+      
+      Archive: {compression: "zip", files_count: 25, extracted_size: 1024000, password_protected: false}
+
   relations:
-    DEPICTS:
-      to:
-        - Person
-        - Asset
-        - Property
-        - Event
-      description: What or who is shown in the photo
-    TAKEN_BY:
+    CREATED_BY:
       to: Person
-      description: Who took the photo
+      cardinality: one
+      description: Who created this digital item
+    
+    OWNED_BY:
+      to: Person
+      cardinality: many
+      description: Who has access to this digital item
+    
+    STORED_AT:
+      to: Location
+      cardinality: many
+      description: Cloud or physical storage locations
+    
+    DOCUMENTS:
+      to: [Item, Person, Location, Activity]
+      cardinality: many
+      description: What this digital item is about or documents
+    
     RELATED_TO:
-      to:
-        - Photo
-        - Event
-        - Note
+      to: [DigitalItem, Item]
       cardinality: many
-      description: Related photos or content
-    TAGGED_WITH:
-      to: Text
+      symmetric: true
+      description: Associated digital or physical items
+    
+    PART_OF:
+      to: Collection
       cardinality: many
-      description: Tags for categorization
+      description: Collections this digital item belongs to
+    
+    VERSION_OF:
+      to: DigitalItem
+      cardinality: one
+      description: Original file this is a version of
 
-# ======================
-# Assets & Properties
-# ======================
-
-Asset:
+Activity:
   description: >
-    A valuable item owned by someone, either physical or digital.
-    Examples: Vehicles, electronics, furniture, collectibles, investments
-  properties:
+    Any event, task, project, meeting, or time-based activity.
+    Covers everything from daily tasks to major life events.
+  
+  core_properties:
     name:
+      type: String
       required: true
-      description: Common name of the asset
-    description:
-      description: Detailed description and features
-    category:
+      description: Activity name or title
+    
+    activity_type:
+      type: String
       required: true
-      enum:
-        - vehicle: Cars, motorcycles, boats, etc.
-        - electronic: Computers, phones, cameras, etc.
-        - furniture: Chairs, tables, sofas, etc.
-        - appliance: Refrigerators, washers, etc.
-        - jewelry: Watches, rings, etc.
-        - collectible: Art, coins, memorabilia
-        - digital: Cryptocurrency, NFTs, domains
-        - financial: Stocks, bonds, accounts
-        - other: Anything that doesn't fit above
-    make:
-      description: Manufacturer or brand
-    model:
-      description: Model name or number
-    serialNumber:
-      description: Unique identifier from manufacturer
-  relations:
-    OWNED_BY:
-      to: Person
-      description: Legal owner of the asset
-    USED_BY:
-      to: Person
-      cardinality: many
-      description: Primary users of the asset
-    LOCATED_AT:
-      to: 
-        - Property
-        - Address
-      description: Where the asset is typically stored or used
-    HAS_DOCUMENT:
-      to: Document
-      cardinality: many
-      description: Related documents (receipts, manuals, warranties)
-
-Property:
-  description: >
-    A piece of real estate, including land and any structures on it.
-    Examples: Primary residence, vacation home, rental property, land parcel
-  properties:
-    name:
-      description: Informal name (e.g., "Beach House", "Downtown Office")
-    propertyType:
-      enum:
-        - single_family: Detached single-family home
-        - multi_family: Duplex, triplex, etc.
-        - apartment: Individual unit in a larger building
-        - condo: Condominium unit
-        - townhouse: Attached home in a row of similar homes
-        - commercial: Office, retail, industrial space
-        - land: Vacant land
-        - farm: Agricultural property
-        - other: Any other type
-      required: true
-    address:
-      type: Address
-      required: true
-    yearBuilt:
-      type: Integer
-      description: Year construction was completed
-    squareFeet:
-      type: Number
-      description: Total livable area in square feet
-    lotSize:
-      type: Number
-      description: Total land area in square feet or acres
-    bedrooms:
-      type: Integer
-      description: Number of bedrooms
-    bathrooms:
-      type: Number
-      description: Number of bathrooms (can be fractional)
-    purchaseDate:
+      description: Type of activity (task, event, project, meeting, etc.)
+    
+    created_at:
       type: DateTime
-      description: When the property was acquired
-    purchasePrice:
+      required: true
+    
+    updated_at:
+      type: DateTime
+      required: true
+
+  standard_properties:
+    description:
+      type: Text
+      description: Detailed description of the activity
+    
+    start_date:
+      type: DateTime
+      description: When the activity starts or is due
+    
+    end_date:
+      type: DateTime
+      description: When the activity ends or was completed
+    
+    status:
+      type: String
+      description: Current status (planned, active, completed, cancelled)
+    
+    priority:
+      type: String
+      description: Priority level (low, medium, high, urgent)
+    
+    completion_percentage:
       type: Number
-      description: Purchase price in the currency's smallest unit
+      description: Progress percentage (0-100)
+
+  dynamic_properties:
+    description: >
+      Activity-specific properties. Examples:
+      
+      Task: {due_date: "2025-07-20", estimated_hours: 3, tags: ["work", "urgent"]}
+      
+      Event: {attendee_count: 50, dress_code: "casual", rsvp_required: true}
+      
+      Project: {budget: 10000, deliverables: ["design", "development"], client: "Acme Corp"}
+      
+      Meeting: {agenda: "Q4 planning", meeting_type: "video", recording_url: "https://..."}
+
   relations:
+    ASSIGNED_TO:
+      to: Person
+      cardinality: many
+      description: People responsible for this activity
+    
+    INVOLVES:
+      to: Person
+      cardinality: many
+      description: People participating in this activity
+    
+    TAKES_PLACE_AT:
+      to: Location
+      cardinality: one
+      description: Where the activity happens
+    
+    USES:
+      to: [Item, DigitalItem]
+      cardinality: many
+      description: Items needed for this activity (physical and digital)
+    
+    DEPENDS_ON:
+      to: Activity
+      cardinality: many
+      description: Prerequisites or dependencies
+    
+    PART_OF:
+      to: Activity
+      cardinality: one
+      description: Parent activity or project
+
+Collection:
+  description: >
+    Any grouping or list of related items - shopping lists, photo albums, 
+    project collections, categorized groups of things.
+  
+  core_properties:
+    name:
+      type: String
+      required: true
+      description: Collection name or title
+    
+    collection_type:
+      type: String
+      required: true
+      description: Type of collection (list, album, category, set, etc.)
+    
+    created_at:
+      type: DateTime
+      required: true
+    
+    updated_at:
+      type: DateTime
+      required: true
+
+  standard_properties:
+    description:
+      type: Text
+      description: Purpose or description of this collection
+    
+    item_count:
+      type: Number
+      description: Number of items in this collection
+    
+    is_ordered:
+      type: Boolean
+      description: Whether the order of items matters
+    
+    is_public:
+      type: Boolean
+      default: false
+      description: Whether this collection can be shared
+
+  dynamic_properties:
+    description: >
+      Collection-specific properties. Examples:
+      
+      Shopping List: {store: "Whole Foods", budget: 150, urgency: "this week"}
+      
+      Photo Album: {event: "Wedding 2023", camera_used: "Canon EOS", location: "Beach"}
+      
+      Book Collection: {genre: "Science Fiction", read_status: "in_progress", rating_system: "5_star"}
+      
+      Tool Set: {brand: "DeWalt", storage_location: "garage", last_inventory: "2025-07-01"}
+
+  relations:
+    CONTAINS:
+      to: [Item, DigitalItem, Activity, Information]
+      cardinality: many
+      description: Items included in this collection
+    
     OWNED_BY:
       to: Person
       cardinality: many
-      description: Legal owners of the property
-    HAS_DOCUMENT:
-      to: Document
+      description: People who can access or modify this collection
+    
+    RELATED_TO:
+      to: Collection
       cardinality: many
-      description: Related documents (deed, survey, inspection reports)
-    HAS_TENANT:
+      symmetric: true
+      description: Related or similar collections
+
+Information:
+  description: >
+    Any piece of knowledge, note, idea, or information that doesn't fit other categories.
+    Covers notes, thoughts, research, quotes, facts, etc.
+  
+  core_properties:
+    title:
+      type: String
+      required: true
+      description: Title or brief description of this information
+    
+    content:
+      type: Text
+      required: true
+      description: The actual information or note content
+    
+    created_at:
+      type: DateTime
+      required: true
+    
+    updated_at:
+      type: DateTime
+      required: true
+
+  standard_properties:
+    content_type:
+      type: String
+      description: Type of content (note, idea, fact, quote, research, etc.)
+    
+    source:
+      type: String
+      description: Where this information came from
+    
+    tags:
+      type: Array
+      description: Keywords or categories for organization
+    
+    importance:
+      type: String
+      description: How important this information is (low, medium, high)
+    
+    is_private:
+      type: Boolean
+      default: true
+      description: Whether this is private or can be shared
+
+  dynamic_properties:
+    description: >
+      Content-specific properties. Examples:
+      
+      Research Note: {topic: "AI", sources: ["book", "article"], confidence: "high"}
+      
+      Quote: {author: "Einstein", context: "relativity theory", language: "English"}
+      
+      Recipe: {cuisine: "Italian", prep_time: 30, difficulty: "medium", serves: 4}
+      
+      Idea: {category: "business", feasibility: "high", resources_needed: ["time", "money"]}
+
+  relations:
+    CREATED_BY:
       to: Person
+      cardinality: one
+      description: Who created this information
+    
+    ABOUT:
+      to: [Person, Location, Item, DigitalItem, Activity]
       cardinality: many
-      description: Current tenants/renters
-      properties:
-        startDate:
-          type: DateTime
-        endDate:
-          type: DateTime
-        monthlyRent:
-          type: Number
-        leaseDocument:
-          type: URL
+      description: What entities this information relates to
+    
+    REFERENCES:
+      to: Information
+      cardinality: many
+      description: Other information this builds upon or cites
+    
+    TAGGED_WITH:
+      to: Collection
+      cardinality: many
+      description: Collections or categories this information belongs to
+
+# ======================
+# PROPERTY TYPE DEFINITIONS
+# ======================
+
+property_types:
+  String:
+    description: Text value up to 255 characters
+    storage: VARCHAR(255)
+  
+  Text:
+    description: Long text content, unlimited length
+    storage: TEXT
+  
+  Email:
+    description: Valid email address
+    storage: VARCHAR(255)
+    validation: email_format
+  
+  DateTime:
+    description: Date and time in ISO 8601 format
+    storage: TIMESTAMP
+  
+  Date:
+    description: Date only (YYYY-MM-DD)
+    storage: DATE
+  
+  Number:
+    description: Numeric value (integer or decimal)
+    storage: DECIMAL
+  
+  Boolean:
+    description: True or false value
+    storage: BOOLEAN
+  
+  Array:
+    description: Array of values stored as JSON
+    storage: JSONB
+  
+  JSONB:
+    description: Dynamic properties stored as JSON with binary indexing
+    storage: JSONB
+    note: Used for all dynamic_properties fields
+
+# ======================
+# USAGE GUIDELINES
+# ======================
+
+usage_guidelines:
+  dynamic_properties:
+    - Store unlimited custom properties as JSONB
+    - No schema validation required for dynamic properties
+    - Indexable and queryable with PostgreSQL/Neo4j JSON functions
+    - Examples encourage LLM to use appropriate property names
+  
+  entity_creation:
+    - Always include core_properties (required)
+    - Include relevant standard_properties when available
+    - Add dynamic_properties for type-specific attributes
+    - Use descriptive names for dynamic properties
+  
+  relationships:
+    - Connect entities through defined relationship types
+    - Add custom relationship properties as needed
+    - Consider bidirectional relationships for navigation
+  
+  best_practices:
+    - Keep entity types generic and high-level
+    - Use dynamic_properties for specialization
+    - Prefer consistent naming in dynamic_properties
+    - Document important dynamic_properties in notes

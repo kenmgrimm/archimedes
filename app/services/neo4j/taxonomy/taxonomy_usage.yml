@@ -1,0 +1,2514 @@
+# Personal Knowledge Graph Taxonomy Usage Examples
+# 20 detailed scenarios demonstrating the taxonomy in action
+# Version: 1.0.0
+# Last Updated: 2025-07-15
+
+# This file shows comprehensive real-world examples of how the taxonomy
+# handles complex personal information scenarios. Each example demonstrates
+# multiple entity types, relationships, and dynamic properties working together.
+
+# ======================
+# EXAMPLE 1: GARDENING & BEEKEEPING ENTHUSIAST
+# ======================
+
+steve_jones_scenario:
+  description: "Steve Jones is a Person with extensive gardening and beekeeping hobbies"
+  
+  entities:
+    # Main person
+    person_steve:
+      type: Person
+      core_properties:
+        name: "Steve Jones"
+      standard_properties:
+        first_name: "Steve"
+        last_name: "Jones"
+        email: "steve.jones@email.com"
+        phone: "555-123-4567"
+        relationship: "self"
+      dynamic_properties:
+        occupation: "Software Engineer"
+        hobbies: ["gardening", "beekeeping", "woodworking"]
+        certifications: ["Master Gardener", "Certified Beekeeper"]
+    
+    # Family members
+    person_sarah:
+      type: Person
+      core_properties:
+        name: "Sarah Jones"
+      standard_properties:
+        first_name: "Sarah"
+        last_name: "Jones"
+        relationship: "spouse"
+      dynamic_properties:
+        occupation: "Teacher"
+        hobbies: ["reading", "cooking"]
+    
+    person_alex:
+      type: Person
+      core_properties:
+        name: "Alex Jones"
+      standard_properties:
+        first_name: "Alex"
+        last_name: "Jones"
+        relationship: "child"
+      dynamic_properties:
+        age: 12
+        school: "Lincoln Middle School"
+        grade: 7
+    
+    # Locations
+    location_home:
+      type: Location
+      core_properties:
+        name: "Jones Family Home"
+      standard_properties:
+        address: "123 Garden Lane"
+        city: "Greenville"
+        state: "CA"
+        postal_code: "95401"
+        location_type: "residence"
+      dynamic_properties:
+        lot_size: "0.5 acres"
+        bedrooms: 4
+        bathrooms: 3
+        year_built: 1995
+        garden_area: "2000 sq ft"
+    
+    location_garden:
+      type: Location
+      core_properties:
+        name: "Steve's Vegetable Garden"
+      standard_properties:
+        location_type: "garden"
+      dynamic_properties:
+        size: "20x40 feet"
+        soil_type: "clay loam"
+        sun_exposure: "full sun"
+        zones: ["tomatoes", "herbs", "root_vegetables"]
+    
+    location_apiary:
+      type: Location
+      core_properties:
+        name: "Backyard Apiary"
+      standard_properties:
+        location_type: "apiary"
+      dynamic_properties:
+        hive_capacity: 6
+        established_date: "2020-04-15"
+        registration_number: "CA-BK-2020-4567"
+    
+    # Physical gardening items
+    item_tractor:
+      type: Item
+      core_properties:
+        name: "Kubota B2320 Tractor"
+        item_type: "equipment"
+      standard_properties:
+        purchase_date: "2021-03-15"
+        purchase_price: 18500
+        condition: "excellent"
+        status: "owned"
+        physical_location: "garage"
+      dynamic_properties:
+        make: "Kubota"
+        model: "B2320"
+        year: 2021
+        hours: 145
+        attachments: ["front_loader", "mower_deck", "box_blade"]
+    
+    item_greenhouse:
+      type: Item
+      core_properties:
+        name: "Polycarbonate Greenhouse"
+        item_type: "structure"
+      standard_properties:
+        purchase_date: "2019-09-20"
+        purchase_price: 2800
+        condition: "good"
+        status: "owned"
+        physical_location: "backyard"
+      dynamic_properties:
+        dimensions: "12x20 feet"
+        material: "aluminum frame, polycarbonate panels"
+        heating: "electric heater"
+        ventilation: "automatic louvers"
+    
+    # Beekeeping equipment
+    item_hive1:
+      type: Item
+      core_properties:
+        name: "Hive #1 - Langstroth"
+        item_type: "beehive"
+      standard_properties:
+        purchase_date: "2020-04-01"
+        condition: "good"
+        status: "active"
+        physical_location: "apiary"
+      dynamic_properties:
+        hive_type: "Langstroth"
+        boxes: 3
+        frames: 30
+        queen_marked: true
+        last_inspection: "2025-07-10"
+        honey_production: "45 lbs (2024)"
+    
+    item_bee_suit:
+      type: Item
+      core_properties:
+        name: "Ventilated Bee Suit"
+        item_type: "protective_equipment"
+      standard_properties:
+        purchase_date: "2020-03-15"
+        condition: "good"
+        status: "owned"
+        physical_location: "garage"
+      dynamic_properties:
+        brand: "Humble Bee"
+        size: "Large"
+        features: ["attached_veil", "ventilated", "pockets"]
+    
+    # Digital documentation
+    digital_garden_photos:
+      type: DigitalItem
+      core_properties:
+        name: "2025 Garden Progress Photos"
+        content_type: "photo"
+      standard_properties:
+        file_path: "/photos/garden/2025/"
+        source: "iPhone 13"
+      dynamic_properties:
+        photo_count: 127
+        date_range: "2025-03-01 to 2025-07-15"
+        subjects: ["tomato_plants", "bee_activity", "harvest"]
+        favorite_shots: ["first_tomatoes.jpg", "bee_on_sunflower.jpg"]
+    
+    digital_hive_records:
+      type: DigitalItem
+      core_properties:
+        name: "Hive Inspection Logs"
+        content_type: "document"
+      standard_properties:
+        file_path: "/documents/beekeeping/inspection_logs.xlsx"
+        mime_type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      dynamic_properties:
+        format: "Excel spreadsheet"
+        columns: ["date", "hive_number", "queen_present", "brood_pattern", "honey_stores", "notes"]
+        entries: 48
+        last_updated: "2025-07-10"
+    
+    # Activities and projects
+    activity_adu_project:
+      type: Activity
+      core_properties:
+        name: "Build Accessory Dwelling Unit"
+        activity_type: "project"
+      standard_properties:
+        description: "Add a 600 sq ft ADU for rental income"
+        start_date: "2025-06-01"
+        end_date: "2025-12-15"
+        status: "active"
+        priority: "high"
+        completion_percentage: 25
+      dynamic_properties:
+        budget: 150000
+        permits_required: ["building", "electrical", "plumbing"]
+        contractor: "Green Valley Construction"
+        architect: "Sarah Chen Architecture"
+        expected_rental_income: 2200
+    
+    activity_hive_inspection:
+      type: Activity
+      core_properties:
+        name: "Weekly Hive Inspections"
+        activity_type: "task"
+      standard_properties:
+        description: "Check queen, brood, and honey stores"
+        start_date: "2025-04-01"
+        status: "active"
+        priority: "medium"
+      dynamic_properties:
+        frequency: "weekly"
+        duration: "30 minutes per hive"
+        best_weather: "sunny, calm, 60-85F"
+        checklist: ["queen_present", "eggs_larvae", "capped_brood", "honey_stores", "varroa_check"]
+    
+    # Collections
+    collection_garden_tools:
+      type: Collection
+      core_properties:
+        name: "Garden Tool Collection"
+        collection_type: "equipment_set"
+      standard_properties:
+        description: "All gardening tools and equipment"
+        item_count: 23
+        is_ordered: false
+      dynamic_properties:
+        categories: ["hand_tools", "power_tools", "irrigation", "pest_control"]
+        storage_location: "tool_shed"
+        last_inventory: "2025-06-01"
+    
+    collection_beekeeping_library:
+      type: Collection
+      core_properties:
+        name: "Beekeeping Reference Library"
+        collection_type: "book_collection"
+      standard_properties:
+        description: "Books and guides about beekeeping"
+        item_count: 8
+        is_ordered: false
+      dynamic_properties:
+        formats: ["physical_books", "ebooks", "videos"]
+        favorite_author: "Michael Bush"
+        topics: ["natural_beekeeping", "hive_management", "honey_production"]
+    
+    # Information and notes
+    info_garden_journal:
+      type: Information
+      core_properties:
+        title: "2025 Garden Planning Notes"
+        content: "Crop rotation plan, seed varieties, planting schedule..."
+      standard_properties:
+        content_type: "note"
+        source: "personal observations"
+        importance: "high"
+      dynamic_properties:
+        topics: ["crop_rotation", "companion_planting", "pest_management"]
+        references: ["Old Farmer's Almanac", "university_extension"]
+
+  relationships:
+    - source: person_steve
+      relationship: KNOWS
+      target: person_sarah
+      properties: {relationship_type: "spouse", years_together: 15}
+    
+    - source: person_steve
+      relationship: KNOWS
+      target: person_alex
+      properties: {relationship_type: "parent"}
+    
+    - source: person_steve
+      relationship: LIVES_AT
+      target: location_home
+    
+    - source: location_garden
+      relationship: CONTAINS
+      target: location_home
+    
+    - source: location_apiary
+      relationship: CONTAINS
+      target: location_home
+    
+    - source: person_steve
+      relationship: OWNS
+      target: item_tractor
+    
+    - source: person_steve
+      relationship: OWNS
+      target: item_greenhouse
+    
+    - source: person_steve
+      relationship: OWNS
+      target: digital_garden_photos
+    
+    - source: item_hive1
+      relationship: LOCATED_AT
+      target: location_apiary
+    
+    - source: item_greenhouse
+      relationship: LOCATED_AT
+      target: location_garden
+    
+    - source: digital_garden_photos
+      relationship: DOCUMENTS
+      target: location_garden
+    
+    - source: digital_hive_records
+      relationship: DOCUMENTS
+      target: item_hive1
+    
+    - source: activity_adu_project
+      relationship: TAKES_PLACE_AT
+      target: location_home
+    
+    - source: activity_hive_inspection
+      relationship: USES
+      target: item_bee_suit
+    
+    - source: person_steve
+      relationship: PARTICIPATES_IN
+      target: activity_adu_project
+    
+    - source: collection_garden_tools
+      relationship: CONTAINS
+      target: item_tractor
+    
+    - source: collection_beekeeping_library
+      relationship: OWNED_BY
+      target: person_steve
+
+# ======================
+# EXAMPLE 2: FREELANCE PHOTOGRAPHER
+# ======================
+
+maria_photographer_scenario:
+  description: "Maria Rodriguez runs a freelance photography business"
+  
+  entities:
+    person_maria:
+      type: Person
+      core_properties:
+        name: "Maria Rodriguez"
+      standard_properties:
+        email: "maria@mariashots.com"
+        phone: "555-987-6543"
+        relationship: "self"
+      dynamic_properties:
+        business_name: "Maria Shots Photography"
+        specialties: ["weddings", "portraits", "events"]
+        years_experience: 8
+        website: "mariashots.com"
+    
+    location_studio:
+      type: Location
+      core_properties:
+        name: "Maria Shots Studio"
+      standard_properties:
+        address: "456 Creative Drive, Suite 12"
+        city: "San Francisco"
+        state: "CA"
+        location_type: "studio"
+      dynamic_properties:
+        square_feet: 800
+        features: ["natural_light", "seamless_backdrop", "changing_room"]
+        rent: 1200
+        lease_expires: "2026-03-31"
+    
+    item_camera_canon:
+      type: Item
+      core_properties:
+        name: "Canon EOS R5"
+        item_type: "camera"
+      standard_properties:
+        purchase_date: "2023-09-15"
+        purchase_price: 3899
+        condition: "excellent"
+        status: "owned"
+      dynamic_properties:
+        brand: "Canon"
+        model: "EOS R5"
+        megapixels: 45
+        serial_number: "CR123456789"
+        shutter_count: 12450
+        insurance_value: 3500
+    
+    item_lens_85mm:
+      type: Item
+      core_properties:
+        name: "Canon RF 85mm f/1.2L"
+        item_type: "lens"
+      standard_properties:
+        purchase_date: "2023-10-01"
+        purchase_price: 2699
+        condition: "excellent"
+        status: "owned"
+      dynamic_properties:
+        focal_length: "85mm"
+        aperture: "f/1.2"
+        mount: "Canon RF"
+        use_cases: ["portraits", "wedding_ceremonies"]
+    
+    digital_wedding_album:
+      type: DigitalItem
+      core_properties:
+        name: "Johnson Wedding - July 2025"
+        content_type: "photo"
+      standard_properties:
+        file_path: "/photography/2025/weddings/johnson_wedding/"
+        file_size: 15600000000
+        date_created: "2025-07-08"
+      dynamic_properties:
+        photo_count: 847
+        edited_count: 156
+        client_favorites: 45
+        backup_locations: ["local_nas", "google_drive", "amazon_s3"]
+        delivery_format: ["online_gallery", "usb_drive"]
+    
+    activity_johnson_wedding:
+      type: Activity
+      core_properties:
+        name: "Johnson Wedding Photography"
+        activity_type: "event"
+      standard_properties:
+        start_date: "2025-07-08T14:00:00"
+        end_date: "2025-07-08T23:00:00"
+        status: "completed"
+      dynamic_properties:
+        client_names: ["Jennifer Johnson", "Michael Johnson"]
+        venue: "Napa Valley Vineyard"
+        package_type: "Premium Wedding Package"
+        fee: 4500
+        hours: 9
+        second_shooter: "Alex Chen"
+
+  relationships:
+    - source: person_maria
+      relationship: OWNS
+      target: location_studio
+    
+    - source: person_maria
+      relationship: OWNS
+      target: item_camera_canon
+    
+    - source: person_maria
+      relationship: OWNS
+      target: item_lens_85mm
+    
+    - source: person_maria
+      relationship: OWNS
+      target: digital_wedding_album
+    
+    - source: activity_johnson_wedding
+      relationship: USES
+      target: item_camera_canon
+    
+    - source: activity_johnson_wedding
+      relationship: USES
+      target: item_lens_85mm
+    
+    - source: digital_wedding_album
+      relationship: DOCUMENTS
+      target: activity_johnson_wedding
+
+# ======================
+# EXAMPLE 3: HOME RENOVATION ENTHUSIAST
+# ======================
+
+david_renovation_scenario:
+  description: "David Kim renovates his 1950s ranch home room by room"
+  
+  entities:
+    person_david:
+      type: Person
+      core_properties:
+        name: "David Kim"
+      standard_properties:
+        email: "dkim.renovations@gmail.com"
+        relationship: "self"
+      dynamic_properties:
+        diy_skill_level: "intermediate"
+        favorite_channels: ["This Old House", "Home RenoVision DIY"]
+        tools_owned: 47
+    
+    location_ranch_home:
+      type: Location
+      core_properties:
+        name: "Kim Family Ranch"
+      standard_properties:
+        address: "789 Maple Street"
+        city: "Portland"
+        state: "OR"
+        location_type: "residence"
+      dynamic_properties:
+        year_built: 1952
+        square_feet: 1800
+        style: "mid-century ranch"
+        lot_size: "0.25 acres"
+    
+    location_kitchen:
+      type: Location
+      core_properties:
+        name: "Kitchen"
+      standard_properties:
+        location_type: "room"
+      dynamic_properties:
+        dimensions: "12x14 feet"
+        renovation_status: "completed"
+        renovation_date: "2024-11-15"
+        budget: 25000
+        features: ["quartz_counters", "subway_tile", "stainless_appliances"]
+    
+    item_table_saw:
+      type: Item
+      core_properties:
+        name: "DeWalt DWE7491RS Table Saw"
+        item_type: "power_tool"
+      standard_properties:
+        purchase_date: "2024-01-20"
+        purchase_price: 649
+        condition: "excellent"
+        status: "owned"
+      dynamic_properties:
+        brand: "DeWalt"
+        model: "DWE7491RS"
+        blade_size: "10 inch"
+        fence_type: "rack and pinion"
+        mobility: "rolling stand"
+    
+    digital_kitchen_before:
+      type: DigitalItem
+      core_properties:
+        name: "Kitchen Before Renovation Photos"
+        content_type: "photo"
+      standard_properties:
+        file_path: "/renovations/kitchen/before/"
+        date_created: "2024-09-01"
+      dynamic_properties:
+        photo_count: 23
+        angles: ["wide_shots", "detail_shots", "problem_areas"]
+        purpose: "documentation"
+    
+    activity_bathroom_reno:
+      type: Activity
+      core_properties:
+        name: "Master Bathroom Renovation"
+        activity_type: "project"
+      standard_properties:
+        start_date: "2025-08-01"
+        end_date: "2025-10-15"
+        status: "planned"
+        priority: "high"
+      dynamic_properties:
+        budget: 18000
+        contractor_needed: ["plumbing", "electrical"]
+        diy_tasks: ["demo", "tile_work", "painting"]
+        permits_required: ["building"]
+
+  relationships:
+    - source: person_david
+      relationship: OWNS
+      target: location_ranch_home
+    
+    - source: person_david
+      relationship: OWNS
+      target: item_table_saw
+    
+    - source: person_david
+      relationship: OWNS
+      target: digital_kitchen_before
+    
+    - source: location_kitchen
+      relationship: PART_OF
+      target: location_ranch_home
+    
+    - source: activity_bathroom_reno
+      relationship: TAKES_PLACE_AT
+      target: location_ranch_home
+    
+    - source: activity_bathroom_reno
+      relationship: USES
+      target: item_table_saw
+    
+    - source: digital_kitchen_before
+      relationship: DOCUMENTS
+      target: location_kitchen
+
+# ======================
+# EXAMPLE 4: BOOK COLLECTOR & READER
+# ======================
+
+susan_books_scenario:
+  description: "Susan Chen is an avid reader with extensive book collections"
+  
+  entities:
+    person_susan:
+      type: Person
+      core_properties:
+        name: "Susan Chen"
+      standard_properties:
+        email: "susan.reads@email.com"
+        relationship: "self"
+      dynamic_properties:
+        reading_goal_2025: 75
+        books_read_ytd: 42
+        favorite_genres: ["science_fiction", "historical_fiction", "biographies"]
+        goodreads_profile: "susan_chen_reads"
+    
+    item_first_edition_dune:
+      type: Item
+      core_properties:
+        name: "Dune First Edition (1965)"
+        item_type: "book"
+      standard_properties:
+        purchase_date: "2023-05-12"
+        purchase_price: 850
+        condition: "very_fine"
+        status: "owned"
+      dynamic_properties:
+        author: "Frank Herbert"
+        publisher: "Chilton Books"
+        isbn: "none (pre-ISBN)"
+        dust_jacket: true
+        signed: false
+        appraised_value: 1200
+    
+    digital_audiobook_dune:
+      type: DigitalItem
+      core_properties:
+        name: "Dune Audiobook"
+        content_type: "audio"
+      standard_properties:
+        file_path: "/audiobooks/science_fiction/dune.m4a"
+        file_size: 1800000000
+        url: "audible://dune-frank-herbert"
+      dynamic_properties:
+        narrator: "Scott Brick"
+        duration: "21 hours 2 minutes"
+        format: "m4a"
+        quality: "enhanced"
+        purchase_date: "2023-01-15"
+    
+    collection_sci_fi_books:
+      type: Collection
+      core_properties:
+        name: "Science Fiction Collection"
+        collection_type: "book_collection"
+      standard_properties:
+        description: "Physical and digital sci-fi books"
+        item_count: 234
+        is_ordered: true
+      dynamic_properties:
+        organization: "by_author_last_name"
+        subcategories: ["hard_sf", "space_opera", "cyberpunk", "dystopian"]
+        storage_location: "home_library"
+        cataloging_system: "LibraryThing"
+    
+    activity_reading_challenge:
+      type: Activity
+      core_properties:
+        name: "2025 Reading Challenge"
+        activity_type: "personal_challenge"
+      standard_properties:
+        start_date: "2025-01-01"
+        end_date: "2025-12-31"
+        status: "active"
+        completion_percentage: 56
+      dynamic_properties:
+        goal_type: "books_read"
+        target: 75
+        current_count: 42
+        tracking_method: "goodreads"
+        favorite_so_far: "Klara and the Sun"
+
+  relationships:
+    - source: person_susan
+      relationship: OWNS
+      target: item_first_edition_dune
+    
+    - source: person_susan
+      relationship: OWNS
+      target: digital_audiobook_dune
+    
+    - source: person_susan
+      relationship: OWNS
+      target: collection_sci_fi_books
+    
+    - source: activity_reading_challenge
+      relationship: PARTICIPATES_IN
+      target: person_susan
+    
+    - source: collection_sci_fi_books
+      relationship: CONTAINS
+      target: item_first_edition_dune
+    
+    - source: digital_audiobook_dune
+      relationship: DOCUMENTS
+      target: item_first_edition_dune
+
+# ======================
+# EXAMPLE 5: FITNESS ENTHUSIAST
+# ======================
+
+mike_fitness_scenario:
+  description: "Mike Thompson tracks his fitness journey and equipment"
+  
+  entities:
+    person_mike:
+      type: Person
+      core_properties:
+        name: "Mike Thompson"
+      standard_properties:
+        relationship: "self"
+      dynamic_properties:
+        fitness_goals: ["build_muscle", "improve_endurance"]
+        current_weight: 185
+        target_weight: 195
+        gym_membership: "Gold's Gym"
+    
+    item_home_gym_rack:
+      type: Item
+      core_properties:
+        name: "Rogue R-3 Power Rack"
+        item_type: "exercise_equipment"
+      standard_properties:
+        purchase_date: "2024-03-10"
+        purchase_price: 1295
+        condition: "excellent"
+        status: "owned"
+      dynamic_properties:
+        brand: "Rogue Fitness"
+        model: "R-3"
+        height: "90 inches"
+        weight_capacity: "1000 lbs"
+        attachments: ["pull_up_bar", "safety_bars", "j_cups"]
+    
+    digital_workout_videos:
+      type: DigitalItem
+      core_properties:
+        name: "AthleanX Workout Programs"
+        content_type: "video"
+      standard_properties:
+        url: "athleanx.com/programs"
+        source: "online_purchase"
+      dynamic_properties:
+        programs_owned: ["AX-1", "Max/Size", "Perfect_Workout"]
+        total_duration: "180 hours"
+        format: "streaming"
+        trainer: "Jeff Cavaliere"
+    
+    activity_morning_workout:
+      type: Activity
+      core_properties:
+        name: "Morning Workout Routine"
+        activity_type: "exercise"
+      standard_properties:
+        start_date: "2025-01-01"
+        status: "active"
+      dynamic_properties:
+        frequency: "5 days per week"
+        duration: "60 minutes"
+        time_of_day: "6:00 AM"
+        split_type: "push_pull_legs"
+
+  relationships:
+    - source: person_mike
+      relationship: OWNS
+      target: item_home_gym_rack
+    
+    - source: person_mike
+      relationship: OWNS
+      target: digital_workout_videos
+    
+    - source: activity_morning_workout
+      relationship: USES
+      target: item_home_gym_rack
+    
+    - source: activity_morning_workout
+      relationship: USES
+      target: digital_workout_videos
+    
+    - source: person_mike
+      relationship: PARTICIPATES_IN
+      target: activity_morning_workout
+
+# ======================
+# EXAMPLE 6: SMALL BUSINESS OWNER
+# ======================
+
+lisa_bakery_scenario:
+  description: "Lisa Martinez owns a small bakery with equipment and recipes"
+  
+  entities:
+    person_lisa:
+      type: Person
+      core_properties:
+        name: "Lisa Martinez"
+      standard_properties:
+        email: "lisa@sweetdreamsbakery.com"
+        relationship: "self"
+      dynamic_properties:
+        business_name: "Sweet Dreams Bakery"
+        years_in_business: 6
+        specialties: ["custom_cakes", "artisan_bread", "pastries"]
+        certifications: ["food_safety", "cake_decorating"]
+    
+    location_bakery:
+      type: Location
+      core_properties:
+        name: "Sweet Dreams Bakery"
+      standard_properties:
+        address: "123 Main Street"
+        city: "Smalltown"
+        state: "TX"
+        location_type: "commercial"
+      dynamic_properties:
+        square_feet: 1200
+        zones: ["kitchen", "storefront", "storage"]
+        rent: 2800
+        hours: "6 AM - 6 PM"
+    
+    item_commercial_oven:
+      type: Item
+      core_properties:
+        name: "Blodgett DFG-100 Gas Oven"
+        item_type: "commercial_equipment"
+      standard_properties:
+        purchase_date: "2020-08-15"
+        purchase_price: 8500
+        condition: "good"
+        status: "owned"
+      dynamic_properties:
+        brand: "Blodgett"
+        model: "DFG-100"
+        fuel_type: "natural_gas"
+        capacity: "5 sheet pans"
+        last_service: "2025-05-20"
+    
+    digital_recipe_database:
+      type: DigitalItem
+      core_properties:
+        name: "Master Recipe Collection"
+        content_type: "document"
+      standard_properties:
+        file_path: "/business/recipes/master_recipes.xlsx"
+        file_size: 25000000
+      dynamic_properties:
+        recipe_count: 156
+        categories: ["breads", "cakes", "pastries", "seasonal"]
+        format: "Excel with photos"
+        backup_frequency: "daily"
+    
+    activity_wedding_cake_order:
+      type: Activity
+      core_properties:
+        name: "Wilson Wedding Cake - August 2025"
+        activity_type: "custom_order"
+      standard_properties:
+        start_date: "2025-07-15"
+        end_date: "2025-08-12"
+        status: "active"
+      dynamic_properties:
+        client_name: "Amanda Wilson"
+        cake_size: "3-tier"
+        flavor: "vanilla_raspberry"
+        decorations: "fondant_flowers"
+        price: 450
+
+  relationships:
+    - source: person_lisa
+      relationship: OWNS
+      target: location_bakery
+    
+    - source: person_lisa
+      relationship: OWNS
+      target: item_commercial_oven
+    
+    - source: person_lisa
+      relationship: OWNS
+      target: digital_recipe_database
+    
+    - source: activity_wedding_cake_order
+      relationship: USES
+      target: item_commercial_oven
+    
+    - source: activity_wedding_cake_order
+      relationship: USES
+      target: digital_recipe_database
+    
+    - source: person_lisa
+      relationship: PARTICIPATES_IN
+      target: activity_wedding_cake_order
+
+# ======================
+# EXAMPLE 7: VINTAGE CAR ENTHUSIAST
+# ======================
+
+robert_cars_scenario:
+  description: "Robert Johnson restores and collects vintage automobiles"
+  
+  entities:
+    person_robert:
+      type: Person
+      core_properties:
+        name: "Robert Johnson"
+      standard_properties:
+        relationship: "self"
+      dynamic_properties:
+        car_club_memberships: ["Classic Mustang Club", "AACA"]
+        favorite_era: "1960s muscle cars"
+        restoration_skills: ["bodywork", "engine_rebuild", "interior"]
+    
+    item_mustang_67:
+      type: Item
+      core_properties:
+        name: "1967 Ford Mustang Fastback"
+        item_type: "vehicle"
+      standard_properties:
+        purchase_date: "2022-06-20"
+        purchase_price: 35000
+        condition: "restoration_in_progress"
+        status: "owned"
+      dynamic_properties:
+        make: "Ford"
+        model: "Mustang"
+        year: 1967
+        body_style: "Fastback"
+        vin: "7F02C123456"
+        engine: "289 V8"
+        transmission: "4-speed manual"
+        color_original: "Springtime Yellow"
+        color_current: "primer_gray"
+    
+    digital_restoration_photos:
+      type: DigitalItem
+      core_properties:
+        name: "67 Mustang Restoration Progress"
+        content_type: "photo"
+      standard_properties:
+        file_path: "/cars/67_mustang/restoration_photos/"
+        date_created: "2022-06-20"
+      dynamic_properties:
+        photo_count: 342
+        stages: ["before", "disassembly", "bodywork", "assembly"]
+        latest_photos: "engine_bay_cleanup"
+        sharing: "car_club_forum"
+    
+    activity_mustang_restoration:
+      type: Activity
+      core_properties:
+        name: "1967 Mustang Full Restoration"
+        activity_type: "project"
+      standard_properties:
+        start_date: "2022-07-01"
+        end_date: "2025-12-31"
+        status: "active"
+        completion_percentage: 65
+      dynamic_properties:
+        budget: 25000
+        phases: ["disassembly", "bodywork", "paint", "engine", "interior", "assembly"]
+        current_phase: "interior"
+        next_milestone: "seat_installation"
+
+  relationships:
+    - source: person_robert
+      relationship: OWNS
+      target: item_mustang_67
+    
+    - source: person_robert
+      relationship: OWNS
+      target: digital_restoration_photos
+    
+    - source: activity_mustang_restoration
+      relationship: USES
+      target: item_mustang_67
+    
+    - source: activity_mustang_restoration
+      relationship: USES
+      target: digital_restoration_photos
+    
+    - source: person_robert
+      relationship: PARTICIPATES_IN
+      target: activity_mustang_restoration
+
+# ======================
+# EXAMPLE 8: ACADEMIC RESEARCHER
+# ======================
+
+dr_patel_research_scenario:
+  description: "Dr. Priya Patel conducts climate science research with extensive documentation"
+  
+  entities:
+    person_priya:
+      type: Person
+      core_properties:
+        name: "Dr. Priya Patel"
+      standard_properties:
+        email: "p.patel@university.edu"
+        relationship: "self"
+      dynamic_properties:
+        title: "Assistant Professor"
+        department: "Climate Science"
+        university: "State University"
+        research_focus: "Arctic ice dynamics"
+        publications: 23
+    
+    digital_research_dataset:
+      type: DigitalItem
+      core_properties:
+        name: "Arctic Ice Core Data 2020-2025"
+        content_type: "dataset"
+      standard_properties:
+        file_path: "/research/arctic_project/ice_core_data.csv"
+        file_size: 2400000000
+        date_created: "2020-08-01"
+      dynamic_properties:
+        format: "CSV"
+        rows: 1250000
+        variables: ["depth", "age", "co2_levels", "temperature", "isotope_ratios"]
+        collection_sites: ["Greenland", "Antarctica"]
+        funding_source: "NSF Grant #1234567"
+    
+    activity_field_expedition:
+      type: Activity
+      core_properties:
+        name: "2025 Greenland Ice Core Expedition"
+        activity_type: "research_expedition"
+      standard_properties:
+        start_date: "2025-06-15"
+        end_date: "2025-07-30"
+        status: "completed"
+      dynamic_properties:
+        location: "Summit Station, Greenland"
+        team_size: 8
+        samples_collected: 45
+        budget: 125000
+        weather_delays: 3
+    
+    info_grant_proposal:
+      type: Information
+      core_properties:
+        title: "NSF Proposal - Arctic Climate Modeling"
+        content: "Comprehensive proposal for 3-year study of ice dynamics..."
+      standard_properties:
+        content_type: "proposal"
+        importance: "high"
+      dynamic_properties:
+        funding_amount: 450000
+        duration: "3 years"
+        status: "submitted"
+        submission_date: "2025-03-15"
+        collaborators: ["Dr. Smith", "Dr. Chen", "Dr. Williams"]
+
+  relationships:
+    - source: person_priya
+      relationship: OWNS
+      target: digital_research_dataset
+    
+    - source: person_priya
+      relationship: OWNS
+      target: info_grant_proposal
+    
+    - source: activity_field_expedition
+      relationship: USES
+      target: digital_research_dataset
+    
+    - source: activity_field_expedition
+      relationship: USES
+      target: info_grant_proposal
+    
+    - source: person_priya
+      relationship: PARTICIPATES_IN
+      target: activity_field_expedition
+
+# ======================
+# EXAMPLE 9: FAMILY ORGANIZER
+# ======================
+
+jennifer_family_scenario:
+  description: "Jennifer Brown manages a busy family with multiple children and activities"
+  
+  entities:
+    person_jennifer:
+      type: Person
+      core_properties:
+        name: "Jennifer Brown"
+      standard_properties:
+        relationship: "self"
+      dynamic_properties:
+        role: "family_organizer"
+        children_count: 3
+        management_tools: ["family_calendar", "chore_charts", "meal_planning"]
+    
+    person_emma:
+      type: Person
+      core_properties:
+        name: "Emma Brown"
+      standard_properties:
+        first_name: "Emma"
+        relationship: "daughter"
+      dynamic_properties:
+        age: 14
+        grade: 9
+        activities: ["soccer", "violin", "debate_team"]
+        school: "Central High School"
+    
+    activity_soccer_practice:
+      type: Activity
+      core_properties:
+        name: "Emma's Soccer Practice"
+        activity_type: "sports_practice"
+      standard_properties:
+        start_date: "2025-08-15"
+        status: "active"
+      dynamic_properties:
+        frequency: "Tuesday/Thursday 6 PM"
+        location: "City Sports Complex"
+        season: "Fall 2025"
+        team: "U15 Lightning"
+        coach: "Coach Martinez"
+    
+    collection_family_calendar:
+      type: Collection
+      core_properties:
+        name: "Brown Family Calendar Events"
+        collection_type: "schedule"
+      standard_properties:
+        description: "All family activities and appointments"
+        item_count: 156
+        is_ordered: true
+      dynamic_properties:
+        sync_method: "Google Calendar"
+        color_coding: {"emma": "blue", "jake": "green", "lily": "purple", "parents": "red"}
+        reminder_settings: "24 hours + 1 hour"
+    
+    digital_meal_plan:
+      type: DigitalItem
+      core_properties:
+        name: "Weekly Meal Plans 2025"
+        content_type: "document"
+      standard_properties:
+        file_path: "/family/meal_planning/2025_meal_plans.xlsx"
+      dynamic_properties:
+        weeks_planned: 30
+        dietary_restrictions: ["gluten_free_emma", "vegetarian_tuesdays"]
+        grocery_integration: "automatic_shopping_lists"
+        favorite_meals: ["taco_tuesday", "pizza_friday"]
+
+  relationships:
+    - source: person_jennifer
+      relationship: OWNS
+      target: collection_family_calendar
+    
+    - source: person_jennifer
+      relationship: OWNS
+      target: digital_meal_plan
+    
+    - source: activity_soccer_practice
+      relationship: PARTICIPATES_IN
+      target: person_emma
+    
+    - source: person_jennifer
+      relationship: PARTICIPATES_IN
+      target: activity_soccer_practice
+    
+    - source: collection_family_calendar
+      relationship: CONTAINS
+      target: activity_soccer_practice
+    
+    - source: digital_meal_plan
+      relationship: DOCUMENTS
+      target: collection_family_calendar
+
+# ======================
+# EXAMPLE 10: TECH STARTUP FOUNDER
+# ======================
+
+alex_startup_scenario:
+  description: "Alex Chen is founding a tech startup with equipment and business planning"
+  
+  entities:
+    person_alex_chen:
+      type: Person
+      core_properties:
+        name: "Alex Chen"
+      standard_properties:
+        email: "alex@innovateai.com"
+        relationship: "self"
+      dynamic_properties:
+        company_name: "InnovateAI"
+        role: "Co-founder & CTO"
+        previous_experience: "Senior Engineer at Meta"
+        linkedin: "linkedin.com/in/alexchen-ai"
+    
+    location_coworking:
+      type: Location
+      core_properties:
+        name: "TechHub Coworking Space"
+      standard_properties:
+        address: "789 Innovation Drive"
+        city: "Austin"
+        state: "TX"
+        location_type: "coworking"
+      dynamic_properties:
+        membership_type: "dedicated_desk"
+        monthly_cost: 400
+        amenities: ["conference_rooms", "high_speed_internet", "coffee_bar"]
+    
+    item_macbook_pro:
+      type: Item
+      core_properties:
+        name: "MacBook Pro 16-inch M3 Max"
+        item_type: "laptop"
+      standard_properties:
+        purchase_date: "2024-11-20"
+        purchase_price: 4399
+        condition: "excellent"
+        status: "owned"
+      dynamic_properties:
+        specs: {"ram": "64GB", "storage": "2TB", "chip": "M3 Max"}
+        use_case: "AI development"
+        backup_frequency: "hourly"
+    
+    digital_business_plan:
+      type: DigitalItem
+      core_properties:
+        name: "InnovateAI Business Plan v3.2"
+        content_type: "document"
+      standard_properties:
+        file_path: "/business/plans/business_plan_v3.2.pdf"
+        file_size: 15000000
+      dynamic_properties:
+        pages: 45
+        last_updated: "2025-07-10"
+        sections: ["executive_summary", "market_analysis", "financial_projections"]
+        confidentiality: "restricted"
+    
+    activity_investor_pitch:
+      type: Activity
+      core_properties:
+        name: "Series A Investor Presentations"
+        activity_type: "fundraising"
+      standard_properties:
+        start_date: "2025-08-01"
+        end_date: "2025-10-31"
+        status: "active"
+      dynamic_properties:
+        target_amount: 5000000
+        investors_contacted: 23
+        meetings_scheduled: 8
+        deck_version: "v2.1"
+
+  relationships:
+    - source: person_alex_chen
+      relationship: OWNS
+      target: location_coworking
+    
+    - source: person_alex_chen
+      relationship: OWNS
+      target: item_macbook_pro
+    
+    - source: person_alex_chen
+      relationship: OWNS
+      target: digital_business_plan
+    
+    - source: activity_investor_pitch
+      relationship: USES
+      target: digital_business_plan
+    
+    - source: person_alex_chen
+      relationship: PARTICIPATES_IN
+      target: activity_investor_pitch
+    
+    - source: location_coworking
+      relationship: CONTAINS
+      target: item_macbook_pro
+
+# ======================
+# EXAMPLE 11: MUSICIAN & SONGWRITER
+# ======================
+
+carlos_music_scenario:
+  description: "Carlos Rivera is a singer-songwriter with instruments and recording equipment"
+  
+  entities:
+    person_carlos:
+      type: Person
+      core_properties:
+        name: "Carlos Rivera"
+      standard_properties:
+        email: "carlos.rivera.music@gmail.com"
+        relationship: "self"
+      dynamic_properties:
+        stage_name: "Carlos R"
+        instruments: ["guitar", "piano", "harmonica"]
+        genres: ["folk", "indie_rock", "singer_songwriter"]
+        spotify_artist_id: "4Xh2l9k3m5n6"
+    
+    item_martin_guitar:
+      type: Item
+      core_properties:
+        name: "Martin D-28 Acoustic Guitar"
+        item_type: "musical_instrument"
+      standard_properties:
+        purchase_date: "2019-12-15"
+        purchase_price: 3200
+        condition: "excellent"
+        status: "owned"
+      dynamic_properties:
+        brand: "Martin"
+        model: "D-28"
+        serial_number: "2456789"
+        wood_type: "sitka_spruce_top_rosewood_back"
+        case_included: true
+        last_setup: "2025-06-01"
+    
+    digital_song_demo:
+      type: DigitalItem
+      core_properties:
+        name: "Midnight Dreams - Demo Recording"
+        content_type: "audio"
+      standard_properties:
+        file_path: "/music/demos/midnight_dreams_v3.wav"
+        file_size: 125000000
+        date_created: "2025-07-05"
+      dynamic_properties:
+        duration: "3:45"
+        bpm: 78
+        key: "G major"
+        instruments: ["acoustic_guitar", "vocals", "harmonica"]
+        recording_quality: "24-bit/96kHz"
+        status: "ready_for_production"
+    
+    activity_album_recording:
+      type: Activity
+      core_properties:
+        name: "First Album Recording Sessions"
+        activity_type: "recording_project"
+      standard_properties:
+        start_date: "2025-09-01"
+        end_date: "2025-11-30"
+        status: "planned"
+      dynamic_properties:
+        studio: "Soundwave Studios"
+        producer: "Jamie Thompson"
+        track_count: 12
+        budget: 15000
+        target_release: "Spring 2026"
+    
+    collection_songbook:
+      type: Collection
+      core_properties:
+        name: "Original Songs Collection"
+        collection_type: "songbook"
+      standard_properties:
+        description: "All original compositions"
+        item_count: 47
+        is_ordered: false
+      dynamic_properties:
+        completion_status: {"finished": 23, "in_progress": 15, "ideas": 9}
+        themes: ["love", "travel", "social_justice", "nature"]
+        collaboration_count: 8
+
+  relationships:
+    - source: person_carlos
+      relationship: OWNS
+      target: item_martin_guitar
+    
+    - source: person_carlos
+      relationship: OWNS
+      target: digital_song_demo
+    
+    - source: activity_album_recording
+      relationship: USES
+      target: item_martin_guitar
+    
+    - source: activity_album_recording
+      relationship: USES
+      target: digital_song_demo
+    
+    - source: person_carlos
+      relationship: PARTICIPATES_IN
+      target: activity_album_recording
+    
+    - source: collection_songbook
+      relationship: CONTAINS
+      target: digital_song_demo
+
+# ======================
+# EXAMPLE 12: CRAFT ENTHUSIAST
+# ======================
+
+diane_crafts_scenario:
+  description: "Diane Walsh creates handmade crafts and manages extensive supplies"
+  
+  entities:
+    person_diane:
+      type: Person
+      core_properties:
+        name: "Diane Walsh"
+      standard_properties:
+        relationship: "self"
+      dynamic_properties:
+        craft_types: ["knitting", "quilting", "jewelry_making", "pottery"]
+        years_crafting: 25
+        etsy_shop: "DianeCreatesThings"
+        guild_memberships: ["Local Quilters Guild", "Fiber Arts Society"]
+    
+    location_craft_room:
+      type: Location
+      core_properties:
+        name: "Craft Room"
+      standard_properties:
+        location_type: "craft_space"
+      dynamic_properties:
+        dimensions: "12x10 feet"
+        storage_solutions: ["pegboard", "clear_containers", "fabric_shelving"]
+        lighting: "full_spectrum_LED"
+        work_surfaces: ["cutting_table", "sewing_station", "pottery_wheel"]
+    
+    item_sewing_machine:
+      type: Item
+      core_properties:
+        name: "Bernina 880 Plus Sewing Machine"
+        item_type: "sewing_machine"
+      standard_properties:
+        purchase_date: "2023-04-20"
+        purchase_price: 8999
+        condition: "excellent"
+        status: "owned"
+      dynamic_properties:
+        brand: "Bernina"
+        model: "880 Plus"
+        features: ["embroidery", "quilting", "automatic_thread_cutting"]
+        warranty_expires: "2028-04-20"
+        service_schedule: "annual"
+    
+    digital_pattern_library:
+      type: DigitalItem
+      core_properties:
+        name: "Digital Sewing Pattern Collection"
+        content_type: "document"
+      standard_properties:
+        file_path: "/crafts/patterns/digital_patterns/"
+        file_size: 850000000
+      dynamic_properties:
+        pattern_count: 89
+        formats: ["PDF", "SVG"]
+        categories: ["clothing", "bags", "home_decor", "quilts"]
+        organization: "by_designer_and_type"
+    
+    activity_charity_quilt:
+      type: Activity
+      core_properties:
+        name: "Charity Auction Quilt - 2025"
+        activity_type: "craft_project"
+      standard_properties:
+        start_date: "2025-06-01"
+        end_date: "2025-09-15"
+        status: "active"
+        completion_percentage: 40
+      dynamic_properties:
+        pattern: "Wedding Ring variation"
+        size: "queen (90x108)"
+        fabric_theme: "autumn_colors"
+        estimated_hours: 120
+        charity: "Local Animal Shelter"
+    
+    collection_fabric_stash:
+      type: Collection
+      core_properties:
+        name: "Fabric Stash"
+        collection_type: "material_collection"
+      standard_properties:
+        description: "All fabric inventory"
+        item_count: 347
+        is_ordered: false
+      dynamic_properties:
+        organization: "by_color_and_type"
+        total_yardage: "approximately 500 yards"
+        categories: ["cotton", "silk", "wool", "specialty"]
+        storage_method: "folded_on_shelves"
+
+  relationships:
+    - source: person_diane
+      relationship: OWNS
+      target: location_craft_room
+    
+    - source: person_diane
+      relationship: OWNS
+      target: item_sewing_machine
+    
+    - source: person_diane
+      relationship: OWNS
+      target: digital_pattern_library
+    
+    - source: activity_charity_quilt
+      relationship: USES
+      target: item_sewing_machine
+    
+    - source: activity_charity_quilt
+      relationship: USES
+      target: digital_pattern_library
+    
+    - source: person_diane
+      relationship: PARTICIPATES_IN
+      target: activity_charity_quilt
+    
+    - source: collection_fabric_stash
+      relationship: CONTAINS
+      target: item_sewing_machine
+
+# ======================
+# EXAMPLE 13: TRAVEL ENTHUSIAST
+# ======================
+
+mark_travel_scenario:
+  description: "Mark Davis documents extensive travel with photos, itineraries, and gear"
+  
+  entities:
+    person_mark:
+      type: Person
+      core_properties:
+        name: "Mark Davis"
+      standard_properties:
+        relationship: "self"
+      dynamic_properties:
+        countries_visited: 47
+        travel_style: "backpacking_and_cultural"
+        languages: ["English", "Spanish", "basic_French"]
+        favorite_regions: ["Southeast_Asia", "South_America"]
+    
+    item_backpack:
+      type: Item
+      core_properties:
+        name: "Osprey Farpoint 40 Travel Backpack"
+        item_type: "luggage"
+      standard_properties:
+        purchase_date: "2022-03-10"
+        purchase_price: 180
+        condition: "good"
+        status: "owned"
+      dynamic_properties:
+        brand: "Osprey"
+        model: "Farpoint 40"
+        capacity: "40 liters"
+        weight: "3.1 lbs"
+        trips_used: 12
+        wear_points: ["bottom_corner", "zipper_pulls"]
+    
+    digital_japan_photos:
+      type: DigitalItem
+      core_properties:
+        name: "Japan Trip Photos - March 2025"
+        content_type: "photo"
+      standard_properties:
+        file_path: "/travel/2025/japan_march/"
+        file_size: 8500000000
+        date_created: "2025-03-01"
+      dynamic_properties:
+        photo_count: 1247
+        cities: ["Tokyo", "Kyoto", "Osaka", "Hiroshima"]
+        highlights: ["cherry_blossoms", "temples", "street_food", "people"]
+        camera_used: "Sony A7 III"
+        backup_status: "cloud_and_local"
+    
+    activity_peru_trip:
+      type: Activity
+      core_properties:
+        name: "Peru Adventure - October 2025"
+        activity_type: "travel"
+      standard_properties:
+        start_date: "2025-10-05"
+        end_date: "2025-10-22"
+        status: "planned"
+      dynamic_properties:
+        itinerary: ["Lima", "Cusco", "Machu_Picchu", "Amazon_rainforest"]
+        budget: 3500
+        flight_booked: true
+        accommodations: ["hostels", "eco_lodge"]
+        activities: ["hiking", "cultural_tours", "wildlife_watching"]
+    
+    collection_travel_memories:
+      type: Collection
+      core_properties:
+        name: "Travel Memory Collection"
+        collection_type: "travel_archive"
+      standard_properties:
+        description: "Photos, documents, and mementos from all trips"
+        item_count: 156
+        is_ordered: true
+      dynamic_properties:
+        organization: "by_year_and_destination"
+        digital_items: 89
+        physical_items: 67
+        backup_frequency: "monthly"
+
+  relationships:
+    - source: person_mark
+      relationship: OWNS
+      target: item_backpack
+    
+    - source: person_mark
+      relationship: OWNS
+      target: digital_japan_photos
+    
+    - source: activity_peru_trip
+      relationship: USES
+      target: item_backpack
+    
+    - source: activity_peru_trip
+      relationship: USES
+      target: digital_japan_photos
+    
+    - source: person_mark
+      relationship: PARTICIPATES_IN
+      target: activity_peru_trip
+    
+    - source: collection_travel_memories
+      relationship: CONTAINS
+      target: digital_japan_photos
+
+# ======================
+# EXAMPLE 14: WINE COLLECTOR
+# ======================
+
+patricia_wine_scenario:
+  description: "Patricia Williams collects and catalogs wines with detailed tasting notes"
+  
+  entities:
+    person_patricia:
+      type: Person
+      core_properties:
+        name: "Patricia Williams"
+      standard_properties:
+        relationship: "self"
+      dynamic_properties:
+        wine_education: "WSET Level 3 Certified"
+        collection_focus: ["Burgundy", "Barolo", "Bordeaux"]
+        cellar_capacity: 500
+        favorite_vintages: ["2005", "2010", "2016"]
+    
+    location_wine_cellar:
+      type: Location
+      core_properties:
+        name: "Home Wine Cellar"
+      standard_properties:
+        location_type: "cellar"
+      dynamic_properties:
+        temperature: "55-58°F constant"
+        humidity: "70%"
+        capacity: 500
+        current_inventory: 347
+        security: "climate_monitoring_system"
+    
+    item_burgundy_2005:
+      type: Item
+      core_properties:
+        name: "2005 Domaine de la Romanée-Conti Montrachet"
+        item_type: "wine"
+      standard_properties:
+        purchase_date: "2007-11-15"
+        purchase_price: 850
+        condition: "excellent"
+        status: "owned"
+      dynamic_properties:
+        producer: "Domaine de la Romanée-Conti"
+        vintage: 2005
+        appellation: "Montrachet Grand Cru"
+        varietal: "Chardonnay"
+        current_value: 2800
+        storage_location: "A4-15"
+        drink_window: "2025-2035"
+    
+    digital_cellar_inventory:
+      type: DigitalItem
+      core_properties:
+        name: "Wine Cellar Inventory Database"
+        content_type: "document"
+      standard_properties:
+        file_path: "/wine/cellar_inventory.xlsx"
+        file_size: 12000000
+      dynamic_properties:
+        wine_count: 347
+        total_value: 125000
+        tracking_fields: ["producer", "vintage", "location", "purchase_price", "current_value"]
+        last_updated: "2025-07-15"
+        backup_frequency: "weekly"
+    
+    activity_tasting_notes:
+      type: Activity
+      core_properties:
+        name: "Monthly Wine Tasting & Documentation"
+        activity_type: "tasting"
+      standard_properties:
+        status: "active"
+      dynamic_properties:
+        frequency: "monthly"
+        wines_per_session: "3-4"
+        documentation: "detailed_notes_and_photos"
+        sharing: "wine_club_newsletter"
+    
+    info_tasting_note_2005:
+      type: Information
+      core_properties:
+        title: "Tasting Note: 2005 DRC Montrachet"
+        content: "Opened July 4, 2025. Stunning golden color with green highlights..."
+      standard_properties:
+        content_type: "tasting_note"
+        importance: "high"
+      dynamic_properties:
+        rating: "96/100"
+        tasting_date: "2025-07-04"
+        occasion: "Independence Day dinner"
+        food_pairing: "lobster_with_butter_sauce"
+
+  relationships:
+    - source: person_patricia
+      relationship: OWNS
+      target: location_wine_cellar
+    
+    - source: person_patricia
+      relationship: OWNS
+      target: item_burgundy_2005
+    
+    - source: person_patricia
+      relationship: OWNS
+      target: digital_cellar_inventory
+    
+    - source: activity_tasting_notes
+      relationship: USES
+      target: item_burgundy_2005
+    
+    - source: activity_tasting_notes
+      relationship: USES
+      target: digital_cellar_inventory
+    
+    - source: person_patricia
+      relationship: PARTICIPATES_IN
+      target: activity_tasting_notes
+    
+    - source: info_tasting_note_2005
+      relationship: ABOUT
+      target: item_burgundy_2005
+
+# ======================
+# EXAMPLE 15: PET OWNER
+# ======================
+
+sarah_pets_scenario:
+  description: "Sarah Johnson manages care for multiple pets with detailed health records"
+  
+  entities:
+    person_sarah_j:
+      type: Person
+      core_properties:
+        name: "Sarah Johnson"
+      standard_properties:
+        relationship: "self"
+      dynamic_properties:
+        pet_count: 3
+        veterinarian: "Dr. Smith at Caring Paws Clinic"
+        pet_insurance: "Healthy Paws"
+        volunteer_work: "animal_rescue"
+    
+    # Pets as People entities
+    person_max:
+      type: Person
+      core_properties:
+        name: "Max"
+      standard_properties:
+        relationship: "pet"
+      dynamic_properties:
+        species: "dog"
+        breed: "Golden Retriever"
+        age: 5
+        weight: "68 lbs"
+        personality: ["friendly", "energetic", "loves_swimming"]
+        microchip_id: "123456789012345"
+    
+    digital_vet_records:
+      type: DigitalItem
+      core_properties:
+        name: "Max's Veterinary Records"
+        content_type: "document"
+      standard_properties:
+        file_path: "/pets/max/vet_records/"
+        file_size: 45000000
+      dynamic_properties:
+        record_count: 23
+        date_range: "2020-2025"
+        includes: ["vaccinations", "checkups", "surgeries", "lab_results"]
+        vet_clinic: "Caring Paws Clinic"
+    
+    item_dog_crate:
+      type: Item
+      core_properties:
+        name: "Large Dog Crate"
+        item_type: "pet_equipment"
+      standard_properties:
+        purchase_date: "2020-08-15"
+        purchase_price: 150
+        condition: "good"
+        status: "owned"
+      dynamic_properties:
+        size: "48x30x33 inches"
+        material: "wire_with_plastic_tray"
+        features: ["collapsible", "two_doors"]
+        used_by: "Max"
+    
+    activity_daily_walks:
+      type: Activity
+      core_properties:
+        name: "Max's Daily Walks"
+        activity_type: "exercise"
+      standard_properties:
+        status: "active"
+      dynamic_properties:
+        frequency: "twice_daily"
+        duration: "30 minutes each"
+        routes: ["neighborhood_loop", "park_trail", "beach_walk"]
+        weather_adaptations: true
+    
+    collection_pet_photos:
+      type: Collection
+      core_properties:
+        name: "Pet Photo Albums"
+        collection_type: "photo_album"
+      standard_properties:
+        description: "Photos of all pets over the years"
+        item_count: 2847
+        is_ordered: true
+      dynamic_properties:
+        organization: "by_pet_and_year"
+        sharing: "family_cloud_album"
+        favorites_count: 156
+
+  relationships:
+    - source: person_sarah_j
+      relationship: OWNS
+      target: person_max
+    
+    - source: person_sarah_j
+      relationship: OWNS
+      target: digital_vet_records
+    
+    - source: person_sarah_j
+      relationship: OWNS
+      target: item_dog_crate
+    
+    - source: activity_daily_walks
+      relationship: PARTICIPATES_IN
+      target: person_max
+    
+    - source: person_sarah_j
+      relationship: PARTICIPATES_IN
+      target: activity_daily_walks
+    
+    - source: collection_pet_photos
+      relationship: CONTAINS
+      target: digital_vet_records
+
+# ======================
+# EXAMPLE 16: RETIREE WITH MULTIPLE HOBBIES
+# ======================
+
+william_retirement_scenario:
+  description: "William Thompson enjoys retirement with woodworking, genealogy, and volunteering"
+  
+  entities:
+    person_william:
+      type: Person
+      core_properties:
+        name: "William Thompson"
+      standard_properties:
+        relationship: "self"
+      dynamic_properties:
+        retirement_date: "2023-06-30"
+        career: "former_electrical_engineer"
+        hobbies: ["woodworking", "genealogy", "volunteer_tutoring"]
+        grandchildren: 6
+    
+    location_workshop:
+      type: Location
+      core_properties:
+        name: "Garage Workshop"
+      standard_properties:
+        location_type: "workshop"
+      dynamic_properties:
+        dimensions: "24x24 feet"
+        power: "240V service"
+        dust_collection: "central_system"
+        safety_equipment: ["fire_extinguisher", "first_aid", "emergency_stop"]
+    
+    item_table_saw_cabinet:
+      type: Item
+      core_properties:
+        name: "SawStop Cabinet Saw"
+        item_type: "woodworking_tool"
+      standard_properties:
+        purchase_date: "2024-01-15"
+        purchase_price: 4200
+        condition: "excellent"
+        status: "owned"
+      dynamic_properties:
+        brand: "SawStop"
+        model: "Professional Cabinet Saw"
+        safety_features: ["flesh_detection", "riving_knife"]
+        fence_type: "T-Glide"
+        blade_size: "10 inch"
+    
+    digital_family_tree:
+      type: DigitalItem
+      core_properties:
+        name: "Thompson Family Genealogy Database"
+        content_type: "document"
+      standard_properties:
+        file_path: "/genealogy/thompson_family_tree.ged"
+        file_size: 15000000
+      dynamic_properties:
+        format: "GEDCOM"
+        people_documented: 847
+        generations_back: 7
+        sources: ["census_records", "birth_certificates", "family_bibles"]
+        research_years: 12
+    
+    activity_grandchild_toy_project:
+      type: Activity
+      core_properties:
+        name: "Wooden Toy Chest for Emma"
+        activity_type: "woodworking_project"
+      standard_properties:
+        start_date: "2025-07-01"
+        end_date: "2025-08-15"
+        status: "active"
+        completion_percentage: 30
+      dynamic_properties:
+        recipient: "granddaughter Emma (age 4)"
+        wood_type: "cherry"
+        dimensions: "36x18x16 inches"
+        features: ["safety_hinges", "carved_name", "toy_dividers"]
+        estimated_hours: 40
+    
+    info_woodworking_notes:
+      type: Information
+      core_properties:
+        title: "Woodworking Tips and Techniques"
+        content: "Collection of techniques learned over years of woodworking..."
+      standard_properties:
+        content_type: "reference"
+        importance: "medium"
+      dynamic_properties:
+        topics: ["joinery", "finishing", "wood_selection", "safety"]
+        sources: ["experience", "woodworking_magazines", "youtube"]
+        sharing: "local_woodworking_club"
+
+  relationships:
+    - source: person_william
+      relationship: OWNS
+      target: location_workshop
+    
+    - source: person_william
+      relationship: OWNS
+      target: item_table_saw_cabinet
+    
+    - source: person_william
+      relationship: OWNS
+      target: digital_family_tree
+    
+    - source: activity_grandchild_toy_project
+      relationship: USES
+      target: item_table_saw_cabinet
+    
+    - source: activity_grandchild_toy_project
+      relationship: USES
+      target: digital_family_tree
+    
+    - source: person_william
+      relationship: PARTICIPATES_IN
+      target: activity_grandchild_toy_project
+    
+    - source: info_woodworking_notes
+      relationship: ABOUT
+      target: item_table_saw_cabinet
+
+# ======================
+# EXAMPLE 17: COLLEGE STUDENT
+# ======================
+
+jessica_student_scenario:
+  description: "Jessica Brown manages coursework, part-time job, and social activities"
+  
+  entities:
+    person_jessica:
+      type: Person
+      core_properties:
+        name: "Jessica Brown"
+      standard_properties:
+        email: "j.brown@university.edu"
+        relationship: "self"
+      dynamic_properties:
+        major: "Computer Science"
+        year: "Junior"
+        gpa: 3.7
+        university: "State University"
+        part_time_job: "campus_IT_help_desk"
+    
+    location_dorm_room:
+      type: Location
+      core_properties:
+        name: "Residence Hall Room 304B"
+      standard_properties:
+        address: "University Residence Hall"
+        location_type: "dormitory"
+      dynamic_properties:
+        roommate: "Amanda Clark"
+        floor: 3
+        room_type: "double"
+        amenities: ["shared_bathroom", "ethernet", "study_lounge"]
+    
+    item_laptop:
+      type: Item
+      core_properties:
+        name: "Lenovo ThinkPad X1 Carbon"
+        item_type: "laptop"
+      standard_properties:
+        purchase_date: "2024-08-20"
+        purchase_price: 1800
+        condition: "excellent"
+        status: "owned"
+      dynamic_properties:
+        specs: {"ram": "16GB", "storage": "512GB SSD", "processor": "Intel i7"}
+        primary_use: "coursework_and_programming"
+        protective_case: "included"
+    
+    digital_course_notes:
+      type: DigitalItem
+      core_properties:
+        name: "CS 450 - Database Systems Notes"
+        content_type: "document"
+      standard_properties:
+        file_path: "/school/fall_2025/cs450/notes/"
+        file_size: 125000000
+      dynamic_properties:
+        format: "OneNote"
+        lecture_count: 28
+        includes: ["lecture_notes", "assignment_solutions", "study_guides"]
+        shared_with: "study_group"
+    
+    activity_final_project:
+      type: Activity
+      core_properties:
+        name: "Database Design Final Project"
+        activity_type: "academic_project"
+      standard_properties:
+        start_date: "2025-10-01"
+        end_date: "2025-12-10"
+        status: "planned"
+      dynamic_properties:
+        course: "CS 450 - Database Systems"
+        team_members: ["Jessica Brown", "Mike Chen", "Sarah Davis"]
+        project_type: "web_application_with_database"
+        expected_grade_weight: "30% of final grade"
+    
+    collection_textbooks:
+      type: Collection
+      core_properties:
+        name: "Fall 2025 Textbooks"
+        collection_type: "book_collection"
+      standard_properties:
+        description: "Required and recommended textbooks"
+        item_count: 7
+        is_ordered: false
+      dynamic_properties:
+        total_cost: 890
+        rental_vs_purchase: {"rented": 4, "purchased": 2, "digital": 1}
+        resale_value: "approximately $200"
+
+  relationships:
+    - source: person_jessica
+      relationship: OWNS
+      target: location_dorm_room
+    
+    - source: person_jessica
+      relationship: OWNS
+      target: item_laptop
+    
+    - source: person_jessica
+      relationship: OWNS
+      target: digital_course_notes
+    
+    - source: activity_final_project
+      relationship: USES
+      target: item_laptop
+    
+    - source: activity_final_project
+      relationship: USES
+      target: digital_course_notes
+    
+    - source: person_jessica
+      relationship: PARTICIPATES_IN
+      target: activity_final_project
+    
+    - source: collection_textbooks
+      relationship: CONTAINS
+      target: digital_course_notes
+
+# ======================
+# EXAMPLE 18: ARTIST & ILLUSTRATOR
+# ======================
+
+miguel_artist_scenario:
+  description: "Miguel Santos creates digital and traditional art with extensive equipment"
+  
+  entities:
+    person_miguel:
+      type: Person
+      core_properties:
+        name: "Miguel Santos"
+      standard_properties:
+        email: "miguel.santos.art@gmail.com"
+        relationship: "self"
+      dynamic_properties:
+        art_styles: ["digital_illustration", "watercolor", "character_design"]
+        instagram: "@miguel_creates"
+        clients: ["indie_game_studios", "book_publishers", "private_commissions"]
+        years_professional: 8
+    
+    item_drawing_tablet:
+      type: Item
+      core_properties:
+        name: "Wacom Cintiq Pro 24"
+        item_type: "digital_art_equipment"
+      standard_properties:
+        purchase_date: "2023-11-20"
+        purchase_price: 2500
+        condition: "excellent"
+        status: "owned"
+      dynamic_properties:
+        brand: "Wacom"
+        model: "Cintiq Pro 24"
+        screen_size: "23.8 inches"
+        pressure_levels: 8192
+        pen_included: "Pro Pen 2"
+        stand: "adjustable_arm"
+    
+    digital_commission_artwork:
+      type: DigitalItem
+      core_properties:
+        name: "Character Design - Fantasy RPG"
+        content_type: "artwork"
+      standard_properties:
+        file_path: "/artwork/2025/commissions/fantasy_rpg_character.psd"
+        file_size: 850000000
+        date_created: "2025-07-01"
+      dynamic_properties:
+        client: "Indie Studios LLC"
+        project: "medieval_fantasy_game"
+        character_name: "Aria the Mage"
+        dimensions: "3000x4000 pixels"
+        layers: 47
+        completion_status: "final_delivery"
+        payment: 1200
+    
+    activity_book_illustration:
+      type: Activity
+      core_properties:
+        name: "Children's Book Illustration Project"
+        activity_type: "commission"
+      standard_properties:
+        start_date: "2025-08-01"
+        end_date: "2025-11-30"
+        status: "active"
+        completion_percentage: 15
+      dynamic_properties:
+        client: "Rainbow Books Publishing"
+        book_title: "The Magic Garden"
+        illustration_count: 24
+        style: "watercolor_digital_hybrid"
+        deadline_schedule: "6 illustrations per month"
+        total_fee: 8500
+    
+    collection_art_supplies:
+      type: Collection
+      core_properties:
+        name: "Traditional Art Supplies"
+        collection_type: "art_materials"
+      standard_properties:
+        description: "Paints, brushes, papers for traditional work"
+        item_count: 89
+        is_ordered: false
+      dynamic_properties:
+        categories: ["watercolors", "brushes", "papers", "pencils", "markers"]
+        storage: "art_supply_organizer"
+        total_investment: "approximately $1500"
+        replacement_frequency: "quarterly for consumables"
+
+  relationships:
+    - source: person_miguel
+      relationship: OWNS
+      target: item_drawing_tablet
+    
+    - source: person_miguel
+      relationship: OWNS
+      target: digital_commission_artwork
+    
+    - source: activity_book_illustration
+      relationship: USES
+      target: item_drawing_tablet
+    
+    - source: activity_book_illustration
+      relationship: USES
+      target: digital_commission_artwork
+    
+    - source: person_miguel
+      relationship: PARTICIPATES_IN
+      target: activity_book_illustration
+    
+    - source: collection_art_supplies
+      relationship: CONTAINS
+      target: item_drawing_tablet
+
+# ======================
+# EXAMPLE 19: HEALTH & WELLNESS COACH
+# ======================
+
+natalie_wellness_scenario:
+  description: "Natalie Green helps clients with nutrition and fitness while tracking her own wellness"
+  
+  entities:
+    person_natalie:
+      type: Person
+      core_properties:
+        name: "Natalie Green"
+      standard_properties:
+        email: "natalie@healthywaycoaching.com"
+        relationship: "self"
+      dynamic_properties:
+        certifications: ["Certified Nutrition Coach", "Personal Trainer (NASM)"]
+        business_name: "Healthy Way Coaching"
+        specialties: ["weight_management", "meal_planning", "fitness_coaching"]
+        client_count: 23
+    
+    item_body_composition_scale:
+      type: Item
+      core_properties:
+        name: "InBody 570 Body Composition Analyzer"
+        item_type: "health_equipment"
+      standard_properties:
+        purchase_date: "2024-02-10"
+        purchase_price: 4500
+        condition: "excellent"
+        status: "owned"
+      dynamic_properties:
+        brand: "InBody"
+        model: "570"
+        measurements: ["weight", "body_fat", "muscle_mass", "visceral_fat"]
+        use: "client_assessments"
+        calibration_schedule: "monthly"
+    
+    digital_meal_plans:
+      type: DigitalItem
+      core_properties:
+        name: "Client Meal Plan Templates"
+        content_type: "document"
+      standard_properties:
+        file_path: "/coaching/meal_plans/"
+        file_size: 75000000
+      dynamic_properties:
+        plan_count: 15
+        dietary_types: ["standard", "vegetarian", "keto", "mediterranean", "gluten_free"]
+        calorie_ranges: ["1200-1500", "1500-1800", "1800-2200", "2200+"]
+        format: "PDF with shopping lists"
+    
+    activity_client_consultations:
+      type: Activity
+      core_properties:
+        name: "Weekly Client Check-ins"
+        activity_type: "coaching_sessions"
+      standard_properties:
+        status: "active"
+      dynamic_properties:
+        frequency: "weekly"
+        session_length: "45 minutes"
+        format: "video_calls"
+        topics: ["progress_review", "meal_planning", "exercise_modifications"]
+        scheduling_tool: "Calendly"
+    
+    info_nutrition_research:
+      type: Information
+      core_properties:
+        title: "Latest Nutrition Research - Intermittent Fasting"
+        content: "Recent studies on IF protocols and metabolic health..."
+      standard_properties:
+        content_type: "research"
+        source: "peer_reviewed_journals"
+        importance: "high"
+      dynamic_properties:
+        journals: ["American Journal of Clinical Nutrition", "Nutrition Reviews"]
+        application: "client_program_development"
+        key_findings: ["improved_insulin_sensitivity", "weight_management_benefits"]
+
+  relationships:
+    - source: person_natalie
+      relationship: OWNS
+      target: item_body_composition_scale
+    
+    - source: person_natalie
+      relationship: OWNS
+      target: digital_meal_plans
+    
+    - source: activity_client_consultations
+      relationship: USES
+      target: item_body_composition_scale
+    
+    - source: activity_client_consultations
+      relationship: USES
+      target: digital_meal_plans
+    
+    - source: person_natalie
+      relationship: PARTICIPATES_IN
+      target: activity_client_consultations
+    
+    - source: info_nutrition_research
+      relationship: ABOUT
+      target: digital_meal_plans
+
+# ======================
+# EXAMPLE 20: SMALL FARM OPERATION
+# ======================
+
+tom_farm_scenario:
+  description: "Tom Wilson operates a small organic farm with crops, livestock, and equipment"
+  
+  entities:
+    person_tom:
+      type: Person
+      core_properties:
+        name: "Tom Wilson"
+      standard_properties:
+        relationship: "self"
+      dynamic_properties:
+        farm_name: "Wilson Organic Farm"
+        farming_experience: 15
+        certifications: ["Certified Organic", "Good Agricultural Practices"]
+        primary_crops: ["tomatoes", "lettuce", "herbs", "seasonal_vegetables"]
+        livestock: ["chickens", "goats"]
+    
+    location_farm:
+      type: Location
+      core_properties:
+        name: "Wilson Organic Farm"
+      standard_properties:
+        address: "1456 Rural Route 2"
+        city: "Farmington"
+        state: "IA"
+        location_type: "farm"
+      dynamic_properties:
+        total_acres: 25
+        cultivated_acres: 18
+        zones: ["vegetable_fields", "pasture", "barn_area", "greenhouse"]
+        water_source: "well_and_pond"
+        soil_type: "loam"
+    
+    item_tractor_farm:
+      type: Item
+      core_properties:
+        name: "John Deere 3038E Compact Tractor"
+        item_type: "farm_equipment"
+      standard_properties:
+        purchase_date: "2021-04-20"
+        purchase_price: 22500
+        condition: "good"
+        status: "owned"
+      dynamic_properties:
+        make: "John Deere"
+        model: "3038E"
+        horsepower: 38
+        hours: 890
+        implements: ["front_loader", "rotary_cutter", "box_blade", "cultivator"]
+        maintenance_schedule: "every_50_hours"
+    
+    # Livestock as People entities
+    person_hen_flock:
+      type: Person
+      core_properties:
+        name: "Heritage Breed Hen Flock"
+      standard_properties:
+        relationship: "livestock"
+      dynamic_properties:
+        species: "chickens"
+        breeds: ["Rhode Island Red", "Buff Orpington", "Australorp"]
+        count: 24
+        egg_production: "18-20 eggs daily"
+        housing: "mobile_chicken_coop"
+        feed_type: "organic_layer_feed"
+    
+    digital_crop_records:
+      type: DigitalItem
+      core_properties:
+        name: "2025 Crop Production Records"
+        content_type: "document"
+      standard_properties:
+        file_path: "/farm/records/2025_crop_records.xlsx"
+        file_size: 8500000
+      dynamic_properties:
+        tracking: ["planting_dates", "harvest_yields", "input_costs", "sales_data"]
+        compliance: "organic_certification_required"
+        backup_frequency: "weekly"
+        sharing: "accountant_access"
+    
+    activity_tomato_harvest:
+      type: Activity
+      core_properties:
+        name: "Summer Tomato Harvest"
+        activity_type: "farming_operation"
+      standard_properties:
+        start_date: "2025-07-15"
+        end_date: "2025-09-30"
+        status: "active"
+      dynamic_properties:
+        varieties: ["Cherokee Purple", "Brandywine", "Roma"]
+        expected_yield: "8000 lbs"
+        harvest_schedule: "every_other_day"
+        distribution: ["farmers_market", "CSA_boxes", "restaurant_sales"]
+    
+    collection_farming_tools:
+      type: Collection
+      core_properties:
+        name: "Farm Tool Collection"
+        collection_type: "equipment_set"
+      standard_properties:
+        description: "All farming tools and equipment"
+        item_count: 67
+        is_ordered: false
+      dynamic_properties:
+        categories: ["hand_tools", "power_equipment", "irrigation", "harvest_containers"]
+        storage_location: "main_barn"
+        insurance_coverage: "farm_equipment_policy"
+        total_value: 45000
+
+  relationships:
+    - type: USES
+      from: activity_tomato_harvest
+      to: collection_farming_tools
+      description: "The Summer Tomato Harvest activity uses tools from the Farm Tool Collection."
+    - type: DOCUMENTS
+      from: digital_crop_records
+      to: activity_tomato_harvest
+      description: "The 2025 Crop Production Records document the Summer Tomato Harvest activity."
+    - type: PART_OF
+      from: digital_crop_records
+      to: collection_farming_tools
+      description: "The crop records are tracked as part of the Farm Tool Collection if digital items are inventoried."
+    - type: OWNS
+      from: person_tom
+      to: item_tractor_farm
+      description: "Tom Wilson owns the John Deere 3038E Compact Tractor."
+    - type: LOCATED_AT
+      from: person_hen_flock
+      to: location_farm
+      description: "The Heritage Breed Hen Flock is located at the Wilson Organic Farm."
+
+# ======================
+# USAGE NOTES
+# ======================
+
+usage_notes:
+  relationship_patterns:
+    - "Person entities can represent humans, pets, or livestock with different dynamic_properties"
+    - "Item vs DigitalItem distinction is crucial for proper modeling"
+    - "Locations can contain other locations (rooms in houses, areas on farms)"
+    - "Collections organize related entities and provide grouping context"
+    - "Activities track time-based events, projects, and recurring tasks"
+    - "Information captures knowledge, notes, and reference materials"
+  
+  dynamic_properties_best_practices:
+    - "Use consistent naming within similar entity types"
+    - "Store complex data as nested JSON when appropriate"
+    - "Include relevant identifiers (serial numbers, IDs, registration numbers)"
+    - "Track status and condition information"
+    - "Document source and provenance information"
+  
+  common_relationship_patterns:
+    - "OWNS connects people to their possessions (physical and digital)"
+    - "DOCUMENTS creates links between digital items and what they represent"
+    - "LOCATED_AT and CONTAINS establish spatial relationships"
+    - "PART_OF creates hierarchical groupings"
+    - "USES and PARTICIPATES_IN show activity involvement"
+    - "ABOUT creates topical connections to information"
+  
+  scalability_considerations:
+    - "Each scenario shows 10-20 entities but real usage could be 100x larger"
+    - "Dynamic properties allow unlimited expansion without schema changes"
+    - "Relationship patterns remain consistent regardless of scale"
+    - "Collections help organize large numbers of similar entities"
