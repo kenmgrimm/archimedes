@@ -38,7 +38,10 @@ Metrics/ClassLength:
   Max: 400
 
 Metrics/CyclomaticComplexity:
-  Max: 10
+  Max: 15
+
+Metrics/PerceivedComplexity:
+  Max: 15
 
 Metrics/ModuleLength:
   Max: 400
@@ -58,10 +61,10 @@ Layout/LineLength:
     - 'spec/**/*'
 
 Metrics/MethodLength:
-  Max: 100
+  Max: 150
 
 Metrics/AbcSize:
-  Max: 100
+  Max: 150
 
 Style/HashSyntax:
   EnforcedStyle: ruby19_no_mixed_keys

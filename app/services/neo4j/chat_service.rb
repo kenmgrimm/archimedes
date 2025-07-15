@@ -6,10 +6,9 @@ module Neo4j
       @logger = Rails.logger
 
       begin
-        taxonomy_path = Rails.root.join("app", "services", "neo4j", "taxonomy", "taxonomy.yml").to_s
-        @logger.debug { "ChatService: Loading taxonomy from #{taxonomy_path}" }
-        @taxonomy = YAML.load_file(taxonomy_path)
-        @logger.debug { "ChatService: Taxonomy loaded with keys: #{@taxonomy.keys}" }
+        @taxonomy_service = Neo4j::TaxonomyService.new
+        @logger.debug { "ChatService: Loading taxonomy via TaxonomyService" }
+        @logger.debug { "ChatService: Taxonomy loaded with entity types: #{@taxonomy_service.entity_types}" }
 
         @current_user = User.current.full_name
         @logger.debug { "ChatService: Initialized with user: #{@current_user}" }
@@ -23,11 +22,11 @@ module Neo4j
     def execute
       @logger.debug { "ChatService: Starting chat with query: #{@query.inspect}" }
       @logger.debug { "ChatService: Current user: #{@current_user.inspect}" }
-      @logger.debug { "ChatService: Taxonomy loaded: #{@taxonomy.present?}" }
+      @logger.debug { "ChatService: Taxonomy service loaded: #{@taxonomy_service.present?}" }
 
       # Step 1: Analyze intent
       @logger.debug { "ChatService: Analyzing intent..." }
-      @intent = Chat::IntentAnalyzer.new(@query, @taxonomy).analyze
+      @intent = Chat::IntentAnalyzer.new(@query, @taxonomy_service).analyze
       @logger.debug { "ChatService: Intent analysis result: #{Chat::Utils.clean_embeddings(@intent.inspect)}" }
 
       if @intent["clarification_needed"]
@@ -43,7 +42,7 @@ module Neo4j
           # Get new intent based on original query + clarification
           updated_query = "#{@query} - #{answer}"
           @logger.debug { "ChatService: Updating intent with answer: #{updated_query}" }
-          @intent = Chat::IntentAnalyzer.new(updated_query, @taxonomy).analyze
+          @intent = Chat::IntentAnalyzer.new(updated_query, @taxonomy_service).analyze
           @logger.debug { "ChatService: Updated intent: #{Chat::Utils.clean_embeddings(@intent.inspect)}" }
         rescue TTY::Reader::InputInterrupt
           @logger.info { "ChatService: User interrupted input" }
@@ -57,7 +56,7 @@ module Neo4j
 
       # Step 2: Plan and execute queries
       @logger.debug { "ChatService: Planning queries..." }
-      query_plan = Chat::QueryPlanner.new(@intent, @taxonomy).plan_queries
+      query_plan = Chat::QueryPlanner.new(@intent, @taxonomy_service).plan_queries
       @logger.debug { "ChatService: Query plan: #{query_plan.inspect}" }
 
       # Step 3: Execute queries and gather results
@@ -265,7 +264,7 @@ module Neo4j
       # Step 5: Generate final response
       @logger.debug { "ChatService: Interpreting results..." }
       @logger.debug { "ChatService: Final results: #{Chat::Utils.clean_embeddings(results.inspect)}" }
-      interpretation = Chat::ResponseGenerator.new(@intent, results, @taxonomy).generate
+      interpretation = Chat::ResponseGenerator.new(@intent, results, @taxonomy_service).generate
       @logger.debug { "ChatService: Interpretation: #{interpretation.inspect}" }
 
       # Show interpreted response and follow-ups

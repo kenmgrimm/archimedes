@@ -39,10 +39,10 @@ module Neo4j
       # Executes a write transaction
       # @yield [Neo4j::Driver::Transaction] The transaction to execute write operations
       # @return [Object] The result of the block
-      def write_transaction(&block)
+      def write_transaction(&)
         session = driver.session
         begin
-          session.write_transaction(&block)
+          session.write_transaction(&)
         ensure
           session&.close
         end

@@ -184,8 +184,8 @@ module Neo4j
 
     # Build the extraction prompt with taxonomy context
     def build_neo4j_extraction_prompt(taxonomy_context)
-      taxonomy_context[:entity_types] || {}
-      taxonomy_context[:relationship_types] || {}
+      entity_types = taxonomy_context[:entity_types] || {}
+      relationship_types = taxonomy_context[:relationship_types] || {}
 
       # Get user references for the prompt
       user_refs = current_user.all_references
@@ -200,11 +200,21 @@ module Neo4j
         - First-person pronouns (I, me, my, mine) refer to this user
         - Known aliases: #{user_refs.join(', ')}
 
+        # VALID ENTITY TYPES:
+        #{format_entity_types(entity_types)}
+
+        # VALID RELATIONSHIPS:
+        #{format_relationship_types(relationship_types)}
+
         # Extraction Guidelines:
         1. Extract ALL possible entities and relationships from the content
-        2. Include every relevant detail as entity properties
-        3. Set confidence scores (0.0-1.0) reflecting your certainty
-        4. Always include the exact source text for each extraction
+        2. ONLY use entity types, relationships, and properties that exist in the schema above
+        3. Include every relevant detail as entity properties (using valid property names)
+        4. Set confidence scores (0.0-1.0) reflecting your certainty
+        5. Always include the exact source text for each extraction
+        6. Validate that all entity types are from the VALID ENTITY TYPES list
+        7. Validate that all relationships are from the VALID RELATIONSHIPS list
+        8. Validate that all properties match the entity type's schema
 
         # For Images/Documents:
         - Create Photo/Document entities with all available metadata
@@ -224,19 +234,19 @@ module Neo4j
         # Response Format (JSON):
         {
           "entities": [{
-            "type": "EntityType",
+            "type": "EntityType",  # MUST be from VALID ENTITY TYPES above
             "name": "Name",
-            "properties": {"key": "value"},
+            "properties": {"key": "value"},  # MUST use valid properties for this entity type
             "confidence": 0.95,
             "source_text": "Original text"
           }],
           "relationships": [{
-            "type": "RELATIONSHIP_NAME",
+            "type": "RELATIONSHIP_NAME",  # MUST be from VALID RELATIONSHIPS above
             "source": "SourceEntity",
-            "source_type": "SourceEntityType",
-            "target": "TargetEntity",
-            "target_type": "TargetEntityType",
-            "properties": {"key": "value"},
+            "source_type": "SourceEntityType",  # MUST be valid entity type
+            "target": "TargetEntity",#{' '}
+            "target_type": "TargetEntityType",  # MUST be valid entity type
+            "properties": {"key": "value"},  # MUST use valid relationship properties
             "confidence": 0.95,
             "source_text": "Original text"
           }]
@@ -460,11 +470,6 @@ module Neo4j
         end
       end
       relationships
-    end
-
-    # Get descriptions for all property types
-    def property_type_descriptions
-      @taxonomy_service.property_types.transform_values { |v| v["description"] }
     end
 
     # Generate a unique signature for an entity to detect duplicates
