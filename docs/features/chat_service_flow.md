@@ -223,9 +223,35 @@ class AdaptiveQueryPlanner
 end
 ```
 
-#### 2. **Modern RAG Integration Patterns** =�
+#### 2. **Modern RAG Integration Patterns**
 
 Based on real-world RAG systems, implement:
+
+**Agentic Orchestration Options:**
+
+| Framework   | License | Maintainer(s) | Community/Activity | Maturity | Lock-in/Extensibility |
+|-------------|---------|---------------|--------------------|----------|----------------------|
+| **AutoGen** | MIT     | Microsoft/OSS | Very active        | Mature   | No lock-in, highly extensible |
+| **LangGraph** | MIT   | LangChain/OSS | Active             | Mature   | No lock-in, extensible |
+| **CrewAI**  | MIT     | OSS/Indie     | Growing            | Young    | No lock-in, extensible |
+
+**AutoGen** (Microsoft):
+- Python framework for building multi-agent LLM systems with agent-to-agent collaboration, tool use, and human-in-the-loop workflows.
+- Highly flexible: define custom agent roles, tool access, and memory (including graph/vector stores via APIs).
+- Excellent for orchestrating complex, adaptive workflows (planner, retriever, executor, etc.).
+- No vendor lock-in, open source, production-ready.
+- Integrates naturally with Rails/Neo4j/pgvector via API or direct DB access.
+
+**LangGraph** (LangChain):
+- Graph-based agent workflow modeling (nodes = agents/tools, edges = transitions).
+- Native support for LangChain tool/memory ecosystem, vector stores, and RAG.
+- Great for stateful, multi-step workflows and visual reasoning flows.
+
+**CrewAI**:
+- Simple multi-agent “crew” model for collaborative task assignment.
+- Fast prototyping, but less granular control for complex, deeply personalized assistants.
+
+---
 
 **a) Retrieval-Augmented Planning:**
 ```ruby
