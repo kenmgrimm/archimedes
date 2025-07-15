@@ -18,7 +18,8 @@ module Neo4j
       # @param enable_vector_search [Boolean, nil] Override for enabling vector similarity search
       # @param similarity_threshold [Float, nil] Override for minimum similarity score (0-1)
       # @param enable_human_review [Boolean] If true, queue uncertain matches for human review
-      def initialize(logger: nil, dry_run: false, enable_vector_search: nil, similarity_threshold: nil, debug: false, enable_human_review: false)
+      def initialize(logger: nil, dry_run: false, enable_vector_search: nil, similarity_threshold: nil, debug: false,
+                     enable_human_review: false)
         super(logger: logger, dry_run: dry_run)
         @debug = debug
         @enable_human_review = enable_human_review
@@ -59,11 +60,11 @@ module Neo4j
         )
 
         # Initialize human review manager if enabled
-        if @enable_human_review
-          require_relative 'human_review_manager'
-          @human_review_manager = HumanReviewManager.new(logger: logger)
-          log_info("Human review enabled for uncertain matches")
-        end
+        return unless @enable_human_review
+
+        require_relative "human_review_manager"
+        @human_review_manager = HumanReviewManager.new(logger: logger)
+        log_info("Human review enabled for uncertain matches")
       end
 
       # Imports a collection of entities (main interface method)
@@ -80,7 +81,7 @@ module Neo4j
 
         entities_by_type.each do |type, type_entities|
           log_info("Importing #{type_entities.size} #{type} nodes...")
-          
+
           # Convert entities to the format expected by import_nodes
           formatted_entities = type_entities.map do |entity|
             # Ensure properties include the name field
@@ -90,7 +91,7 @@ module Neo4j
           end
 
           type_stats = import_nodes(formatted_entities, type: type)
-          
+
           # Aggregate stats
           total_stats.each_key do |key|
             total_stats[key] += type_stats[key] if type_stats[key]
@@ -162,21 +163,21 @@ module Neo4j
       # @param properties [Hash] The properties to match against
       # @return [Neo4j::Core::Node, nil] The matching node, or nil if not found
       def find_existing_node(tx, type, properties)
-        puts "\n🔍 FIND_EXISTING_NODE - Starting search for #{type}" if @debug
-        puts "  Properties: #{properties.keys.join(', ')}" if @debug
-        
+        Rails.logger.debug { "\n🔍 FIND_EXISTING_NODE - Starting search for #{type}" } if @debug
+        Rails.logger.debug { "  Properties: #{properties.keys.join(', ')}" } if @debug
+
         # First try exact matching on unique constraints
-        puts "  Step 1: Trying constraint matching..." if @debug
+        Rails.logger.debug "  Step 1: Trying constraint matching..." if @debug
         existing_node = find_node_by_constraints(tx, type, properties)
         if existing_node
-          puts "  ✅ Found via constraints!" if @debug
+          Rails.logger.debug "  ✅ Found via constraints!" if @debug
           return existing_node
         end
-        puts "  ❌ No constraint matches" if @debug
+        Rails.logger.debug "  ❌ No constraint matches" if @debug
 
         # If vector search is enabled, try similarity search
         if @enable_vector_search && properties["embedding"].is_a?(Array)
-          puts "  Step 2: Trying vector search (has embedding)..." if @debug
+          Rails.logger.debug "  Step 2: Trying vector search (has embedding)..." if @debug
 
           # Get type-specific similarity threshold
           threshold = NodeMatcherRegistry.similarity_threshold_for(type)
@@ -191,45 +192,43 @@ module Neo4j
           # Return the most similar node if above threshold
           best_match = similar_nodes.first
           if best_match&.dig(:similarity).to_f >= threshold
-            puts "  ✅ Found via vector search! (similarity: #{best_match[:similarity].round(4)})" if @debug
+            Rails.logger.debug { "  ✅ Found via vector search! (similarity: #{best_match[:similarity].round(4)})" } if @debug
             return best_match[:node]
-          else
-            puts "  ❌ Vector search found no matches above threshold" if @debug
+          elsif @debug
+            Rails.logger.debug "  ❌ Vector search found no matches above threshold"
           end
-        else
-          if @enable_vector_search
-            puts "  Step 2: Skipping vector search (no embedding)" if @debug
-          else
-            puts "  Step 2: Vector search disabled" if @debug
-          end
+        elsif @enable_vector_search
+          Rails.logger.debug "  Step 2: Skipping vector search (no embedding)" if @debug
+        elsif @debug
+          Rails.logger.debug "  Step 2: Vector search disabled"
         end
 
         # Fall back to fuzzy matching using NodeMatcherRegistry (with human review if enabled)
-        puts "  Step 3: Trying fuzzy matching..." if @debug
-        
+        Rails.logger.debug "  Step 3: Trying fuzzy matching..." if @debug
+
         # Debug: Check what nodes exist before fuzzy matching
         if @debug
           debug_result = tx.run("MATCH (n:#{type}) RETURN count(n) as count")
           node_count = debug_result.first[:count]
-          puts "    Debug: Found #{node_count} existing #{type} nodes in database"
+          Rails.logger.debug { "    Debug: Found #{node_count} existing #{type} nodes in database" }
         end
-        
+
         fuzzy_result = find_node_by_fuzzy_matching_with_review(tx, type, properties)
         if fuzzy_result
-          puts "  ✅ Found via fuzzy matching!" if @debug
+          Rails.logger.debug "  ✅ Found via fuzzy matching!" if @debug
           return fuzzy_result
         end
-        puts "  ❌ No fuzzy matches" if @debug
-        
-        puts "  Step 4: Trying property matching..." if @debug
+        Rails.logger.debug "  ❌ No fuzzy matches" if @debug
+
+        Rails.logger.debug "  Step 4: Trying property matching..." if @debug
         property_result = find_node_by_properties(tx, type, properties)
         if property_result
-          puts "  ✅ Found via property matching!" if @debug
+          Rails.logger.debug "  ✅ Found via property matching!" if @debug
           return property_result
         end
-        puts "  ❌ No property matches" if @debug
-        
-        puts "  🚫 No existing node found - will create new one" if @debug
+        Rails.logger.debug "  ❌ No property matches" if @debug
+
+        Rails.logger.debug "  🚫 No existing node found - will create new one" if @debug
         nil
       end
 
@@ -241,7 +240,7 @@ module Neo4j
       def find_node_by_constraints(tx, type, properties)
         # First try to find by ID if present
         if properties["id"]
-          escaped_type = type.include?(' ') ? "`#{type}`" : type
+          escaped_type = type.include?(" ") ? "`#{type}`" : type
           query = "MATCH (n:#{escaped_type} {id: $id}) RETURN n LIMIT 1"
           result = tx.run(query, id: properties["id"])
           record = result.first
@@ -251,15 +250,15 @@ module Neo4j
         # Then try to find by other unique properties
         unique_props = properties.select { |k, _| k.to_s.start_with?("unique_") }
         if unique_props.any?
-          escaped_type = type.include?(' ') ? "`#{type}`" : type
-          where_clause = unique_props.map { |k, _| 
-            escaped_prop = k.to_s.include?(' ') ? "`#{k}`" : k
-            param_name = k.to_s.gsub(' ', '_')
+          escaped_type = type.include?(" ") ? "`#{type}`" : type
+          where_clause = unique_props.map do |k, _|
+            escaped_prop = k.to_s.include?(" ") ? "`#{k}`" : k
+            param_name = k.to_s.tr(" ", "_")
             "n.#{escaped_prop} = $#{param_name}"
-          }.join(" AND ")
+          end.join(" AND ")
           query = "MATCH (n:#{escaped_type}) WHERE #{where_clause} RETURN n LIMIT 1"
           # Convert unique properties to symbol keys with underscores
-          unique_params = unique_props.each_with_object({}) { |(k, v), h| h[k.to_s.gsub(' ', '_').to_sym] = v }
+          unique_params = unique_props.transform_keys { |k| k.to_s.tr(" ", "_").to_sym }
           result = tx.run(query, **unique_params)
           record = result.first
           return record[:n] if record
@@ -278,17 +277,17 @@ module Neo4j
         return nil if properties.empty?
 
         # Create a simple property-based query
-        escaped_type = type.include?(' ') ? "`#{type}`" : type
-        where_clause = properties.map { |k, _| 
-          escaped_prop = k.to_s.include?(' ') ? "`#{k}`" : k
-          param_name = k.to_s.gsub(' ', '_')
+        escaped_type = type.include?(" ") ? "`#{type}`" : type
+        where_clause = properties.map do |k, _|
+          escaped_prop = k.to_s.include?(" ") ? "`#{k}`" : k
+          param_name = k.to_s.tr(" ", "_")
           "n.#{escaped_prop} = $#{param_name}"
-        }.join(" AND ")
+        end.join(" AND ")
         query = "MATCH (n:#{escaped_type}) WHERE #{where_clause} RETURN n LIMIT 1"
 
         begin
           # Convert properties to symbol keys for the neo4j-driver, replacing spaces with underscores
-          params = properties.each_with_object({}) { |(k, v), h| h[k.to_s.gsub(' ', '_').to_sym] = v }
+          params = properties.transform_keys { |k| k.to_s.tr(" ", "_").to_sym }
           result = tx.run(query, **params)
           record = result.first
           record ? record[:n] : nil
@@ -308,62 +307,62 @@ module Neo4j
         return find_node_by_fuzzy_matching(tx, type, properties) unless @enable_human_review
 
         # With human review enabled, evaluate each potential match
-        puts "\\n=== Fuzzy Matching with Human Review ===" if @debug
-        puts "Type: #{type}" if @debug
-        puts "Properties: #{properties.keys.join(', ')}" if @debug
+        Rails.logger.debug "\\n=== Fuzzy Matching with Human Review ===" if @debug
+        Rails.logger.debug { "Type: #{type}" } if @debug
+        Rails.logger.debug { "Properties: #{properties.keys.join(', ')}" } if @debug
 
         # Query for all nodes of the specified type
-        escaped_type = type.include?(' ') ? "`#{type}`" : type
-        
+        escaped_type = type.include?(" ") ? "`#{type}`" : type
+
         # Build property list based on node type
         if type == "Person"
           query = "MATCH (n:#{escaped_type}) RETURN n, n.name as name, n.email as email, n.phone_number as phone_number, n.ID as ID, n.aliases as aliases"
-        elsif type == "Asset" || type == "Vehicle"  
+        elsif ["Asset", "Vehicle"].include?(type)
           query = "MATCH (n:#{escaped_type}) RETURN n, n.name as name, n.model as model, n.brand as brand, n.make as make, n.serial_number as serial_number, n.license_plate as license_plate, n.category as category, n.description as description"
         else
           query = "MATCH (n:#{escaped_type}) RETURN n, n.name as name, n.description as description, n.title as title"
         end
-        
+
         result = tx.run(query)
         records = result.to_a
-        puts "Found #{records.size} records to evaluate" if @debug
+        Rails.logger.debug { "Found #{records.size} records to evaluate" } if @debug
 
         matcher_class = NodeMatcherRegistry.matcher_for(type)
 
         records.each_with_index do |record, index|
           node = record[:n]
-          
+
           # Reconstruct properties from individual fields
           existing_props = extract_node_properties(record, type)
-          
-          puts "\\n--- Evaluating match #{index + 1} ---" if @debug
-          puts "Node ID: #{node.id}" if @debug
-          puts "Existing: #{existing_props['name']}" if @debug
-          puts "New: #{properties['name']}" if @debug
+
+          Rails.logger.debug { "\\n--- Evaluating match #{index + 1} ---" } if @debug
+          Rails.logger.debug { "Node ID: #{node.id}" } if @debug
+          Rails.logger.debug { "Existing: #{existing_props['name']}" } if @debug
+          Rails.logger.debug { "New: #{properties['name']}" } if @debug
 
           # Use human review manager to evaluate the match
           decision = @human_review_manager.evaluate_merge_decision(
-            existing_props, 
-            properties, 
+            existing_props,
+            properties,
             matcher_class
           )
 
           case decision[:action]
           when :auto_merge
-            puts "  ✅ Auto-merge approved (#{decision[:confidence].round(3)} confidence)" if @debug
+            Rails.logger.debug { "  ✅ Auto-merge approved (#{decision[:confidence].round(3)} confidence)" } if @debug
             return node
           when :auto_reject
-            puts "  ❌ Auto-reject (#{decision[:confidence].round(3)} confidence)" if @debug
+            Rails.logger.debug { "  ❌ Auto-reject (#{decision[:confidence].round(3)} confidence)" } if @debug
             next
           when :human_review
-            puts "  🤔 Queued for human review (#{decision[:confidence].round(3)} confidence)" if @debug
-            puts "  Review ID: #{decision[:review_id]}" if @debug
+            Rails.logger.debug { "  🤔 Queued for human review (#{decision[:confidence].round(3)} confidence)" } if @debug
+            Rails.logger.debug { "  Review ID: #{decision[:review_id]}" } if @debug
             # Continue to next potential match
             next
           end
         end
 
-        puts "No automatic matches found" if @debug
+        Rails.logger.debug "No automatic matches found" if @debug
         nil
       end
 
@@ -373,9 +372,9 @@ module Neo4j
       # @param properties [Hash] The properties to match against
       # @return [Neo4j::Core::Node, nil] The matching node, or nil if not found
       def find_node_by_fuzzy_matching(tx, type, properties)
-        puts "\n=== Fuzzy Matching ===" if @debug
-        puts "Type: #{type}" if @debug
-        puts "Properties: #{properties.keys.join(', ')}" if @debug
+        Rails.logger.debug "\n=== Fuzzy Matching ===" if @debug
+        Rails.logger.debug { "Type: #{type}" } if @debug
+        Rails.logger.debug { "Properties: #{properties.keys.join(', ')}" } if @debug
 
         # Enable debug mode for this operation if @debug is true
         original_debug = $debug_mode
@@ -384,61 +383,61 @@ module Neo4j
         begin
           # Query for all nodes of the specified type
           # Escape type names that contain spaces or special characters
-          escaped_type = type.include?(' ') ? "`#{type}`" : type
+          escaped_type = type.include?(" ") ? "`#{type}`" : type
           # Build property list based on node type
           if type == "Person"
             query = "MATCH (n:#{escaped_type}) RETURN n, n.name as name, n.email as email, n.phone_number as phone_number, n.ID as ID, n.aliases as aliases"
-          elsif type == "Asset" || type == "Vehicle"  
+          elsif ["Asset", "Vehicle"].include?(type)
             query = "MATCH (n:#{escaped_type}) RETURN n, n.name as name, n.model as model, n.brand as brand, n.make as make, n.serial_number as serial_number, n.license_plate as license_plate, n.category as category, n.description as description"
           else
             # Default for other types
             query = "MATCH (n:#{escaped_type}) RETURN n, n.name as name, n.description as description, n.title as title"
           end
-          puts "Executing query: #{query}" if @debug
+          Rails.logger.debug { "Executing query: #{query}" } if @debug
 
           result = tx.run(query)
-          puts "Executing fuzzy matching query..." if @debug
+          Rails.logger.debug "Executing fuzzy matching query..." if @debug
 
           # Collect all results to avoid result stream consumption issues
           records = result.to_a
-          puts "Found #{records.size} records to check" if @debug
+          Rails.logger.debug { "Found #{records.size} records to check" } if @debug
           records.each_with_index do |record, index|
             node = record[:n]
             # Reconstruct properties from individual fields based on node type
-            if type == "Person"
-              existing_props = {
-                "name" => record[:name],
-                "email" => record[:email], 
-                "phone_number" => record[:phone_number],
-                "ID" => record[:ID],
-                "aliases" => record[:aliases]
-              }.compact
-            elsif type == "Asset" || type == "Vehicle"
-              existing_props = {
-                "name" => record[:name],
-                "model" => record[:model],
-                "brand" => record[:brand], 
-                "make" => record[:make],
-                "serial_number" => record[:serial_number],
-                "license_plate" => record[:license_plate],
-                "category" => record[:category],
-                "description" => record[:description]
-              }.compact
-            else
-              # Default for other types
-              existing_props = {
-                "name" => record[:name],
-                "description" => record[:description],
-                "title" => record[:title]
-              }.compact
-            end
+            existing_props = if type == "Person"
+                               {
+                                 "name" => record[:name],
+                                 "email" => record[:email],
+                                 "phone_number" => record[:phone_number],
+                                 "ID" => record[:ID],
+                                 "aliases" => record[:aliases]
+                               }.compact
+                             elsif ["Asset", "Vehicle"].include?(type)
+                               {
+                                 "name" => record[:name],
+                                 "model" => record[:model],
+                                 "brand" => record[:brand],
+                                 "make" => record[:make],
+                                 "serial_number" => record[:serial_number],
+                                 "license_plate" => record[:license_plate],
+                                 "category" => record[:category],
+                                 "description" => record[:description]
+                               }.compact
+                             else
+                               # Default for other types
+                               {
+                                 "name" => record[:name],
+                                 "description" => record[:description],
+                                 "title" => record[:title]
+                               }.compact
+                             end
 
-            puts "\n--- Checking match #{index + 1} ---" if @debug
-            puts "Node ID: #{node.id}" if @debug
-            puts "Existing props keys: #{existing_props.keys.join(', ')}" if @debug
-            puts "New props keys: #{properties.keys.join(', ')}" if @debug
-            puts "Existing name: '#{existing_props['name']}'" if @debug
-            puts "New name: '#{properties['name']}'" if @debug
+            Rails.logger.debug { "\n--- Checking match #{index + 1} ---" } if @debug
+            Rails.logger.debug { "Node ID: #{node.id}" } if @debug
+            Rails.logger.debug { "Existing props keys: #{existing_props.keys.join(', ')}" } if @debug
+            Rails.logger.debug { "New props keys: #{properties.keys.join(', ')}" } if @debug
+            Rails.logger.debug { "Existing name: '#{existing_props['name']}'" } if @debug
+            Rails.logger.debug { "New name: '#{properties['name']}'" } if @debug
 
             # Log specific properties for comparison
             if type == "Address"
@@ -452,14 +451,14 @@ module Neo4j
             # Enable detailed debug logging for the fuzzy match
             NodeMatcherRegistry.debug = true if @debug
 
-            puts "Calling NodeMatcherRegistry.fuzzy_match?..." if @debug
-            puts "  Using matcher: #{NodeMatcherRegistry.matcher_for(type).name}" if @debug
+            Rails.logger.debug "Calling NodeMatcherRegistry.fuzzy_match?..." if @debug
+            Rails.logger.debug { "  Using matcher: #{NodeMatcherRegistry.matcher_for(type).name}" } if @debug
             match_result = NodeMatcherRegistry.fuzzy_match?(type, existing_props, properties, debug: @debug)
             if match_result
-              puts "✅ Found fuzzy match!" if @debug
+              Rails.logger.debug "✅ Found fuzzy match!" if @debug
               return node
-            else
-              puts "❌ No match" if @debug
+            elsif @debug
+              Rails.logger.debug "❌ No match"
             end
 
             # Reset debug mode
@@ -487,7 +486,7 @@ module Neo4j
         when "Person"
           {
             "name" => record[:name],
-            "email" => record[:email], 
+            "email" => record[:email],
             "phone_number" => record[:phone_number],
             "ID" => record[:ID],
             "aliases" => record[:aliases]
@@ -496,7 +495,7 @@ module Neo4j
           {
             "name" => record[:name],
             "model" => record[:model],
-            "brand" => record[:brand], 
+            "brand" => record[:brand],
             "make" => record[:make],
             "serial_number" => record[:serial_number],
             "license_plate" => record[:license_plate],

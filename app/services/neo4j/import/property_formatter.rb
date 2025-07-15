@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'date'
-require 'json'
+require "date"
+require "json"
 
 module Neo4j
   module Import
@@ -22,7 +22,7 @@ module Neo4j
         when Hash
           log_debug(logger, "    - Formatting hash") if depth.zero?
           # Neo4j doesn't support nested objects, so we need to flatten or serialize them
-          if depth > 0
+          if depth.positive?
             # Convert nested hashes to JSON strings
             log_debug(logger, "    - Converting nested hash to JSON string") if logger && depth == 1
             value.to_json
@@ -44,7 +44,7 @@ module Neo4j
           log_debug(logger, "    - Formatting array (#{value.size} items)") if depth.zero?
 
           # For large arrays (like embeddings), don't log individual items
-          if value.size > 5 && depth.zero? && value.all? { |v| v.is_a?(Numeric) }
+          if value.size > 5 && depth.zero? && value.all?(Numeric)
             log_debug(logger, "    - Large numeric array detected, skipping detailed logging")
             return value.map { |v| format_property(v, depth: depth + 1, logger: logger) }
           end
@@ -61,7 +61,7 @@ module Neo4j
         else
           # Handle time-like objects and other classes by name
           case value.class.name
-          when 'DateTime', 'ActiveSupport::TimeWithZone'
+          when "DateTime", "ActiveSupport::TimeWithZone"
             value.respond_to?(:iso8601) ? value.iso8601 : value.to_s
           else
             log_warn(logger, "Unhandled type #{value.class.name}, converting to string") if depth.zero?
@@ -93,7 +93,7 @@ module Neo4j
           next unless is_top_level
 
           log_value = if formatted_value.is_a?(Array)
-                        if formatted_value.size > 5 && formatted_value.all? { |v| v.is_a?(Numeric) }
+                        if formatted_value.size > 5 && formatted_value.all?(Numeric)
                           "[Array(#{formatted_value.size} numbers)]"
                         elsif formatted_value.size > 5
                           "[Array(#{formatted_value.size} items) #{formatted_value.first(3).inspect}... #{formatted_value.last(2).inspect}]"

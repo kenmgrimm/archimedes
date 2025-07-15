@@ -17,13 +17,13 @@ module Neo4j
 
       def execute_write(cypher, parameters = {})
         write_transaction do |tx|
-          tx.run(cypher, parameters)
+          tx.run(cypher, **parameters)
         end
       end
 
       def execute_read(cypher, parameters = {})
         read_transaction do |tx|
-          tx.run(cypher, parameters)
+          tx.run(cypher, **parameters)
         end
       end
 

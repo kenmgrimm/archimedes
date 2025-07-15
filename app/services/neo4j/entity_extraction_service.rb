@@ -173,7 +173,6 @@ module Neo4j
 
         # Parse and validate the response
         parse_and_validate_response(response, raw_response)
-
       rescue StandardError => e
         @logger.error("Extraction with messages failed: #{e.message}")
         @logger.error(e.backtrace.join("\n")) if e.backtrace
@@ -193,7 +192,7 @@ module Neo4j
       user_description = current_user.prompt_description
 
       <<~PROMPT
-        Extract detailed knowledge from the provided content to build a comprehensive personal knowledge graph.#{' '}
+        Extract detailed knowledge from the provided content to build a comprehensive personal knowledge graph.
         Focus on identifying all relevant entities, their properties, and relationships.
 
         # User Context:

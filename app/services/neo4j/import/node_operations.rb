@@ -92,10 +92,10 @@ module Neo4j
 
       def execute_create_node(tx, type, properties, stats)
         # Escape type names that contain spaces or special characters
-        escaped_type = type.include?(' ') ? "`#{type}`" : type
+        escaped_type = type.include?(" ") ? "`#{type}`" : type
         query = "CREATE (n:#{escaped_type} $props) RETURN n"
         log_info("  + Executing: #{query}")
-        puts "  + Properties being stored: #{properties.inspect}" if @debug
+        Rails.logger.debug { "  + Properties being stored: #{properties.inspect}" } if @debug
 
         result = tx.run(query, props: properties)
 

@@ -5,7 +5,7 @@ require_relative "../config/environment"
 
 # Enable detailed logging
 Rails.logger.level = Logger::DEBUG
-ActiveRecord::Base.logger = Logger.new(STDOUT) if defined?(ActiveRecord::Base)
+ActiveRecord::Base.logger = Logger.new($stdout) if defined?(ActiveRecord::Base)
 
 # This script provides a comprehensive test suite for the AI-powered vector similarity search
 # It tests various scenarios including exact matches, similar matches, and edge cases
@@ -18,7 +18,7 @@ class AISimilarityTestSuite
     @importer = Neo4j::Import::NodeImporter.new(
       enable_vector_search: true,
       similarity_threshold: 0.8,
-      logger: Logger.new(STDOUT),
+      logger: Logger.new($stdout),
       debug: true # Enable debug mode for the importer
     )
 
@@ -233,7 +233,7 @@ class AISimilarityTestSuite
     puts "Failed: #{@results[:failed]}"
     puts "Skipped: #{@results[:skipped]}"
 
-    if @results[:failed] > 0
+    if @results[:failed].positive?
       puts "\n❌ Some tests failed. Please review the output above."
       exit 1
     else

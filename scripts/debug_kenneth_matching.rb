@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require_relative '../config/environment'
+require_relative "../config/environment"
 
 puts "Debug matching between first two Kenneth Grimm entities..."
 
@@ -14,7 +14,7 @@ props1 = {
   "name" => "Kenneth Grimm"
 }
 
-# Properties from second entity  
+# Properties from second entity
 props2 = {
   "aliases" => ["Kenneth", "Ken", "Kenny"],
   "ID" => "1",

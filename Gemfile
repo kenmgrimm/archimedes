@@ -103,3 +103,9 @@ end
 gem "active_storage_validations", "~> 3.0"
 
 gem "mimemagic", "~> 0.4.3"
+
+# CLI tools
+gem "thor"
+gem "tty-box"
+gem "tty-markdown"
+gem "tty-prompt"

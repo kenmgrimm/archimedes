@@ -25,7 +25,7 @@ module Neo4j
             properties["phone_number"].to_s,
             properties["title"].to_s,
             properties["company_name"].to_s
-          ].reject(&:blank?).join(" ").strip
+          ].compact_blank.join(" ").strip
         end
 
         # Define fuzzy matching methods to try in order
@@ -58,10 +58,10 @@ module Neo4j
         def self.exact_phone_match(existing_props, new_props)
           existing_phone = existing_props["phone"].to_s.strip
           existing_phone = existing_props["phone_number"].to_s.strip if existing_phone.blank?
-          
+
           new_phone = new_props["phone"].to_s.strip
           new_phone = new_props["phone_number"].to_s.strip if new_phone.blank?
-          
+
           return false if existing_phone.blank? || new_phone.blank?
 
           # Normalize phone numbers by removing non-digit characters
@@ -153,7 +153,7 @@ module Neo4j
           first = props["first_name"].to_s.strip
           last = props["last_name"].to_s.strip
 
-          [first, last].reject(&:blank?).join(" ")
+          [first, last].compact_blank.join(" ")
         end
       end
     end

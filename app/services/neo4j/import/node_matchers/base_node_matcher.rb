@@ -28,8 +28,7 @@ module Neo4j
             return "" unless properties.is_a?(Hash)
 
             text_parts = embedding_properties
-                         .map { |p| properties[p] }
-                         .compact
+                         .filter_map { |p| properties[p] }
                          .reject(&:empty?)
 
             text_parts.any? ? text_parts.join(". ") : ""

@@ -2,13 +2,12 @@
 
 module OpenAI
   class EntityMatchingService
-    class EntityRelationship < Struct.new(:type, :confidence, :reason, :existing_entity, :new_entity)
-      # type: :duplicate, :component, or :none
-      # confidence: Float between 0.0 and 1.0
-      # reason: Explanation of the relationship
-      # existing_entity: The existing entity (for components, this is the parent)
-      # new_entity: The new entity being analyzed
-    end
+    EntityRelationship = Struct.new(:type, :confidence, :reason, :existing_entity, :new_entity)
+    # type: :duplicate, :component, or :none
+    # confidence: Float between 0.0 and 1.0
+    # reason: Explanation of the relationship
+    # existing_entity: The existing entity (for components, this is the parent)
+    # new_entity: The new entity being analyzed
 
     def initialize(api_key: nil, model: "gpt-4")
       @client = OpenAI::Client.new(access_token: api_key || ENV.fetch("OPENAI_API_KEY", nil))

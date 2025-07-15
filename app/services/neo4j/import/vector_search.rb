@@ -55,7 +55,7 @@ module Neo4j
 
         threshold ||= @similarity_threshold
 
-        escaped_type = type.include?(' ') ? "`#{type}`" : type
+        escaped_type = type.include?(" ") ? "`#{type}`" : type
         query = <<~CYPHER
           MATCH (n:#{escaped_type})
           WHERE n.embedding IS NOT NULL

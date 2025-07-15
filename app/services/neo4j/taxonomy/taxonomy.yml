@@ -59,9 +59,9 @@ Person:
     name:
       required: true
       description: Full name in display format (e.g., "Dr. Jane A. Smith, PhD")
-    givenName:
+    firstName:
       description: First/given name (e.g., "John", "Mary")
-    familyName:
+    lastName:
       description: Last/family name (e.g., "Smith")
     middleName:
       description: Middle name(s) or initial(s) (e.g., "Alexander" or "A.")
@@ -618,7 +618,7 @@ Document:
     A file or document, either physical or digital.
     Examples: PDF reports, spreadsheets, scanned receipts, contracts
   properties:
-    title:
+    name:
       required: true
       description: Name of the document
     description:
@@ -720,24 +720,6 @@ Photo:
       description: When the photo was taken (from EXIF data if available)
     location:
       description: Geographic coordinates or place name where the photo was taken
-    cameraMake:
-      description: Camera manufacturer (from EXIF)
-    cameraModel:
-      description: Camera model (from EXIF)
-    aperture:
-      description: Camera aperture setting (from EXIF)
-    exposure:
-      description: Exposure time (from EXIF)
-    iso:
-      type: Number
-      description: ISO speed (from EXIF)
-    focalLength:
-      type: Number
-      description: Focal length in mm (from EXIF)
-    isFavorite:
-      type: Boolean
-      default: false
-      description: Whether the photo is marked as a favorite
   relations:
     DEPICTS:
       to:
@@ -793,33 +775,6 @@ Asset:
       description: Model name or number
     serialNumber:
       description: Unique identifier from manufacturer
-    purchaseDate:
-      type: DateTime
-      description: When the asset was acquired
-    purchasePrice:
-      type: Number
-      description: Original purchase price in the currency's smallest unit
-    purchaseLocation:
-      description: Where the asset was purchased
-    currentValue:
-      type: Number
-      description: Current estimated value in the currency's smallest unit
-    valueDate:
-      type: DateTime
-      description: When the current value was assessed
-    condition:
-      enum: [new, excellent, good, fair, poor]
-      description: Current physical condition
-    status:
-      enum: [active, in_use, in_storage, in_repair, lost, sold, disposed]
-      default: active
-    warrantyExpires:
-      type: DateTime
-      description: When the warranty period ends
-    insurancePolicyNumber:
-      description: Related insurance policy ID
-    notes:
-      description: Any additional information
   relations:
     OWNED_BY:
       to: Person
@@ -837,7 +792,6 @@ Asset:
       to: Document
       cardinality: many
       description: Related documents (receipts, manuals, warranties)
-
 
 Property:
   description: >
@@ -882,37 +836,6 @@ Property:
     purchasePrice:
       type: Number
       description: Purchase price in the currency's smallest unit
-    currentValue:
-      type: Number
-      description: Current market value estimate
-    valueDate:
-      type: DateTime
-      description: When the current value was assessed
-    mortgageBalance:
-      type: Number
-      description: Remaining mortgage principal
-    mortgageRate:
-      type: Number
-      description: Interest rate on mortgage (as decimal)
-    mortgageTerm:
-      type: Integer
-      description: Loan term in years
-    propertyTax:
-      type: Number
-      description: Annual property tax amount
-    hoaFee:
-      type: Number
-      description: Monthly HOA or condo fee
-    isRental:
-      type: Boolean
-      default: false
-      description: Whether the property is rented to others
-    isPrimaryResidence:
-      type: Boolean
-      default: false
-      description: Whether this is the owner's primary home
-    notes:
-      description: Any additional information
   relations:
     OWNED_BY:
       to: Person
@@ -935,24 +858,3 @@ Property:
           type: Number
         leaseDocument:
           type: URL
-
-# Property Types
-property_types:
-  Text:
-    description: Plain text
-  Email:
-    description: Email address
-  URL:
-    description: Web URL
-  DateTime:
-    description: Date and time (ISO 8601)
-  Duration:
-    description: Time duration (ISO 8601 duration format)
-  Boolean:
-    description: True or false
-  Number:
-    description: Numeric value
-  Object:
-    description: Arbitrary key-value data
-  Relationship:
-    description: Reference to another entity

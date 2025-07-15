@@ -65,7 +65,7 @@ module Neo4j
         tx.run(query, {
                  from_id: from_node.id,
                  to_id: to_node.id
-               }).map { |record| record[:r] }
+               }).pluck(:r)
       rescue StandardError => e
         log_error("Error finding relationships: #{e.message}")
         log_error(e.backtrace.join("\n")) if @debug

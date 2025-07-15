@@ -181,7 +181,7 @@ module Neo4j
         Neo4j::DatabaseService.read_transaction do |tx|
           # First try: Exact match on name
           query = ""
-          query += "MATCH (n#{':' + type if type}) "
+          query += "MATCH (n#{":#{type}" if type}) "
           query += "WHERE n.name = $name "
           query += "RETURN id(n) as id, labels(n) as labels, properties(n) as props "
           query += "LIMIT 1"
@@ -215,7 +215,7 @@ module Neo4j
             # Check if any string property contains the name (case-insensitive)
             entity["props"].each do |key, value|
               next if key == "embedding" # Skip embedding arrays
-              
+
               # Handle arrays by checking each item
               if value.is_a?(Array)
                 found_in_array = value.any? { |item| item.to_s.downcase.include?(name_lower) }

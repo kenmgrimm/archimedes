@@ -8,7 +8,7 @@ namespace :neo4j do
     end
     puts "✅ Neo4j database cleared successfully!"
   end
-  
+
   # Existing import task...
   desc "Import data into Neo4j from a directory of JSON files or a specific file"
   task :import, [:input_path] => :environment do |_t, args|

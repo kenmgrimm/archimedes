@@ -122,7 +122,13 @@ module OpenAI
       end
 
       @logger.debug("Sending request to OpenAI API with model: #{model}")
-      begin
+
+      messages[-1][:content] = "#{messages[-1][:content]}\n\nReturn your response as a JSON object."
+      retries = 0
+      max_retries = 3
+
+      response = nil
+      loop do
         response = @client.chat(
           parameters: {
             model: model,
@@ -132,28 +138,32 @@ module OpenAI
             response_format: { type: "json_object" }
           }
         )
+        break
+      rescue OpenAI::RateLimitError => e
+        retries += 1
+        raise if retries > max_retries
 
-        @logger.debug("Received response from OpenAI API")
-        @logger.debug("Response: #{response.inspect}")
-
-        # Check for error in response
-        if response.is_a?(Hash) && response.key?("error")
-          error_msg = response.dig("error", "message") || "Unknown error from OpenAI API"
-          @logger.error("OpenAI API error: #{error_msg}")
-          raise ExtractionError, "OpenAI API error: #{error_msg}"
-        end
-
-        response
-      rescue StandardError => e
-        @logger.error("OpenAI API request failed: #{e.message}")
-        @logger.error(e.backtrace.join("\n")) if e.backtrace
-        raise ExtractionError, "OpenAI API request failed: #{e.message}"
+        wait_time = (e.retry_after || 1).to_f
+        @logger.info("Rate limited, waiting #{wait_time}s (retry #{retries}/#{max_retries})")
+        sleep(wait_time)
       end
 
-      parse_response(response, prompt_config)
-    rescue StandardError => e
-      @logger.error("Error in extract_structured_data: #{e.message}")
-      raise ExtractionError, "Failed to extract structured data: #{e.message}"
+      @logger.debug("Received response from OpenAI API")
+      @logger.debug("Response: #{response.inspect}")
+
+      # Check for error in response
+      if response.is_a?(Hash) && response.key?("error")
+        error_msg = response.dig("error", "message") || "Unknown error from OpenAI API"
+        @logger.error("OpenAI API error: #{error_msg}")
+        raise ExtractionError, "OpenAI API error: #{error_msg}"
+      end
+
+      begin
+        JSON.parse(response.dig("choices", 0, "message", "content"))
+      rescue StandardError => e
+        @logger.error("Error in extract_structured_data: #{e.message}")
+        raise ExtractionError, "Failed to extract structured data: #{e.message}"
+      end
     end
 
     # Alias for backward compatibility

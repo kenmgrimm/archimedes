@@ -23,7 +23,7 @@ module Neo4j
       def evaluate_merge_decision(existing_props, new_props, matcher_class)
         # Calculate confidence score for the match
         confidence_score = calculate_confidence_score(existing_props, new_props, matcher_class)
-        
+
         decision = {
           confidence: confidence_score,
           existing_props: existing_props,
@@ -51,7 +51,7 @@ module Neo4j
 
       # Calculate a confidence score (0.0-1.0) for asset matching
       # @param existing_props [Hash] Properties of existing asset
-      # @param new_props [Hash] Properties of new asset  
+      # @param new_props [Hash] Properties of new asset
       # @param matcher_class [Class] The node matcher class to use
       # @return [Float] Confidence score between 0.0 and 1.0
       def calculate_confidence_score(existing_props, new_props, matcher_class)
@@ -59,17 +59,15 @@ module Neo4j
 
         # Test each matching method and collect scores
         matcher_class.fuzzy_equality_methods.each do |method_name|
-          begin
-            match_result = matcher_class.send(method_name, existing_props, new_props)
-            if match_result
-              # Weight different match types differently
-              weight = method_weight(method_name)
-              method_score = calculate_method_confidence(method_name, existing_props, new_props)
-              scores << { method: method_name, score: method_score, weight: weight }
-            end
-          rescue StandardError => e
-            log_error("Error in #{method_name}: #{e.message}")
+          match_result = matcher_class.send(method_name, existing_props, new_props)
+          if match_result
+            # Weight different match types differently
+            weight = method_weight(method_name)
+            method_score = calculate_method_confidence(method_name, existing_props, new_props)
+            scores << { method: method_name, score: method_score, weight: weight }
           end
+        rescue StandardError => e
+          log_error("Error in #{method_name}: #{e.message}")
         end
 
         return 0.0 if scores.empty?
@@ -77,12 +75,12 @@ module Neo4j
         # Calculate weighted average confidence
         total_weighted_score = scores.sum { |s| s[:score] * s[:weight] }
         total_weight = scores.sum { |s| s[:weight] }
-        
+
         confidence = total_weighted_score / total_weight
-        
+
         # Apply modifiers based on data quality
         confidence = apply_data_quality_modifiers(confidence, existing_props, new_props)
-        
+
         [confidence, 1.0].min # Cap at 1.0
       end
 
@@ -91,12 +89,12 @@ module Neo4j
       # Weight different matching methods by reliability
       def method_weight(method_name)
         weights = {
-          exact_serial_number_match: 1.0,           # Highest reliability
-          exact_unique_identifier_match: 0.95,     # Very high reliability  
+          exact_serial_number_match: 1.0, # Highest reliability
+          exact_unique_identifier_match: 0.95,     # Very high reliability
           brand_and_model_match: 0.7,              # Medium-high reliability
           asset_name_similarity_match: 0.5         # Lower reliability
         }
-        
+
         weights[method_name] || 0.5
       end
 
@@ -120,9 +118,9 @@ module Neo4j
       def calculate_brand_confidence(existing_props, new_props)
         existing_brand = extract_brand(existing_props)
         new_brand = extract_brand(new_props)
-        
+
         return 0.3 if existing_brand.blank? || new_brand.blank?
-        
+
         if existing_brand.downcase == new_brand.downcase
           1.0
         else
@@ -136,9 +134,9 @@ module Neo4j
       def calculate_model_confidence(existing_props, new_props)
         existing_model = extract_model(existing_props)
         new_model = extract_model(new_props)
-        
+
         return 0.4 if existing_model.blank? || new_model.blank?
-        
+
         if existing_model.downcase == new_model.downcase
           1.0
         else
@@ -151,11 +149,11 @@ module Neo4j
       def calculate_name_similarity_confidence(existing_props, new_props)
         existing_name = existing_props["name"].to_s
         new_name = new_props["name"].to_s
-        
+
         return 0.1 if existing_name.blank? || new_name.blank?
-        
+
         similarity = string_similarity(existing_name, new_name)
-        
+
         # Lower confidence for name-only matching
         similarity * 0.8
       end
@@ -167,7 +165,7 @@ module Neo4j
         # Boost confidence if both assets have multiple identifying properties
         existing_identifiers = count_identifying_properties(existing_props)
         new_identifiers = count_identifying_properties(new_props)
-        
+
         if existing_identifiers >= 3 && new_identifiers >= 3
           modified_confidence += 0.1 # Boost for rich data
         elsif existing_identifiers <= 1 || new_identifiers <= 1
@@ -175,37 +173,35 @@ module Neo4j
         end
 
         # Penalty for very generic names
-        if generic_name?(existing_props["name"]) || generic_name?(new_props["name"])
-          modified_confidence -= 0.15
-        end
+        modified_confidence -= 0.15 if generic_name?(existing_props["name"]) || generic_name?(new_props["name"])
 
         [modified_confidence, 0.0].max # Don't go below 0
       end
 
       # Count identifying properties in an asset
       def count_identifying_properties(props)
-        identifying_fields = %w[serial_number license_plate vin part_number barcode brand model name]
+        identifying_fields = ["serial_number", "license_plate", "vin", "part_number", "barcode", "brand", "model", "name"]
         identifying_fields.count { |field| props[field].present? }
       end
 
       # Check if name is too generic for reliable matching
       def generic_name?(name)
         return false if name.blank?
-        
-        generic_names = %w[truck car vehicle bike item asset equipment tool part component]
-        generic_names.any? { |generic| name.downcase.strip == generic }
+
+        generic_names = ["truck", "car", "vehicle", "bike", "item", "asset", "equipment", "tool", "part", "component"]
+        generic_names.any?(name.downcase.strip)
       end
 
       # Queue asset pair for human review
       def queue_for_human_review(existing_props, new_props, confidence_score)
         review_id = SecureRandom.uuid
-        
+
         review_record = {
           id: review_id,
           existing_asset: existing_props,
           new_asset: new_props,
           confidence_score: confidence_score,
-          status: 'pending',
+          status: "pending",
           created_at: Time.current,
           reviewed_at: nil,
           reviewer: nil,
@@ -215,7 +211,7 @@ module Neo4j
 
         # Store in database or file system for human review
         store_review_record(review_record)
-        
+
         review_id
       end
 
@@ -223,13 +219,13 @@ module Neo4j
       def store_review_record(review_record)
         # Option 1: Store in database
         # HumanReview.create!(review_record)
-        
+
         # Option 2: Store in JSON file for simple implementation
-        reviews_file = Rails.root.join('tmp', 'human_reviews.json')
+        reviews_file = Rails.root.join("tmp", "human_reviews.json")
         existing_reviews = File.exist?(reviews_file) ? JSON.parse(File.read(reviews_file)) : []
         existing_reviews << review_record
         File.write(reviews_file, JSON.pretty_generate(existing_reviews))
-        
+
         log_info("Stored review record: #{review_record[:id]}")
       end
 
@@ -246,23 +242,24 @@ module Neo4j
         # Simple Levenshtein similarity (you might want to use a gem like 'fuzzy_match')
         return 1.0 if str1 == str2
         return 0.0 if str1.blank? || str2.blank?
-        
-        str1, str2 = str1.downcase, str2.downcase
+
+        str1 = str1.downcase
+        str2 = str2.downcase
         longer = str1.length > str2.length ? str1 : str2
         shorter = str1.length > str2.length ? str2 : str1
-        
-        return 1.0 if longer.length.zero?
-        
+
+        return 1.0 if longer.empty?
+
         edit_distance = levenshtein_distance(longer, shorter)
         (longer.length - edit_distance).to_f / longer.length
       end
 
       def levenshtein_distance(str1, str2)
         matrix = Array.new(str1.length + 1) { Array.new(str2.length + 1) }
-        
+
         (0..str1.length).each { |i| matrix[i][0] = i }
         (0..str2.length).each { |j| matrix[0][j] = j }
-        
+
         (1..str1.length).each do |i|
           (1..str2.length).each do |j|
             cost = str1[i - 1] == str2[j - 1] ? 0 : 1
@@ -273,7 +270,7 @@ module Neo4j
             ].min
           end
         end
-        
+
         matrix[str1.length][str2.length]
       end
 
